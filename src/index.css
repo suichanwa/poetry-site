@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background-light: #f8fafc;
+    --foreground-light: #1a202c;
+    --card-light: #ffffff;
+    --card-foreground-light: #1a202c;
+    --primary-light: #4a5568;
+    --primary-foreground-light: #ffffff;
+
+    --background-dark: #121212;
+    --foreground-dark: #e0e0e0;
+    --card-dark: #1e1e1e;
+    --card-foreground-dark: #e0e0e0;
+    --primary-dark: #bb86fc;
+    --primary-foreground-dark: #121212;
+    --muted-light: #e2e8f0;
+    --muted-dark: #2d3748;
+    --muted-foreground-light: #4a5568;
+    --muted-foreground-dark: #a0aec0;
+    --accent-light: #edf2f7;
+    --accent-dark: #2c5282;
+    --accent-foreground-light: #2d3748;
+    --accent-foreground-dark: #e2e8f0;
+  }
+
+  body {
+    @apply bg-background-light text-foreground-light;
+    overflow: hidden; /* Hide scrollbar */
+  }
+
+  .dark body {
+    @apply bg-background-dark text-foreground-dark;
+  }
+}
+
+@layer components {
+  .bg-background {
+    background-color: var(--background-light);
+  }
+  .dark .bg-background {
+    background-color: var(--background-dark);
+  }
+
+  .text-foreground {
+    color: var(--foreground-light);
+  }
+  .dark .text-foreground {
+    color: var(--foreground-dark);
+  }
+
+  .bg-card {
+    background-color: var(--card-light);
+  }
+  .dark .bg-card {
+    background-color: var(--card-dark);
+  }
+
+  .text-card-foreground {
+    color: var(--card-foreground-light);
+  }
+  .dark .text-card-foreground {
+    color: var (--card-foreground-dark);
+  }
+
+  .bg-primary {
+    background-color: var(--primary-light);
+  }
+  .dark .bg-primary {
+    background-color: var(--primary-dark);
+  }
+
+  .text-primary-foreground {
+    color: var(--primary-foreground-light);
+  }
+  .dark .text-primary-foreground {
+    color: var(--primary-foreground-dark);
+  }
+
+  .bg-muted {
+    background-color: var(--muted-light);
+  }
+  .dark .bg-muted {
+    background-color: var(--muted-dark);
+  }
+
+  .text-muted-foreground {
+    color: var(--muted-foreground-light);
+  }
+  .dark .text-muted-foreground {
+    color: var(--muted-foreground-dark);
+  }
+
+  .bg-accent {
+    background-color: var(--accent-light);
+  }
+  .dark .bg-accent {
+    background-color: var(--accent-dark);
+  }
+
+  .text-accent-foreground {
+    color: var(--accent-foreground-light);
+  }
+  .dark .text-accent-foreground {
+    color: var(--accent-foreground-dark);
+  }
+}
