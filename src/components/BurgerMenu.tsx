@@ -7,14 +7,12 @@ import { useTheme } from "@/context/ThemeContext";
 
 export default function BurgerMenu() {
   const [isOpen, setIsOpen] = useState(false);
-  const [language, setLanguage] = useState("en");
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const changeLanguage = (lang: string) => {
-    setLanguage(lang);
     // Add logic to change the language in your application
   };
 
