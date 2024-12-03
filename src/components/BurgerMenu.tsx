@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { Menu, Sun, Moon, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,10 +10,6 @@ export default function BurgerMenu() {
   const { theme, toggleTheme } = useTheme();
 
   const toggleMenu = () => setIsOpen(!isOpen);
-
-  const changeLanguage = (lang: string) => {
-    // Add logic to change the language in your application
-  };
 
   return (
     <div className="relative">
