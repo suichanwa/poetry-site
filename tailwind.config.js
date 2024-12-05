@@ -10,59 +10,56 @@ export default {
     extend: {
       colors: {
         background: {
-          light: "#f8fafc",
-          dark: "#121212",
+          light: "#ffffff",
+          dark: "#0a0a0a",  // True black background
         },
         foreground: {
-          light: "#1a202c",
-          dark: "#e0e0e0",
+          light: "#000000",
+          dark: "#ffffff",  // Pure white text
         },
         card: {
           light: "#ffffff",
-          dark: "#1e1e1e",
+          dark: "#141414",  // Slightly lighter than background
         },
         "card-foreground": {
-          light: "#1a202c",
-          dark: "#e0e0e0",
+          light: "#000000",
+          dark: "#ffffff",
         },
         primary: {
-          light: "#4a5568",
-          dark: "#bb86fc",
+          light: "#000000",
+          dark: "#ffffff",
         },
         "primary-foreground": {
           light: "#ffffff",
-          dark: "#121212",
+          dark: "#000000",
         },
         muted: {
-          light: "#e2e8f0",
-          dark: "#2d3748",
+          light: "#f5f5f5",
+          dark: "#262626",  // Neutral dark gray
         },
         "muted-foreground": {
-          light: "#4a5568",
-          dark: "#a0aec0",
+          light: "#737373",
+          dark: "#a3a3a3",  // Muted text
         },
         accent: {
-          light: "#edf2f7",
-          dark: "#2c5282",
+          light: "#f5f5f5",
+          dark: "#1f1f1f",  // Subtle accent
         },
         "accent-foreground": {
-          light: "#2d3748",
-          dark: "#e2e8f0",
+          light: "#000000",
+          dark: "#ffffff",
         },
       },
-      keyframes: {
-        modalShow: {
-          '0%': { transform: 'scale(0.95)', opacity: '0' },
-          '100%': { transform: 'scale(1)', opacity: '1' },
-        },
-        modalHide: {
-          '0%': { transform: 'scale(1)', opacity: '1' },
-          '100%': { transform: 'scale(0.95)', opacity: '0' },
-        },
+      borderRadius: {
+        lg: "0.5rem",
+        md: "calc(0.5rem - 2px)",
+        sm: "calc(0.5rem - 4px)",
       },
-      animation: {
-        'modal-show': 'modalShow 0.3s ease-out',
-        'modal-hide': 'modalHide 0.3s ease-in',
+      boxShadow: {
+        sm: "0 1px 2px rgba(0, 0, 0, 0.05)",
+        DEFAULT: "0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)",
+        md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
       },
     },
   },

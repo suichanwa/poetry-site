@@ -27,8 +27,8 @@ export function PoemCard({
   };
 
   return (
-    <Card className="bg-white dark:bg-gray-800 shadow-md p-4">
-      {label && <div className="text-sm font-semibold text-blue-500 mb-2">{label}</div>}
+    <Card className="shadow-md p-4">
+      {label && <div className="text-sm font-semibold text-pink-200 mb-2">{label}</div>}
       <div className="border-b pb-2">
         <h3 className="text-xl font-bold">{title}</h3>
         <p className="text-sm text-gray-500">By {author}</p>
@@ -46,11 +46,11 @@ export function PoemCard({
         </div>
       )}
       {comments.length > 0 && (
-        <div className="mt-4 border border-gray-300 dark:border-gray-600 rounded-lg p-4">
+        <div className="mt-4 border rounded-lg p-4">
           <h4 className="text-lg font-semibold mb-2">Comments</h4>
           <ul className="space-y-2">
             {comments.map((comment, index) => (
-              <li key={index} className="bg-gray-100 dark:bg-gray-700 p-2 rounded flex justify-between items-center">
+              <li key={index} className="0 p-2 rounded flex justify-between items-center">
                 <span>{comment}</span>
                 <LikeButton />
               </li>

@@ -10,9 +10,9 @@ export default function MainPage({ poems, onAddPoetry }: { poems: { id: number; 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 relative">
+    <div className="min-h-screen p-6 relative">
       <main>
-        <h2 className="text-2xl font-semibold mb-4">Poetry Feed</h2>
+        <h2 className="text-2xl font-semibold mb-4">Feed</h2>
         <div className="space-y-4">
           {poems.map((poem, index) => (
             <PoemCard
