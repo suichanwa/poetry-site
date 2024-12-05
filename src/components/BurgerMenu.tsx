@@ -3,13 +3,20 @@ import { Menu, Sun, Moon, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/context/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 export default function BurgerMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const { t, i18n } = useTranslation();
 
   const toggleMenu = () => setIsOpen(!isOpen);
+
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+    console.log(`Language changed to ${lang}`);
+  };
 
   return (
     <div className="relative">
@@ -30,7 +37,7 @@ export default function BurgerMenu() {
                 }}
                 className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full"
               >
-                Home
+                {t("home")}
               </button>
             </li>
             <li>
@@ -41,7 +48,7 @@ export default function BurgerMenu() {
                 }}
                 className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full"
               >
-                Register
+                {t("register")}
               </button>
             </li>
             <li>
@@ -52,7 +59,7 @@ export default function BurgerMenu() {
                 }}
                 className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full"
               >
-                Login
+                {t("login")}
               </button>
             </li>
             <li>
@@ -64,7 +71,7 @@ export default function BurgerMenu() {
                 className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full flex items-center space-x-2"
               >
                 {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                <span>Toggle Theme</span>
+                <span>{t("toggleTheme")}</span>
               </button>
             </li>
             <li>
@@ -76,7 +83,7 @@ export default function BurgerMenu() {
                 className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full flex items-center space-x-2"
               >
                 <Globe className="w-5 h-5" />
-                <span>English</span>
+                <span>{t("english")}</span>
               </button>
             </li>
             <li>
@@ -88,7 +95,7 @@ export default function BurgerMenu() {
                 className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full flex items-center space-x-2"
               >
                 <Globe className="w-5 h-5" />
-                <span>Romanian</span>
+                <span>{t("romanian")}</span>
               </button>
             </li>
             <li>
@@ -100,7 +107,7 @@ export default function BurgerMenu() {
                 className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full flex items-center space-x-2"
               >
                 <Globe className="w-5 h-5" />
-                <span>Russian</span>
+                <span>{t("russian")}</span>
               </button>
             </li>
           </ul>
