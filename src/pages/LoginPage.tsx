@@ -32,11 +32,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="w-full max-w-sm bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+    <div className="flex flex-col items-center justify-center min-h-screen ">
+      <div className="w-full max-w-sm  shadow-md rounded-lg p-6">
         <h1 className="text-2xl font-bold text-center mb-4">Login</h1>
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className=" text-red-700 px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}

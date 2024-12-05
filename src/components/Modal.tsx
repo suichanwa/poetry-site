@@ -22,16 +22,16 @@ export function Modal({ isOpen, onClose, children }: ModalProps) {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
       <div
         className={cn(
-          "relative bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md transform transition-all duration-300 ease-in-out",
+          "relative bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-2xl transform transition-all duration-300 ease-in-out",
           { "animate-modal-show": isOpen, "animate-modal-hide": !isOpen }
         )}
       >
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
         >
           &times;
         </button>

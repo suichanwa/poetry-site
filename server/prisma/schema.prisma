@@ -8,14 +8,16 @@ generator client {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  name      String    
   password  String
+  avatar    String?
   poems     Poem[]
   comments  Comment[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  likes     Like[]    // Add this line to establish the relation
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Poem {

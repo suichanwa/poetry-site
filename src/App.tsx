@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainPage from "./pages/MainPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ProfilePage from "./pages/ProfilePage";
+import AccountSettingsPage from "./pages/AccountSettingPage";
 import { Layout } from "@/components/Layout";
-import { useState } from "react";
+import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
   const [poems, setPoems] = useState([
@@ -32,15 +36,21 @@ function App() {
   };
 
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<MainPage poems={poems} onAddPoetry={addPoetry} />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <AuthProvider>
+      <ThemeProvider>
+        <Router>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<MainPage poems={poems} onAddPoetry={addPoetry} />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/settings" element={<AccountSettingsPage />} />
+            </Routes>
+          </Layout>
+        </Router>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 
