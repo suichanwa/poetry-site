@@ -12,11 +12,11 @@ model User {
   email      String     @unique
   name       String    
   password   String
-  avatar     String?
+  avatar     String?    // This field will store the avatar URL/path
   poems      Poem[]
   comments   Comment[]
   likes      Like[]
-  bookmarks  Bookmark[] // Add this line
+  bookmarks  Bookmark[]
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 }

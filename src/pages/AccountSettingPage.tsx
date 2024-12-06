@@ -74,31 +74,33 @@ export default function AccountSettingsPage() {
     }
   };
 
-  const handleAvatarUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append('avatar', file);
+const handleAvatarUpload = async (file: File) => {
+  const formData = new FormData();
+  formData.append('avatar', file);
 
-    try {
-      const response = await fetch(`http://localhost:3000/api/users/${user?.id}/avatar`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: formData,
-      });
+  try {
+    const response = await fetch(`http://localhost:3000/api/users/${user?.id}/avatar`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: formData,
+    });
 
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-
-      setSuccess("Avatar updated successfully");
-      setError("");
-      setIsAvatarModalOpen(false);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to update avatar');
-      setSuccess("");
+    if (!response.ok) {
+      throw new Error(await response.text());
     }
-  };
+
+    const data = await response.json();
+    user.avatar = data.avatar;
+    setSuccess("Avatar updated successfully");
+    setError("");
+    setIsAvatarModalOpen(false);
+  } catch (error) {
+    setError(error instanceof Error ? error.message : 'Failed to update avatar');
+    setSuccess("");
+  }
+};
 
   return (
     <div className="min-h-screen p-6">
