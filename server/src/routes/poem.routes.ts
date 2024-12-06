@@ -77,4 +77,39 @@ router.post('/:id/comment', authMiddleware, async (req: any, res) => {
   }
 });
 
+// Add bookmark to poem (protected route)
+router.post('/:id/bookmark', authMiddleware, async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    // Check if bookmark already exists
+    const existingBookmark = await prisma.bookmark.findFirst({
+      where: {
+        userId,
+        poemId: parseInt(id),
+      },
+    });
+
+    if (existingBookmark) {
+      // Remove bookmark if it exists
+      await prisma.bookmark.delete({
+        where: { id: existingBookmark.id },
+      });
+      res.json({ bookmarked: false });
+    } else {
+      // Create new bookmark
+      await prisma.bookmark.create({
+        data: {
+          userId,
+          poemId: parseInt(id),
+        },
+      });
+      res.json({ bookmarked: true });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to toggle bookmark' });
+  }
+});
+
 export default router;

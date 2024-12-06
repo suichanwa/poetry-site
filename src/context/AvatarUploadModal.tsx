@@ -1,17 +1,19 @@
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
+import { Modal } from "@/components/Modal";
 import { Button } from "@/components/ui/button";
 import { User, Upload } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
 
-export default function ProfileSetupPage() {
+interface AvatarUploadModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onUpload: (file: File) => Promise<void>;
+}
+
+export function AvatarUploadModal({ isOpen, onClose, onUpload }: AvatarUploadModalProps) {
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string>("");
-  const navigate = useNavigate();
-  const { user } = useAuth();
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -31,33 +33,13 @@ export default function ProfileSetupPage() {
     }
   };
 
-  const handleSkip = () => {
-    navigate('/');
-  };
-
   const handleUpload = async () => {
     if (!image) return;
 
     setIsUploading(true);
-    setError("");
-    
     try {
-      const formData = new FormData();
-      formData.append('avatar', image);
-
-      const response = await fetch(`http://localhost:3000/api/users/${user?.id}/avatar`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-
-      navigate('/');
+      await onUpload(image);
+      onClose();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to upload avatar');
     } finally {
@@ -66,12 +48,12 @@ export default function ProfileSetupPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-6">
-      <Card className="w-full max-w-md p-6 space-y-6">
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className="space-y-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Complete Your Profile</h1>
+          <h2 className="text-2xl font-bold mb-2">Change Avatar</h2>
           <p className="text-muted-foreground">
-            Add a profile picture to personalize your account
+            Upload a new profile picture
           </p>
         </div>
 
@@ -101,7 +83,7 @@ export default function ProfileSetupPage() {
                   onChange={handleImageChange}
                   disabled={isUploading}
                 />
-                Change Photo
+                Choose Photo
               </label>
             </div>
           </div>
@@ -110,10 +92,10 @@ export default function ProfileSetupPage() {
             <Button
               variant="outline"
               className="flex-1"
-              onClick={handleSkip}
+              onClick={onClose}
               disabled={isUploading}
             >
-              Skip for now
+              Cancel
             </Button>
             <Button
               className="flex-1"
@@ -128,13 +110,13 @@ export default function ProfileSetupPage() {
               ) : (
                 <>
                   <Upload className="w-4 h-4 mr-2" />
-                  Continue
+                  Save
                 </>
               )}
             </Button>
           </div>
         </div>
-      </Card>
-    </div>
+      </div>
+    </Modal>
   );
 }

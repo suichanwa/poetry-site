@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainPage from "./pages/MainPage";
@@ -8,6 +9,7 @@ import AccountSettingsPage from "./pages/AccountSettingPage";
 import { Layout } from "@/components/Layout";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import ProfileSetupPage from './pages/ProfileSetupPage';
 
 function App() {
   const [poems, setPoems] = useState([
@@ -46,6 +48,7 @@ function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/settings" element={<AccountSettingsPage />} />
+              <Route path="/profile-setup" element={<ProfileSetupPage />} />
             </Routes>
           </Layout>
         </Router>

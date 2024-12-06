@@ -8,28 +8,30 @@ generator client {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  name      String    
-  password  String
-  avatar    String?
-  poems     Poem[]
-  comments  Comment[]
-  likes     Like[]    // Add this line to establish the relation
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id         Int        @id @default(autoincrement())
+  email      String     @unique
+  name       String    
+  password   String
+  avatar     String?
+  poems      Poem[]
+  comments   Comment[]
+  likes      Like[]
+  bookmarks  Bookmark[] // Add this line
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 }
 
 model Poem {
-  id        Int       @id @default(autoincrement())
-  title     String
-  content   String
-  author    User      @relation(fields: [authorId], references: [id])
-  authorId  Int
-  comments  Comment[]
-  likes     Like[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id         Int        @id @default(autoincrement())
+  title      String
+  content    String
+  author     User       @relation(fields: [authorId], references: [id])
+  authorId   Int
+  comments   Comment[]
+  likes      Like[]
+  bookmarks  Bookmark[] // Add this line
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 }
 
 model Comment {
@@ -53,4 +55,15 @@ model Like {
   comment   Comment? @relation(fields: [commentId], references: [id])
   commentId Int?
   createdAt DateTime @default(now())
+}
+
+model Bookmark {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  poem      Poem     @relation(fields: [poemId], references: [id])
+  poemId    Int
+  createdAt DateTime @default(now())
+
+  @@unique([userId, poemId])
 }
