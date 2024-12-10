@@ -1,80 +1,94 @@
 import { useState } from "react";
 import { Modal } from "@/components/Modal";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
-import { User } from "lucide-react";
 
 interface AddPoetryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddPoetry: (title: string, content: string, author: string) => void;
+  onAddPoetry: (poem: { title: string; content: string; author: string }) => void;
 }
 
 export function AddPoetryModal({ isOpen, onClose, onAddPoetry }: AddPoetryModalProps) {
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [author, setAuthor] = useState("");
+  const [author, setAuthor] = useState(user?.name || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddPoetry = async () => {
-    if (!title || !content || !author) return;
-    
-    setIsSubmitting(true);
-    try {
-      await onAddPoetry(title, content, author);
-      setTitle("");
-      setContent("");
-      setAuthor("");
-      onClose();
-    } finally {
-      setIsSubmitting(false);
+  setIsSubmitting(true);
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
     }
-  };
+
+    const response = await fetch('http://localhost:3000/api/poems', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ title, content }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to create poem');
+    }
+
+    const newPoem = await response.json();
+    onAddPoetry(newPoem);
+    onClose();
+  } catch (error) {
+    console.error('Error creating poem:', error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.2 }}
-        className="space-y-6 px-2"
-      >
-        <div className="flex items-start space-x-4">
-          <div className="flex-shrink-0">
-            <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-              <User className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-            </div>
-          </div>
-          <div className="flex-grow space-y-4">
-            <Textarea
-              placeholder="What's your poem's title?"
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold mb-2">Add a New Poem</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Title</label>
+            <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="border-none resize-none focus:ring-0 text-xl font-semibold placeholder:text-gray-400 p-0"
+              className="w-full"
+              required
             />
-            
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Content</label>
             <Textarea
-              placeholder="Write your poetry here..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="min-h-[150px] border-none resize-none focus:ring-0 p-0"
+              className="w-full"
+              required
             />
-            
-            <Textarea
-              placeholder="Your pen name..."
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Author</label>
+            <Input
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
-              className="border-none resize-none focus:ring-0 p-0"
+              className="w-full"
+              required
+              disabled
             />
           </div>
         </div>
-
         <div className="flex items-center justify-end pt-4 border-t mt-4">
           <Button
             onClick={handleAddPoetry}
-            disabled={!title || !content || !author || isSubmitting}
+            disabled={!title || !content || isSubmitting}
             className="px-6 rounded-full"
           >
             {isSubmitting ? (
@@ -88,7 +102,7 @@ export function AddPoetryModal({ isOpen, onClose, onAddPoetry }: AddPoetryModalP
             )}
           </Button>
         </div>
-      </motion.div>
+      </div>
     </Modal>
   );
 }

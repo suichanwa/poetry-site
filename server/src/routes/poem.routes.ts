@@ -26,22 +26,33 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Create a new poem (protected route)
+import express from 'express';
+import { PrismaClient } from '@prisma/client';
+import { authMiddleware } from '../middleware/auth.middleware.js';
+
+const router = express.Router();
+const prisma = new PrismaClient();
+
+// Add poem (protected route)
 router.post('/', authMiddleware, async (req: any, res) => {
   try {
     const { title, content } = req.body;
+    const userId = req.user.id;
+
     const poem = await prisma.poem.create({
       data: {
         title,
         content,
-        authorId: req.user.id
-      }
+        authorId: userId,
+      },
     });
+
     res.json(poem);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create poem' });
   }
 });
+
 
 // Add like to poem (protected route)
 router.post('/:id/like', authMiddleware, async (req: any, res) => {
@@ -109,6 +120,44 @@ router.post('/:id/bookmark', authMiddleware, async (req: any, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: 'Failed to toggle bookmark' });
+  }
+});
+
+
+// In server/src/routes/poem.routes.ts
+router.get('/:id/bookmark/status', authMiddleware, async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const bookmark = await prisma.bookmark.findFirst({
+      where: {
+        userId,
+        poemId: parseInt(id),
+      },
+    });
+
+    res.json({ bookmarked: !!bookmark });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch bookmark status' });
+  }
+});
+
+// In server/src/routes/poem.routes.ts
+router.get('/user/:userId', authMiddleware, async (req: any, res) => {
+  try {
+    const { userId } = req.params;
+    const poems = await prisma.poem.findMany({
+      where: { authorId: parseInt(userId) },
+      include: {
+        author: {
+          select: { name: true, email: true }
+        }
+      }
+    });
+    res.json(poems);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch user poems' });
   }
 });
 

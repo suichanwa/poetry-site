@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
-import { Menu, Sun, Moon, Globe, LogOut, User, Settings } from "lucide-react";
+import { Menu, Sun, Moon, Globe, LogOut, User, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/context/ThemeContext";
@@ -84,13 +83,13 @@ export default function BurgerMenu() {
                 <li>
                   <button
                     onClick={() => {
-                      navigate("/settings");
+                      navigate("/bookmarks");
                       setIsOpen(false);
                     }}
                     className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full flex items-center"
                   >
-                    <Settings className="w-4 h-4 mr-2" />
-                    Settings
+                    <Bookmark className="w-4 h-4 mr-2" />
+                    Bookmarks
                   </button>
                 </li>
                 <li>
