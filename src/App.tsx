@@ -1,9 +1,8 @@
-// src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainPage from "./pages/MainPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import ProfilePage from "./pages/ProfilePage";
+import ProfilePage from "./pages/ProfileSetup/Profile"; // Update this import path
 import AccountSettingsPage from "./pages/AccountSettings/AccountSettingsPage";
 import BookmarksPage from "./pages/BookmarksPage";
 import ProfileSetupPage from "./pages/ProfileSetup/ProfileSetup";

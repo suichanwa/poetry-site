@@ -39,7 +39,7 @@ export default function ProfileSetupPage() {
   };
 
   const handleUpload = async () => {
-    if (!image) return;
+    if (!image || !user) return;
 
     setIsUploading(true);
     setError("");
@@ -50,7 +50,7 @@ export default function ProfileSetupPage() {
       formData.append('name', name);
       formData.append('bio', bio);
 
-      const response = await fetch(`http://localhost:3000/api/users/${user?.id}/setup-profile`, {
+      const response = await fetch(`http://localhost:3000/api/users/${user.id}/setup-profile`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -59,12 +59,25 @@ export default function ProfileSetupPage() {
       });
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        const errorText = await response.text();
+        console.error('Error uploading profile:', errorText);
+        setError(errorText);
+        return;
       }
+
+      const data = await response.json();
+      
+      // Update user context with new data
+      if (data.avatar) {
+        user.avatar = data.avatar;
+      }
+      user.name = name;
+      user.bio = bio;
 
       navigate('/');
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to upload avatar');
+      console.error('Error uploading profile:', error);
+      setError(error instanceof Error ? error.message : 'Failed to update profile');
     } finally {
       setIsUploading(false);
     }
@@ -80,14 +93,14 @@ export default function ProfileSetupPage() {
           </div>
         )}
         <ProfileImageUpload 
-          preview={preview} 
+          preview={preview || (user?.avatar ? `http://localhost:3000${user.avatar}` : null)}
           handleImageChange={handleImageChange} 
           isUploading={isUploading} 
         />
         <ProfileForm 
-          name={name} 
+          name={name || user?.name || ''} 
           setName={setName} 
-          bio={bio} 
+          bio={bio || user?.bio || ''} 
           setBio={setBio} 
           handleSkip={handleSkip} 
           handleUpload={handleUpload} 

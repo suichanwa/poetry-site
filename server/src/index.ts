@@ -5,13 +5,22 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import authRoutes from '../routes/auth.routes';
-import userRoutes from '../routes/poem.routes';
+import userRoutes from '../routes/user.routes';
 import poemRoutes from '../routes/poem.routes';
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Add CSP headers
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; img-src 'self' data: blob: *; style-src 'self' 'unsafe-inline';"
+  );
+  next();
+});
 
 // Define __dirname for ES module compatibility
 const __filename = fileURLToPath(import.meta.url);
@@ -28,8 +37,6 @@ app.use(express.json());
 // Serve static files from uploads directory
 // In server/src/index.ts
 app.use('/uploads', express.static(uploadsDir));
-
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/poems', poemRoutes);
 app.use('/api/users', userRoutes);

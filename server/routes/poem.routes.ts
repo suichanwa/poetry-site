@@ -26,54 +26,67 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Create a new poem (protected route)
+// Add poem (protected route)
 router.post('/', authMiddleware, async (req: any, res) => {
   try {
     const { title, content } = req.body;
+    const userId = req.user.id;
+
     const poem = await prisma.poem.create({
       data: {
         title,
         content,
-        authorId: req.user.id
-      }
+        authorId: userId,
+      },
     });
+
     res.json(poem);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create poem' });
   }
 });
 
-// Add like to poem (protected route)
-router.post('/:id/like', authMiddleware, async (req: any, res) => {
+// Rest of your routes...
+// Get bookmark status
+router.get('/:id/bookmark/status', authMiddleware, async (req: any, res) => {
   try {
-    const { id } = req.params;
-    const like = await prisma.like.create({
-      data: {
-        userId: req.user.id,
-        poemId: parseInt(id)
+    const poemId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    const bookmark = await prisma.bookmark.findUnique({
+      where: {
+        userId_poemId: {
+          userId: userId,
+          poemId: poemId
+        }
       }
     });
-    res.json(like);
+
+    res.json({ bookmarked: !!bookmark });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to like poem' });
+    res.status(500).json({ error: 'Failed to get bookmark status' });
   }
 });
 
-// Add comment to poem (protected route)
-router.post('/:id/comment', authMiddleware, async (req: any, res) => {
+router.get('/user/:id', authMiddleware, async (req: any, res) => {
   try {
-    const { id } = req.params;
-    const { content } = req.body;
-    const comment = await prisma.comment.create({
-      data: {
-        content,
-        userId: req.user.id,
-        poemId: parseInt(id)
+    const userId = parseInt(req.params.id);
+    const poems = await prisma.poem.findMany({
+      where: {
+        authorId: userId
+      },
+      include: {
+        author: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
       }
     });
-    res.json(comment);
+    res.json(poems);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to add comment' });
+    res.status(500).json({ error: 'Failed to fetch user poems' });
   }
 });
 

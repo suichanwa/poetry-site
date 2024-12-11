@@ -1,4 +1,3 @@
-// src/pages/AccountSettings/ChangePassword.tsx
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -36,7 +35,11 @@ export function ChangePassword({ setError, setSuccess }: ChangePasswordProps) {
       });
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        const errorText = await response.text();
+        console.error('Error updating password:', errorText);
+        setError(errorText);
+        setSuccess("");
+        return;
       }
 
       setSuccess("Password updated successfully");
@@ -45,6 +48,7 @@ export function ChangePassword({ setError, setSuccess }: ChangePasswordProps) {
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
+      console.error('Error updating password:', err);
       setError("Failed to update password");
       setSuccess("");
     }

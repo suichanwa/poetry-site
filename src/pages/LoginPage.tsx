@@ -9,27 +9,28 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+const handleLogin = async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error);
-      }
-
-      localStorage.setItem('token', data.token);
-      navigate('/');
-    } catch (error) {
-      setError(error.message);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error);
     }
-  };
+
+    // Use the login function from AuthContext to save user data
+    login(data.token, data.user);
+    navigate('/');
+  } catch (error) {
+    setError(error instanceof Error ? error.message : 'Failed to login');
+  }
+};
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen ">
