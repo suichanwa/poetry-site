@@ -43,13 +43,8 @@ const upload = multer({
   }
 });
 
-// Avatar upload endpoint
-router.post('/:id/avatar', authMiddleware, upload.single('avatar'), async (req: any, res) => {
+router.put('/:id', authMiddleware, async (req: any, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
     const userId = parseInt(req.params.id);
     
     // Authorization check
@@ -57,26 +52,26 @@ router.post('/:id/avatar', authMiddleware, upload.single('avatar'), async (req: 
       return res.status(403).json({ error: 'Not authorized to update this user' });
     }
 
-    // Create relative path for storage
-    const relativePath = path.relative(
-      path.join(__dirname, '../..'),
-      req.file.path
-    ).replace(/\\/g, '/');
+    const { name, bio, email } = req.body;
 
-    // Update user's avatar in database
+    // Update user's profile in database
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { avatar: `/uploads/${path.basename(req.file.path)}` }
+      data: { 
+        name, 
+        bio, 
+        email
+      }
     });
 
     res.json({
-      avatar: updatedUser.avatar,
-      message: 'Avatar uploaded successfully'
+      user: updatedUser,
+      message: 'Profile updated successfully'
     });
 
   } catch (error) {
-    console.error('Avatar upload error:', error);
-    res.status(500).json({ error: 'Failed to upload avatar' });
+    console.error('Profile update error:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
   }
 });
 

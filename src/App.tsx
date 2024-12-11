@@ -1,10 +1,12 @@
+// src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainPage from "./pages/MainPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
-import AccountSettingsPage from "./pages/AccountSettingPage";
+import AccountSettingsPage from "./pages/AccountSettings/AccountSettingsPage";
 import BookmarksPage from "./pages/BookmarksPage";
+import ProfileSetupPage from "./pages/ProfileSetup/ProfileSetup";
 import { Layout } from "@/components/Layout";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -22,6 +24,7 @@ function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/settings" element={<AccountSettingsPage />} />
               <Route path="/bookmarks" element={<BookmarksPage />} />
+              <Route path="/setup-profile" element={<ProfileSetupPage />} />
             </Routes>
           </Layout>
         </Router>
