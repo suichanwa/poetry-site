@@ -5,7 +5,7 @@ import { User, Upload } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export function AvatarUpload() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -60,7 +60,7 @@ export function AvatarUpload() {
       
       // Update user context with new avatar
       if (user && data.avatar) {
-        user.avatar = data.avatar;
+        updateUser({ avatar: data.avatar });
       }
       
       setSuccess("Avatar updated successfully");

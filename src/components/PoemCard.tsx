@@ -61,31 +61,37 @@ export function PoemCard({ title, content, author, label, id, isPreview = true }
     }
   };
 
-  const handleBookmark = async () => {
-    if (!user) {
-      navigate('/login');
-      return;
+const handleBookmark = async () => {
+  if (!user) {
+    navigate('/login');
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem('token');
+    console.log('Token:', token);
+
+    const response = await fetch(`http://localhost:3000/api/poems/${id}/bookmark`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log('Response status:', response.status);
+    console.log('Response text:', await response.text());
+
+    if (!response.ok) {
+      throw new Error('Failed to bookmark poem');
     }
 
-    try {
-      const response = await fetch(`http://localhost:3000/api/poems/${id}/bookmark`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to bookmark poem');
-      }
-
-      const data = await response.json();
-      setIsBookmarked(data.bookmarked);
-    } catch (error) {
-      console.error('Error bookmarking poem:', error);
-    }
-  };
+    const data = await response.json();
+    setIsBookmarked(data.bookmarked);
+  } catch (error) {
+    console.error('Error bookmarking poem:', error);
+  }
+};
 
   const handleNavigate = () => {
     if (isPreview) {

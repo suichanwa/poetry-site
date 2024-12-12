@@ -10,7 +10,7 @@ export default function BookmarksPage() {
   useEffect(() => {
     const fetchBookmarkedPoems = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/users/${user?.id}/bookmarks`, {
+        const response = await fetch(`http://localhost:3000/api/poems/user/${user?.id}/bookmarks`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
           },

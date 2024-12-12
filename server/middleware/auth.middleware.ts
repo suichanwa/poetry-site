@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// server/middleware/auth.middleware.ts
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
@@ -6,7 +6,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 interface AuthRequest extends Request {
-  user?: unknown;
+  user?: any;
 }
 
 export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -17,18 +17,17 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-key');
     const user = await prisma.user.findUnique({
-  where: { id: (decoded as unknown).userId },
-  select: { 
-    id: true, 
-    name: true, 
-    email: true,
-    avatar: true,  // Add this
-    bio: true     // Add this
-  }
-});
-
+      where: { id: (decoded as any).userId },
+      select: { 
+        id: true, 
+        name: true, 
+        email: true,
+        avatar: true,
+        bio: true
+      }
+    });
 
     if (!user) {
       return res.status(401).json({ error: 'User not found' });

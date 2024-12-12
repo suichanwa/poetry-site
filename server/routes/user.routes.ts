@@ -1,9 +1,10 @@
+// server/routes/user.routes.ts
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
-import { authMiddleware } from '../middleware/auth.middleware.js';
+import { authMiddleware } from '../middleware/auth.middleware';
 import { fileURLToPath } from 'url';
 
 const router = express.Router();

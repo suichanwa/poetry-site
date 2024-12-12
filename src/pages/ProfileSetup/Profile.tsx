@@ -10,7 +10,7 @@ interface Poem {
   id: number;
   title: string;
   content: string;
-  author: string;
+  author: string | { name: string; email: string };
   createdAt: string;
 }
 
@@ -18,6 +18,7 @@ export default function Profile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [userPoems, setUserPoems] = useState<Poem[]>([]);
+  const [bookmarkedPoems, setBookmarkedPoems] = useState<Poem[]>([]);
   const [error, setError] = useState<string>("");
   const [userData, setUserData] = useState(user);
 
@@ -66,6 +67,30 @@ export default function Profile() {
 
     if (user?.id) {
       fetchUserPoems();
+    }
+  }, [user?.id]);
+
+  // Fetch bookmarked poems
+  useEffect(() => {
+    const fetchBookmarkedPoems = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/poems/user/${user?.id}/bookmarks`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setBookmarkedPoems(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch bookmarked poems:', error);
+        setError("Failed to load bookmarked poems");
+      }
+    };
+
+    if (user?.id) {
+      fetchBookmarkedPoems();
     }
   }, [user?.id]);
 
@@ -155,6 +180,32 @@ export default function Profile() {
                   >
                     Write Your First Poem
                   </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Bookmarked Poems */}
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold mb-4">Bookmarked Poems</h2>
+          {error ? (
+            <div className="text-red-500 text-center">{error}</div>
+          ) : (
+            <div className="space-y-4">
+              {bookmarkedPoems.length > 0 ? (
+                bookmarkedPoems.map((poem) => (
+                  <PoemCard
+                    key={poem.id}
+                    title={poem.title}
+                    content={poem.content}
+                    author={poem.author.name}
+                    id={poem.id}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <p>You haven't bookmarked any poems yet.</p>
                 </div>
               )}
             </div>

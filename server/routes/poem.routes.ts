@@ -1,6 +1,7 @@
+// server/routes/poem.routes.ts
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authMiddleware } from '../middleware/auth.middleware.js';
+import { authMiddleware } from '../middleware/auth.middleware';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -46,7 +47,6 @@ router.post('/', authMiddleware, async (req: any, res) => {
   }
 });
 
-// Rest of your routes...
 // Get bookmark status
 router.get('/:id/bookmark/status', authMiddleware, async (req: any, res) => {
   try {
@@ -68,6 +68,51 @@ router.get('/:id/bookmark/status', authMiddleware, async (req: any, res) => {
   }
 });
 
+// Bookmark a poem
+// Bookmark a poem
+router.post('/:id/bookmark', authMiddleware, async (req: any, res) => {
+  try {
+    const poemId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    console.log('User ID:', userId);
+    console.log('Poem ID:', poemId);
+
+    const existingBookmark = await prisma.bookmark.findUnique({
+      where: {
+        userId_poemId: {
+          userId: userId,
+          poemId: poemId
+        }
+      }
+    });
+
+    if (existingBookmark) {
+      await prisma.bookmark.delete({
+        where: {
+          userId_poemId: {
+            userId: userId,
+            poemId: poemId
+          }
+        }
+      });
+      res.json({ bookmarked: false });
+    } else {
+      await prisma.bookmark.create({
+        data: {
+          userId: userId,
+          poemId: poemId
+        }
+      });
+      res.json({ bookmarked: true });
+    }
+  } catch (error) {
+    console.error('Error bookmarking poem:', error);
+    res.status(500).json({ error: 'Failed to bookmark poem' });
+  }
+});
+
+// Get poems by user
 router.get('/user/:id', authMiddleware, async (req: any, res) => {
   try {
     const userId = parseInt(req.params.id);
@@ -87,6 +132,34 @@ router.get('/user/:id', authMiddleware, async (req: any, res) => {
     res.json(poems);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch user poems' });
+  }
+});
+
+// Get bookmarked poems by user
+router.get('/user/:id/bookmarks', authMiddleware, async (req: any, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const bookmarks = await prisma.bookmark.findMany({
+      where: {
+        userId: userId
+      },
+      include: {
+        poem: {
+          include: {
+            author: {
+              select: {
+                name: true,
+                email: true
+              }
+            }
+          }
+        }
+      }
+    });
+    const poems = bookmarks.map(bookmark => bookmark.poem);
+    res.json(poems);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch bookmarked poems' });
   }
 });
 
