@@ -1,18 +1,13 @@
-import { ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import BurgerMenu from "@/components/BurgerMenu";
+import { useAuth } from "@/context/AuthContext";
 import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
+import BurgerMenu from "@/components/BurgerMenu";
+import React, { ReactNode } from "react";
 
-export function Layout({ children }: { children: ReactNode }) {
+function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { user } = useAuth();
-
-  // Debug logs
-  console.log('Current user in Layout:', user);
-  console.log('Avatar path:', user?.avatar);
-  console.log('Full avatar URL:', user?.avatar ? `http://localhost:3000${user.avatar}` : 'No avatar');
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-hidden">
@@ -30,10 +25,6 @@ export function Layout({ children }: { children: ReactNode }) {
                   src={`http://localhost:3000${user.avatar}`}
                   alt={user.name} 
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    console.error('Error loading avatar:', e);
-                    e.currentTarget.src = '';
-                  }}
                 />
               ) : (
                 <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -56,3 +47,5 @@ export function Layout({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
+export default Layout;

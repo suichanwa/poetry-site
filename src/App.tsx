@@ -1,12 +1,14 @@
+// src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainPage from "./pages/MainPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import ProfilePage from "./pages/ProfileSetup/Profile"; // Update this import path
+import ProfilePage from "./pages/ProfileSetup/Profile";
 import AccountSettingsPage from "./pages/AccountSettings/AccountSettingsPage";
 import BookmarksPage from "./pages/BookmarksPage";
 import ProfileSetupPage from "./pages/ProfileSetup/ProfileSetup";
-import { Layout } from "@/components/Layout";
+import PoemDetail from "./pages/PoemDetail";
+import Layout from "@/components/Layout";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 
@@ -24,6 +26,7 @@ function App() {
               <Route path="/settings" element={<AccountSettingsPage />} />
               <Route path="/bookmarks" element={<BookmarksPage />} />
               <Route path="/setup-profile" element={<ProfileSetupPage />} />
+              <Route path="/poem/:id" element={<PoemDetail />} />
             </Routes>
           </Layout>
         </Router>
