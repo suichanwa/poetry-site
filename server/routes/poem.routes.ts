@@ -171,6 +171,7 @@ router.get('/:id', async (req, res) => {
       include: {
         author: {
           select: {
+            id: true,      // Add this
             name: true,
             email: true,
             avatar: true
@@ -180,6 +181,7 @@ router.get('/:id', async (req, res) => {
           include: {
             user: {
               select: {
+                id: true,  // Add this
                 name: true,
                 avatar: true
               }

@@ -1,10 +1,12 @@
+// src/pages/ProfileSetup/Profile.tsx
 import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom"; // Add useParams import
 import { Card } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Settings, LogOut, PenSquare, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PoemCard } from "@/components/PoemCard";
+import { FollowButton } from "@/components/FollowButton";
 
 interface Poem {
   id: number;
@@ -14,43 +16,58 @@ interface Poem {
   createdAt: string;
 }
 
+interface FollowStats {
+  followersCount: number;
+  followingCount: number;
+}
+
 export default function Profile() {
+  const { id } = useParams<{ id?: string }>();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [userPoems, setUserPoems] = useState<Poem[]>([]);
   const [bookmarkedPoems, setBookmarkedPoems] = useState<Poem[]>([]);
   const [error, setError] = useState<string>("");
   const [userData, setUserData] = useState(user);
+  const [followStats, setFollowStats] = useState<FollowStats>({
+    followersCount: 0,
+    followingCount: 0,
+  });
 
-  // Fetch user data including avatar and bio
+  const isOwnProfile = !id || id === user?.id.toString();
+
+  // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/users/${user?.id}`, {
+        const userId = id || user?.id;
+        const response = await fetch(`http://localhost:3000/api/users/${userId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
         if (response.ok) {
           const data = await response.json();
-          console.log('Fetched user data:', data);
           setUserData(data);
+          console.log('Fetched user data:', data);
         }
       } catch (error) {
         console.error('Failed to fetch user data:', error);
+        setError("Failed to load user profile");
       }
     };
 
-    if (user?.id) {
+    if (id || user?.id) {
       fetchUserData();
     }
-  }, [user?.id]);
+  }, [id, user?.id]);
 
   // Fetch user poems
   useEffect(() => {
     const fetchUserPoems = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/poems/user/${user?.id}`, {
+        const userId = id || user?.id;
+        const response = await fetch(`http://localhost:3000/api/poems/user/${userId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -65,14 +82,16 @@ export default function Profile() {
       }
     };
 
-    if (user?.id) {
+    if (id || user?.id) {
       fetchUserPoems();
     }
-  }, [user?.id]);
+  }, [id, user?.id]);
 
-  // Fetch bookmarked poems
+  // Only fetch bookmarks for own profile
   useEffect(() => {
     const fetchBookmarkedPoems = async () => {
+      if (!isOwnProfile) return;
+
       try {
         const response = await fetch(`http://localhost:3000/api/poems/user/${user?.id}/bookmarks`, {
           headers: {
@@ -85,14 +104,52 @@ export default function Profile() {
         }
       } catch (error) {
         console.error('Failed to fetch bookmarked poems:', error);
-        setError("Failed to load bookmarked poems");
       }
     };
 
     if (user?.id) {
       fetchBookmarkedPoems();
     }
-  }, [user?.id]);
+  }, [user?.id, isOwnProfile]);
+
+  // Fetch follow stats
+  useEffect(() => {
+    const fetchFollowStats = async () => {
+      try {
+        const userId = id || user?.id;
+        const [followersRes, followingRes] = await Promise.all([
+          fetch(`http://localhost:3000/api/follow/${userId}/followers`),
+          fetch(`http://localhost:3000/api/follow/${userId}/following`),
+        ]);
+
+        const followers = await followersRes.json();
+        const following = await followingRes.json();
+
+        setFollowStats({
+          followersCount: followers.length,
+          followingCount: following.length,
+        });
+      } catch (error) {
+        console.error('Error fetching follow stats:', error);
+      }
+    };
+
+    if (id || user?.id) {
+      fetchFollowStats();
+    }
+  }, [id, user?.id]);
+
+  if (!userData) {
+    return (
+      <div className="min-h-screen p-6">
+        <Card className="max-w-2xl mx-auto p-6">
+          <div className="text-center">
+            <p className="text-red-500">{error || "User not found"}</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6">
@@ -120,42 +177,69 @@ export default function Profile() {
             {userData?.bio && (
               <p className="text-gray-500 dark:text-gray-400 mt-2">{userData.bio}</p>
             )}
+            <div className="flex items-center space-x-4 mt-2">
+              <span className="text-sm">
+                <span className="font-bold">{followStats.followersCount}</span> followers
+              </span>
+              <span className="text-sm">
+                <span className="font-bold">{followStats.followingCount}</span> following
+              </span>
+            </div>
           </div>
-          <Button 
-            variant="outline" 
-            size="icon"
-            onClick={() => navigate('/write')}
-          >
-            <PenSquare className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center space-x-2">
+            {!isOwnProfile && (
+              <FollowButton 
+                userId={parseInt(id!)}
+                onFollowChange={(isFollowing) => {
+                  setFollowStats(prev => ({
+                    ...prev,
+                    followersCount: prev.followersCount + (isFollowing ? 1 : -1)
+                  }));
+                }}
+              />
+            )}
+            {isOwnProfile && (
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={() => navigate('/write')}
+              >
+                <PenSquare className="w-5 h-5" />
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="space-y-4">
-          <Button 
-            variant="outline" 
-            className="w-full justify-start" 
-            onClick={() => navigate('/settings')}
-          >
-            <Settings className="mr-2 h-4 w-4" />
-            Account Settings
-          </Button>
-          <Button 
-            variant="outline" 
-            className="w-full justify-start text-red-500 hover:text-red-600" 
-            onClick={() => {
-              logout();
-              navigate('/login');
-            }}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
-        </div>
+        {/* Action Buttons - Only show for own profile */}
+        {isOwnProfile && (
+          <div className="space-y-4">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start" 
+              onClick={() => navigate('/settings')}
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Account Settings
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full justify-start text-red-500 hover:text-red-600" 
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
+          </div>
+        )}
 
         {/* User's Poems */}
         <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">My Poems</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            {isOwnProfile ? "My Poems" : `${userData.name}'s Poems`}
+          </h2>
           {error ? (
             <div className="text-red-500 text-center">{error}</div>
           ) : (
@@ -172,26 +256,26 @@ export default function Profile() {
                 ))
               ) : (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <p>You haven't written any poems yet.</p>
-                  <Button 
-                    variant="outline" 
-                    className="mt-4"
-                    onClick={() => navigate('/write')}
-                  >
-                    Write Your First Poem
-                  </Button>
+                  <p>No poems yet.</p>
+                  {isOwnProfile && (
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => navigate('/write')}
+                    >
+                      Write Your First Poem
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
           )}
         </div>
 
-        {/* Bookmarked Poems */}
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">Bookmarked Poems</h2>
-          {error ? (
-            <div className="text-red-500 text-center">{error}</div>
-          ) : (
+        {/* Bookmarked Poems - Only show for own profile */}
+        {isOwnProfile && (
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold mb-4">Bookmarked Poems</h2>
             <div className="space-y-4">
               {bookmarkedPoems.length > 0 ? (
                 bookmarkedPoems.map((poem) => (
@@ -209,8 +293,8 @@ export default function Profile() {
                 </div>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </Card>
     </div>
   );

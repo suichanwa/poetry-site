@@ -86,4 +86,31 @@ router.get('/:id', authMiddleware, async (req: any, res) => {
   }
 });
 
+// Get user by username
+router.get('/username/:username', async (req, res) => {
+  try {
+    const user = await prisma.user.findFirst({
+      where: { 
+        name: req.params.username 
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        bio: true
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
 export default router;

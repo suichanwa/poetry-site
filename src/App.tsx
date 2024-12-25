@@ -27,6 +27,7 @@ function App() {
               <Route path="/bookmarks" element={<BookmarksPage />} />
               <Route path="/setup-profile" element={<ProfileSetupPage />} />
               <Route path="/poem/:id" element={<PoemDetail />} />
+              <Route path='/profile/:id' element={<ProfilePage />} />
             </Routes>
           </Layout>
         </Router>

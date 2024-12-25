@@ -12,14 +12,27 @@ model User {
   email      String     @unique
   name       String    
   password   String
-  avatar     String?    // This field will store the avatar URL/path
-  poems      Poem[]
+  avatar     String?
   bio        String?
+  poems      Poem[]
   comments   Comment[]
   likes      Like[]
   bookmarks  Bookmark[]
+  followers  Follow[]   @relation("followers")
+  following  Follow[]   @relation("following")
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
+}
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+  follower    User     @relation("following", fields: [followerId], references: [id])
+  followerId  Int
+  following   User     @relation("followers", fields: [followingId], references: [id])
+  followingId Int
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
 }
 
 model Poem {

@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import authRoutes from '../routes/auth.routes';
 import userRoutes from '../routes/user.routes';
 import poemRoutes from '../routes/poem.routes';
+import followRoutes from '../routes/follow.routes';
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use('/uploads', express.static(uploadsDir));
 app.use('/api/auth', authRoutes);
 app.use('/api/poems', poemRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/follow', followRoutes);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
