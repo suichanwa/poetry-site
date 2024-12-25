@@ -14,7 +14,7 @@ export default function ProfileSetupPage() {
   const [name, setName] = useState<string>("");
   const [bio, setBio] = useState<string>("");
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -38,50 +38,51 @@ export default function ProfileSetupPage() {
     navigate('/');
   };
 
-  const handleUpload = async () => {
-    if (!image || !user) return;
+ const handleUpload = async () => {
+  if (!image || !user) return;
 
-    setIsUploading(true);
-    setError("");
-    
-    try {
-      const formData = new FormData();
-      formData.append('avatar', image);
-      formData.append('name', name);
-      formData.append('bio', bio);
+  setIsUploading(true);
+  setError("");
+  
+  try {
+    // First upload the avatar
+    const formData = new FormData();
+    formData.append('avatar', image);
 
-      const response = await fetch(`http://localhost:3000/api/users/${user.id}/setup-profile`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: formData,
-      });
+    const response = await fetch(`http://localhost:3000/api/users/${user.id}/avatar`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: formData,
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error uploading profile:', errorText);
-        setError(errorText);
-        return;
-      }
-
-      const data = await response.json();
-      
-      // Update user context with new data
-      if (data.avatar) {
-        user.avatar = data.avatar;
-      }
-      user.name = name;
-      user.bio = bio;
-
-      navigate('/');
-    } catch (error) {
-      console.error('Error uploading profile:', error);
-      setError(error instanceof Error ? error.message : 'Failed to update profile');
-    } finally {
-      setIsUploading(false);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error uploading avatar:', errorText);
+      setError(errorText);
+      return;
     }
-  };
+
+    const data = await response.json();
+    
+    // Update the user's avatar in context
+    if (user && data.avatar) {
+      updateUser({ 
+        avatar: data.avatar,
+        name: name || user.name,
+        bio: bio || user.bio
+      });
+    }
+
+    navigate('/');
+  } catch (error) {
+    console.error('Error uploading avatar:', error);
+    setError(error instanceof Error ? error.message : 'Failed to upload avatar');
+  } finally {
+    setIsUploading(false);
+  }
+}; 
 
   return (
     <div className="flex items-center justify-center min-h-screen p-6">

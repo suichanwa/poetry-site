@@ -163,4 +163,42 @@ router.get('/user/:id/bookmarks', authMiddleware, async (req: any, res) => {
   }
 });
 
+router.get('/:id', async (req, res) => {
+  try {
+    const poemId = parseInt(req.params.id);
+    const poem = await prisma.poem.findUnique({
+      where: { id: poemId },
+      include: {
+        author: {
+          select: {
+            name: true,
+            email: true,
+            avatar: true
+          }
+        },
+        comments: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                avatar: true
+              }
+            }
+          }
+        },
+        likes: true
+      }
+    });
+
+    if (!poem) {
+      return res.status(404).json({ error: 'Poem not found' });
+    }
+
+    res.json(poem);
+  } catch (error) {
+    console.error('Error fetching poem:', error);
+    res.status(500).json({ error: 'Failed to fetch poem' });
+  }
+});
+
 export default router;

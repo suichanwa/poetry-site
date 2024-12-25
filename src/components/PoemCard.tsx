@@ -67,29 +67,26 @@ const handleBookmark = async () => {
     return;
   }
 
-  try {
-    const token = localStorage.getItem('token');
-    console.log('Token:', token);
+  const token = localStorage.getItem('token');
+  console.log('Token:', token);
 
-    const response = await fetch(`http://localhost:3000/api/poems/${id}/bookmark`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+  const response = await fetch(`http://localhost:3000/api/poems/${id}/bookmark`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
 
-    console.log('Response status:', response.status);
-    console.log('Response text:', await response.text());
+  console.log('Response status:', response.status);
+  const responseText = await response.text();
+  console.log('Response text:', responseText);
 
-    if (!response.ok) {
-      throw new Error('Failed to bookmark poem');
-    }
-
-    const data = await response.json();
+  if (response.ok) {
+    const data = JSON.parse(responseText);
     setIsBookmarked(data.bookmarked);
-  } catch (error) {
-    console.error('Error bookmarking poem:', error);
+  } else {
+    console.error('Failed to bookmark poem:', responseText);
   }
 };
 
