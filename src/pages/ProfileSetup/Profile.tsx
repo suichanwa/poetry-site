@@ -1,6 +1,5 @@
-// src/pages/ProfileSetup/Profile.tsx
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // Add useParams import
+import { useParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { Settings, LogOut, PenSquare, User } from "lucide-react";
@@ -49,7 +48,6 @@ export default function Profile() {
         if (response.ok) {
           const data = await response.json();
           setUserData(data);
-          console.log('Fetched user data:', data);
         }
       } catch (error) {
         console.error('Failed to fetch user data:', error);
@@ -86,31 +84,6 @@ export default function Profile() {
       fetchUserPoems();
     }
   }, [id, user?.id]);
-
-  // Only fetch bookmarks for own profile
-  useEffect(() => {
-    const fetchBookmarkedPoems = async () => {
-      if (!isOwnProfile) return;
-
-      try {
-        const response = await fetch(`http://localhost:3000/api/poems/user/${user?.id}/bookmarks`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setBookmarkedPoems(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch bookmarked poems:', error);
-      }
-    };
-
-    if (user?.id) {
-      fetchBookmarkedPoems();
-    }
-  }, [user?.id, isOwnProfile]);
 
   // Fetch follow stats
   useEffect(() => {
@@ -193,7 +166,7 @@ export default function Profile() {
                 onFollowChange={(isFollowing) => {
                   setFollowStats(prev => ({
                     ...prev,
-                    followersCount: prev.followersCount + (isFollowing ? 1 : -1)
+                    followersCount: Math.max(0, prev.followersCount + (isFollowing ? 1 : -1))
                   }));
                 }}
               />

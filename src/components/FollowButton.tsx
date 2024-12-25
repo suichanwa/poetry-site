@@ -1,4 +1,3 @@
-// src/components/FollowButton.tsx
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -20,9 +19,6 @@ export function FollowButton({ userId, onFollowChange }: FollowButtonProps) {
 
       try {
         const token = localStorage.getItem('token');
-        console.log('Checking follow status for user:', userId);
-        console.log('Token:', token);
-
         const response = await fetch(`http://localhost:3000/api/follow/${userId}/status`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -31,14 +27,11 @@ export function FollowButton({ userId, onFollowChange }: FollowButtonProps) {
         });
 
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Follow status error:', errorText);
-          return;
+          throw new Error(await response.text());
         }
 
         const data = await response.json();
-        console.log('Follow status response:', data);
-        setIsFollowing(data.isFollowing);
+        setIsFollowing(!!data.isFollowing);
       } catch (error) {
         console.error('Error checking follow status:', error);
       }
@@ -47,38 +40,34 @@ export function FollowButton({ userId, onFollowChange }: FollowButtonProps) {
     checkFollowStatus();
   }, [userId, user]);
 
-const handleFollow = async () => {
-  if (!user || user.id === userId) return;
-  setIsLoading(true);
+  const handleFollow = async () => {
+    if (!user || user.id === userId) return;
+    setIsLoading(true);
 
-  const token = localStorage.getItem('token');
-  console.log(`${isFollowing ? 'Unfollowing' : 'Following'} user:`, userId);
-  console.log('Token:', token);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/follow/${userId}`, {
+        method: isFollowing ? 'DELETE' : 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+      });
 
-  const response = await fetch(`http://localhost:3000/api/follow/${userId}`, {
-    method: isFollowing ? 'DELETE' : 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-  });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Follow action error:', errorText);
-    return;
-  }
+      const newFollowingState = !isFollowing;
+      setIsFollowing(newFollowingState);
+      onFollowChange?.(newFollowingState);
+    } catch (error) {
+      console.error('Follow action error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const data = await response.json();
-  console.log('Follow action response:', data);
-
-  setIsFollowing(data.isFollowing);
-  onFollowChange?.(data.isFollowing);
-  setIsLoading(false);
-};
-  
-
-  // Don't render the button if it's the user's own profile
   if (!user || user.id === userId) return null;
 
   return (

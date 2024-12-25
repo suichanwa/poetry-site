@@ -11,9 +11,12 @@ interface Poem {
   title: string;
   content: string;
   author: {
+    id: number;
     name: string;
     email: string;
+    avatar?: string;
   };
+  createdAt: string;
 }
 
 export default function MainPage() {

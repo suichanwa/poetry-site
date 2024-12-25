@@ -12,13 +12,32 @@ import { cn } from "@/lib/utils";
 export interface PoemCardProps {
   title: string;
   content: string;
-  author: string | { name: string; email: string };
+  author: {
+    id: number;
+    name: string;
+    email: string;
+    avatar?: string;
+  };
   label?: string;
   id: number;
   isPreview?: boolean;
+  formatting?: {
+    isBold?: boolean;
+    isItalic?: boolean;
+    alignment?: 'left' | 'center' | 'right';
+    fontSize?: 'small' | 'medium' | 'large';
+  };
 }
 
-export function PoemCard({ title, content, author, label, id, isPreview = true }: PoemCardProps) {
+export function PoemCard({ 
+  title, 
+  content, 
+  author, 
+  label, 
+  id, 
+  isPreview = true,
+  formatting = {}
+}: PoemCardProps){
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [comments, setComments] = useState<string[]>([]);
   const { user } = useAuth();
@@ -135,6 +154,7 @@ const handleBookmark = async () => {
         content={content} 
         isPreview={isPreview} 
         onClick={handleNavigate}
+        formatting={formatting}
       />
       <PoemActions 
         onAddComment={addComment}

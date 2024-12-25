@@ -73,4 +73,46 @@ router.get('/:id/status', authMiddleware, async (req: any, res) => {
   }
 });
 
+// Get followers
+router.get('/:id/followers', authMiddleware, async (req: any, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+
+    const followers = await prisma.follow.findMany({
+      where: {
+        followingId: userId,
+      },
+      include: {
+        follower: true,
+      },
+    });
+
+    res.json(followers.map(f => f.follower));
+  } catch (error) {
+    console.error('Error fetching followers:', error);
+    res.status(500).json({ error: 'Failed to fetch followers' });
+  }
+});
+
+// Get following
+router.get('/:id/following', authMiddleware, async (req: any, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+
+    const following = await prisma.follow.findMany({
+      where: {
+        followerId: userId,
+      },
+      include: {
+        following: true,
+      },
+    });
+
+    res.json(following.map(f => f.following));
+  } catch (error) {
+    console.error('Error fetching following:', error);
+    res.status(500).json({ error: 'Failed to fetch following' });
+  }
+});
+
 export default router;

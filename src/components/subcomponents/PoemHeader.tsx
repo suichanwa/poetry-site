@@ -1,19 +1,29 @@
-// src/components/subcomponents/PoemHeader.tsx
-import React from "react";
+import { User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface PoemHeaderProps {
   title: string;
-  author: string | { name: string; email: string };
+  author: {
+    id: number;
+    name: string;
+    email: string;
+    avatar?: string;
+  };
   label?: string;
   isPreview?: boolean;
 }
 
 export function PoemHeader({ title, author, label, isPreview = true }: PoemHeaderProps) {
+  const navigate = useNavigate();
   const maxTitleLength = window.innerWidth < 640 ? 60 : 120;
   const displayTitle = isPreview && title.length > maxTitleLength 
     ? `${title.slice(0, maxTitleLength)}...` 
     : title;
-  const authorName = typeof author === 'string' ? author : author.name;
+
+  const handleAuthorClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/profile/${author.id}`);
+  };
 
   return (
     <>
@@ -23,12 +33,30 @@ export function PoemHeader({ title, author, label, isPreview = true }: PoemHeade
         </div>
       )}
       <div className="border-b pb-2">
-        <h3 className="text-lg sm:text-xl font-bold hover:text-primary transition-colors line-clamp-2">
-          {displayTitle}
-        </h3>
-        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-          By {authorName}
-        </p>
+        <button 
+          className="flex items-center gap-2 mb-2 hover:opacity-80 transition-opacity"
+          onClick={handleAuthorClick}
+        >
+          <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden flex items-center justify-center">
+            {author.avatar ? (
+              <img
+                src={`http://localhost:3000${author.avatar}`}
+                alt={author.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+            )}
+          </div>
+          <div>
+            <h3 className="text-lg sm:text-xl font-bold hover:text-primary transition-colors line-clamp-2 text-left">
+              {displayTitle}
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-left">
+              By {author.name}
+            </p>
+          </div>
+        </button>
       </div>
     </>
   );

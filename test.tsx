@@ -1,119 +1,82 @@
-// src/pages/PoemDetail.tsx
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
-import { Share2, ArrowLeft, User } from "lucide-react";
-import { PoemActions } from "@/components/subcomponents/PoemActions";
-
-interface Poem {
-  id: number;
-  title: string;
-  content: string;
-  author: {
-    id: number; // Add this
-    name: string;
-    email: string;
-    avatar?: string;
-  };
-  createdAt: string;
-  comments: Array<{
-    id: number;
-    content: string;
-    user: {
-      id: number; // Add this
-      name: string;
-      avatar?: string;
-    };
-  }>;
-}
-
-export default function PoemDetail() {
-  // ... existing state and effects ...
-
-  const navigateToProfile = (userId: number) => {
-    navigate(`/profile/${userId}`);
-  };
-
-  // ... rest of the existing code ...
-
   return (
-    <div className="min-h-screen p-6">
-      <Card className="max-w-2xl mx-auto p-6">
-        <Button
-          variant="ghost"
-          className="mb-4"
-          onClick={() => navigate(-1)}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-
-        <h1 className="text-3xl font-bold mb-4">{poem.title}</h1>
-        <div className="flex items-center space-x-2 mb-6">
-          <button 
-            onClick={() => navigateToProfile(poem.author.id)}
-            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-          >
-            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
-              {poem.author.avatar ? (
-                <img
-                  src={`http://localhost:3000${poem.author.avatar}`}
-                  alt={poem.author.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User className="w-6 h-6 m-2 text-gray-500 dark:text-gray-400" />
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold mb-2">Add a New Poem</h2>
+        <div className="space-y-4">
+          {/* Existing title input */}
+          
+          <div className="space-y-2">
+            <label className="block text-sm font-medium mb-1">Content</label>
+            <div className="flex gap-2 mb-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFormatting(prev => ({ ...prev, isBold: !prev.isBold }))}
+                className={cn(formatting.isBold && "bg-accent")}
+              >
+                <Bold className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFormatting(prev => ({ ...prev, isItalic: !prev.isItalic }))}
+                className={cn(formatting.isItalic && "bg-accent")}
+              >
+                <Italic className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFormatting(prev => ({ ...prev, alignment: 'left' }))}
+                className={cn(formatting.alignment === 'left' && "bg-accent")}
+              >
+                <AlignLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFormatting(prev => ({ ...prev, alignment: 'center' }))}
+                className={cn(formatting.alignment === 'center' && "bg-accent")}
+              >
+                <AlignCenter className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFormatting(prev => ({ ...prev, alignment: 'right' }))}
+                className={cn(formatting.alignment === 'right' && "bg-accent")}
+              >
+                <AlignRight className="w-4 h-4" />
+              </Button>
+              <select
+                className="px-2 py-1 border rounded"
+                value={formatting.fontSize}
+                onChange={(e) => setFormatting(prev => ({ ...prev, fontSize: e.target.value }))}
+              >
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
+            </div>
+            <Textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className={cn(
+                "w-full",
+                formatting.isBold && "font-bold",
+                formatting.isItalic && "italic",
+                `text-${formatting.alignment}`,
+                {
+                  'text-sm': formatting.fontSize === 'small',
+                  'text-base': formatting.fontSize === 'medium',
+                  'text-lg': formatting.fontSize === 'large'
+                }
               )}
-            </div>
-            <div className="text-left">
-              <p className="font-medium hover:underline">{poem.author.name}</p>
-              <p className="text-sm text-gray-500">
-                {new Date(poem.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-          </button>
-        </div>
-
-        {/* ... rest of the existing JSX ... */}
-
-        {poem.comments.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Comments</h2>
-            <div className="space-y-4">
-              {poem.comments.map((comment) => (
-                <div key={comment.id} className="flex space-x-3">
-                  <button 
-                    onClick={() => navigateToProfile(comment.user.id)}
-                    className="flex items-start space-x-3 hover:opacity-80 transition-opacity"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
-                      {comment.user.avatar ? (
-                        <img
-                          src={`http://localhost:3000${comment.user.avatar}`}
-                          alt={comment.user.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-4 h-4 m-2 text-gray-500 dark:text-gray-400" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium hover:underline">
-                        {comment.user.name}
-                      </p>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        {comment.content}
-                      </p>
-                    </div>
-                  </button>
-                </div>
-              ))}
-            </div>
+              required
+            />
           </div>
-        )}
-      </Card>
-    </div>
+          {/* Rest of the existing code */}
+        </div>
+      </div>
+    </Modal>
   );
-}
