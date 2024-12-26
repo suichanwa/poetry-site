@@ -1,67 +1,53 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: "class",
+  darkMode: ["class"],
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/ui-shadcn/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
       colors: {
-        background: {
-          light: "#ffffff",
-          dark: "#0a0a0a",  // True black background
-        },
-        foreground: {
-          light: "#000000",
-          dark: "#ffffff",  // Pure white text
-        },
-        card: {
-          light: "#ffffff",
-          dark: "#141414",  // Slightly lighter than background
-        },
-        "card-foreground": {
-          light: "#000000",
-          dark: "#ffffff",
-        },
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
         primary: {
-          light: "#000000",
-          dark: "#ffffff",
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
         },
-        "primary-foreground": {
-          light: "#ffffff",
-          dark: "#000000",
+        secondary: {
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+        },
+        destructive: {
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
         },
         muted: {
-          light: "#f5f5f5",
-          dark: "#262626",  // Neutral dark gray
-        },
-        "muted-foreground": {
-          light: "#737373",
-          dark: "#a3a3a3",  // Muted text
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
         },
         accent: {
-          light: "#f5f5f5",
-          dark: "#1f1f1f",  // Subtle accent
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
         },
-        "accent-foreground": {
-          light: "#000000",
-          dark: "#ffffff",
+        popover: {
+          DEFAULT: "var(--popover)",
+          foreground: "var(--popover-foreground)",
+        },
+        card: {
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
         },
       },
       borderRadius: {
-        lg: "0.5rem",
-        md: "calc(0.5rem - 2px)",
-        sm: "calc(0.5rem - 4px)",
-      },
-      boxShadow: {
-        sm: "0 1px 2px rgba(0, 0, 0, 0.05)",
-        DEFAULT: "0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)",
-        md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-        lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
-};
+}

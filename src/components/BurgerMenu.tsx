@@ -15,11 +15,6 @@ export default function BurgerMenu() {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    console.log(`Language changed to ${lang}`);
-  };
-
   return (
     <div className="relative">
       <Button variant="outline" onClick={toggleMenu} aria-label="Toggle Menu">
@@ -27,15 +22,15 @@ export default function BurgerMenu() {
       </Button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-md z-50">
-          <ul className="flex flex-col">
+        <div className="absolute top-full left-0 mt-2 w-48 bg-card text-card-foreground shadow-lg rounded-md z-50">
+          <ul className="flex flex-col py-2">
             <li>
               <button
                 onClick={() => {
                   navigate("/");
                   setIsOpen(false);
                 }}
-                className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full"
+                className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full"
               >
                 {t("home")}
               </button>
@@ -49,7 +44,7 @@ export default function BurgerMenu() {
                       navigate("/register");
                       setIsOpen(false);
                     }}
-                    className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full"
+                    className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full"
                   >
                     {t("register")}
                   </button>
@@ -60,7 +55,7 @@ export default function BurgerMenu() {
                       navigate("/login");
                       setIsOpen(false);
                     }}
-                    className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full"
+                    className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full"
                   >
                     {t("login")}
                   </button>
@@ -74,7 +69,7 @@ export default function BurgerMenu() {
                       navigate("/profile");
                       setIsOpen(false);
                     }}
-                    className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full flex items-center"
+                    className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full flex items-center"
                   >
                     <User className="w-4 h-4 mr-2" />
                     Profile
@@ -86,7 +81,7 @@ export default function BurgerMenu() {
                       navigate("/bookmarks");
                       setIsOpen(false);
                     }}
-                    className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full flex items-center"
+                    className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full flex items-center"
                   >
                     <Bookmark className="w-4 h-4 mr-2" />
                     Bookmarks
@@ -99,7 +94,7 @@ export default function BurgerMenu() {
                       navigate("/login");
                       setIsOpen(false);
                     }}
-                    className="block px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 w-full flex items-center text-red-500"
+                    className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full flex items-center text-destructive"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
                     Logout
@@ -108,7 +103,28 @@ export default function BurgerMenu() {
               </>
             )}
 
-            {/* Theme and Language options remain the same */}
+            {/* Theme Toggle */}
+            <li className="border-t border-border mt-2 pt-2">
+              <button
+                onClick={() => {
+                  toggleTheme();
+                  setIsOpen(false);
+                }}
+                className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full flex items-center"
+              >
+                {theme === 'dark' ? (
+                  <>
+                    <Sun className="w-4 h-4 mr-2" />
+                    Light Mode
+                  </>
+                ) : (
+                  <>
+                    <Moon className="w-4 h-4 mr-2" />
+                    Dark Mode
+                  </>
+                )}
+              </button>
+            </li>
           </ul>
         </div>
       )}
