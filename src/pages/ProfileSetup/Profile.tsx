@@ -124,151 +124,136 @@ export default function Profile() {
     );
   }
 
-  return (
-    <div className="min-h-screen p-6">
-      <Card className="max-w-2xl mx-auto p-6">
-        {/* Profile Header */}
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-            {userData?.avatar ? (
-              <img 
-                src={`http://localhost:3000${userData.avatar}`}
-                alt={userData?.name || 'Profile'} 
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  console.error('Error loading avatar image');
-                  e.currentTarget.src = '';
-                }}
-              />
-            ) : (
-              <User className="w-10 h-10 text-gray-500 dark:text-gray-400" />
-            )}
-          </div>
-          <div className="flex-grow">
-            <h1 className="text-2xl font-bold">{userData?.name}</h1>
-            <p className="text-gray-500 dark:text-gray-400">{userData?.email}</p>
-            {userData?.bio && (
-              <p className="text-gray-500 dark:text-gray-400 mt-2">{userData.bio}</p>
-            )}
-            <div className="flex items-center space-x-4 mt-2">
-              <span className="text-sm">
-                <span className="font-bold">{followStats.followersCount}</span> followers
-              </span>
-              <span className="text-sm">
-                <span className="font-bold">{followStats.followingCount}</span> following
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            {!isOwnProfile && (
-              <FollowButton 
-                userId={parseInt(id!)}
-                onFollowChange={(isFollowing) => {
-                  setFollowStats(prev => ({
-                    ...prev,
-                    followersCount: Math.max(0, prev.followersCount + (isFollowing ? 1 : -1))
-                  }));
-                }}
-              />
-            )}
-            {isOwnProfile && (
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={() => navigate('/write')}
-              >
-                <PenSquare className="w-5 h-5" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Action Buttons - Only show for own profile */}
-        {isOwnProfile && (
-          <div className="space-y-4">
-            <Button 
-              variant="outline" 
-              className="w-full justify-start" 
-              onClick={() => navigate('/settings')}
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              Account Settings
-            </Button>
-            <Button 
-              variant="outline" 
-              className="w-full justify-start text-red-500 hover:text-red-600" 
-              onClick={() => {
-                logout();
-                navigate('/login');
+return (
+  <div className="min-h-screen p-2 sm:p-4 lg:p-6">
+    <Card className="max-w-3xl mx-auto p-4 lg:p-6">
+      {/* Profile Header */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center space-y-4 lg:space-y-0 lg:space-x-6 mb-6">
+        {/* Avatar Section - Reduced size */}
+        <div className="w-20 h-20 lg:w-28 lg:h-28 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+          {userData?.avatar ? (
+            <img 
+              src={`http://localhost:3000${userData.avatar}`}
+              alt={userData?.name || 'Profile'} 
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                console.error('Error loading avatar image');
+                e.currentTarget.src = '';
               }}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
-          </div>
-        )}
-
-        {/* User's Poems */}
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">
-            {isOwnProfile ? "My Poems" : `${userData.name}'s Poems`}
-          </h2>
-          {error ? (
-            <div className="text-red-500 text-center">{error}</div>
+            />
           ) : (
-            <div className="space-y-4">
-              {userPoems.length > 0 ? (
-                userPoems.map((poem) => (
-                  <PoemCard
-                    key={poem.id}
-                    title={poem.title}
-                    content={poem.content}
-                    author={userData?.name || poem.author}
-                    id={poem.id}
-                  />
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <p>No poems yet.</p>
-                  {isOwnProfile && (
-                    <Button 
-                      variant="outline" 
-                      className="mt-4"
-                      onClick={() => navigate('/write')}
-                    >
-                      Write Your First Poem
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
+            <User className="w-8 h-8 lg:w-12 lg:h-12 text-gray-500 dark:text-gray-400" />
           )}
         </div>
 
-        {/* Bookmarked Poems - Only show for own profile */}
-        {isOwnProfile && (
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Bookmarked Poems</h2>
-            <div className="space-y-4">
-              {bookmarkedPoems.length > 0 ? (
-                bookmarkedPoems.map((poem) => (
-                  <PoemCard
-                    key={poem.id}
-                    title={poem.title}
-                    content={poem.content}
-                    author={poem.author.name}
-                    id={poem.id}
-                  />
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <p>You haven't bookmarked any poems yet.</p>
-                </div>
-              )}
-            </div>
+        {/* User Info Section - Reduced text sizes */}
+        <div className="flex-grow">
+          <h1 className="text-2xl lg:text-3xl font-bold mb-1">{userData?.name}</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm lg:text-base">{userData?.email}</p>
+          {userData?.bio && (
+            <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm lg:text-base">{userData.bio}</p>
+          )}
+          <div className="flex items-center space-x-4 mt-2">
+            <span className="text-sm lg:text-base">
+              <span className="font-bold">{followStats.followersCount}</span> followers
+            </span>
+            <span className="text-sm lg:text-base">
+              <span className="font-bold">{followStats.followingCount}</span> following
+            </span>
+          </div>
+        </div>
+
+        {/* Actions Section */}
+        <div className="flex items-center space-x-2">
+          {!isOwnProfile && (
+            <FollowButton 
+              userId={parseInt(id!)}
+              onFollowChange={(isFollowing) => {
+                setFollowStats(prev => ({
+                  ...prev,
+                  followersCount: Math.max(0, prev.followersCount + (isFollowing ? 1 : -1))
+                }));
+              }}
+            />
+          )}
+          {isOwnProfile && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate('/write')}
+              className="flex items-center space-x-1"
+            >
+              <PenSquare className="w-4 h-4" />
+              <span>Write</span>
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Action Buttons - Only show for own profile */}
+      {isOwnProfile && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-6">
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="justify-start"
+            onClick={() => navigate('/settings')}
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            Account Settings
+          </Button>
+          <Button 
+            variant="outline"
+            size="sm" 
+            className="justify-start text-red-500 hover:text-red-600"
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
+        </div>
+      )}
+
+      {/* Poems Section */}
+      <div className="mt-6">
+        <h2 className="text-xl font-semibold mb-4">
+          {isOwnProfile ? "My Poems" : `${userData.name}'s Poems`}
+        </h2>
+        {error ? (
+          <div className="text-red-500 text-center text-sm">{error}</div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {userPoems.length > 0 ? (
+              userPoems.map((poem) => (
+                <PoemCard
+                  key={poem.id}
+                  title={poem.title}
+                  content={poem.content}
+                  author={userData?.name || poem.author}
+                  id={poem.id}
+                />
+              ))
+            ) : (
+              <div className="col-span-2 text-center py-8 text-gray-500 dark:text-gray-400">
+                <p className="text-base mb-3">No poems yet.</p>
+                {isOwnProfile && (
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/write')}
+                  >
+                    Write Your First Poem
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         )}
-      </Card>
-    </div>
-  );
+      </div>
+    </Card>
+  </div>
+);
 }

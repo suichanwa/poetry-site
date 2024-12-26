@@ -3,15 +3,19 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
-import { Share2, ArrowLeft, User } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { PoemActions } from "@/components/subcomponents/PoemActions";
+import { PoemDetailHeader } from "@/components/subcomponents/PoemDetailHeader";
+import { PoemDetailComments } from "@/components/subcomponents/PoemDetailComments";
+import { LoadingState } from "@/components/LoadingState";
+import { ErrorState } from "@/components/ErrorState";
 
 interface Poem {
   id: number;
   title: string;
   content: string;
   author: {
-    id: number; 
+    id: number;
     name: string;
     email: string;
     avatar?: string;
@@ -21,13 +25,12 @@ interface Poem {
     id: number;
     content: string;
     user: {
-      id: number; // Add this
+      id: number;
       name: string;
       avatar?: string;
     };
   }>;
 }
-
 
 export default function PoemDetail() {
   const { id } = useParams<{ id: string }>();
@@ -38,50 +41,80 @@ export default function PoemDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const navigateToProfile = (userId: number) => { if (userId) { navigate(`/profile/${userId}`); } };
+const addComment = async (comment: string) => {
+  if (!user || !poem) return;
+
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:3000/api/poems/${id}/comments`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content: comment }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to add comment');
+    }
+
+    const newComment = await response.json();
+    setPoem(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        comments: [newComment, ...prev.comments]
+      };
+    });
+  } catch (error) {
+    console.error('Error adding comment:', error);
+  }
+};
+
 
   useEffect(() => {
-    const fetchPoemDetails = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/poems/${id}`);
-        if (!response.ok) {
+        const [poemResponse, bookmarkResponse] = await Promise.all([
+          fetch(`http://localhost:3000/api/poems/${id}`),
+          user ? fetch(`http://localhost:3000/api/poems/${id}/bookmark/status`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+          }) : null
+        ]);
+
+        if (!poemResponse.ok) {
           throw new Error('Failed to fetch poem');
         }
-        const data = await response.json();
-        setPoem(data);
+
+        const poemData = await poemResponse.json();
+        setPoem(poemData);
+
+        if (bookmarkResponse) {
+          const bookmarkData = await bookmarkResponse.json();
+          setIsBookmarked(bookmarkData.bookmarked);
+        }
       } catch (error) {
-        console.error('Error fetching poem:', error);
+        console.error('Error:', error);
         setError('Failed to load poem');
       } finally {
         setIsLoading(false);
       }
     };
 
-    const fetchBookmarkStatus = async () => {
-      if (!user) return;
-      try {
-        const response = await fetch(`http://localhost:3000/api/poems/${id}/bookmark/status`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        const data = await response.json();
-        setIsBookmarked(data.bookmarked);
-      } catch (error) {
-        console.error('Error fetching bookmark status:', error);
-      }
-    };
-
-    fetchPoemDetails();
-    fetchBookmarkStatus();
+    fetchData();
   }, [id, user]);
 
   const handleShare = async () => {
+    if (!poem) return;
+    
     if (navigator.share) {
       try {
         await navigator.share({
-          title: poem?.title || '',
-          text: poem?.content || '',
+          title: poem.title,
+          text: poem.content,
           url: window.location.href,
         });
       } catch (error) {
@@ -118,48 +151,16 @@ export default function PoemDetail() {
     }
   };
 
-  const addComment = async (comment: string) => {
-    // Implement comment functionality
-  };
-
   if (isLoading) {
-    return (
-      <div className="min-h-screen p-6">
-        <Card className="max-w-2xl mx-auto p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
-            <div className="space-y-2">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-            </div>
-          </div>
-        </Card>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (error || !poem) {
-    return (
-      <div className="min-h-screen p-6">
-        <Card className="max-w-2xl mx-auto p-6 text-center">
-          <p className="text-red-500">{error || 'Poem not found'}</p>
-          <Button
-            variant="outline"
-            className="mt-4"
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Go Back
-          </Button>
-        </Card>
-      </div>
-    );
+    return <ErrorState error={error} onBack={() => navigate(-1)} />;
   }
 
   return (
-        <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6">
       <Card className="max-w-2xl mx-auto p-6">
         <Button
           variant="ghost"
@@ -171,30 +172,11 @@ export default function PoemDetail() {
         </Button>
 
         <h1 className="text-3xl font-bold mb-4">{poem.title}</h1>
-        <div className="flex items-center space-x-2 mb-6">
-          <button 
-            onClick={() => navigateToProfile(poem.author.id)}
-            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-          >
-            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
-              {poem.author.avatar ? (
-                <img
-                  src={`http://localhost:3000${poem.author.avatar}`}
-                  alt={poem.author.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User className="w-6 h-6 m-2 text-gray-500 dark:text-gray-400" />
-              )}
-            </div>
-            <div className="text-left">
-              <p className="font-medium hover:underline">{poem.author.name}</p>
-              <p className="text-sm text-gray-500">
-                {new Date(poem.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-          </button>
-        </div>
+        
+        <PoemDetailHeader 
+          author={poem.author} 
+          createdAt={poem.createdAt} 
+        />
 
         <div className="prose dark:prose-invert max-w-none mb-6">
           <p className="whitespace-pre-wrap">{poem.content}</p>
@@ -207,41 +189,10 @@ export default function PoemDetail() {
           isBookmarked={isBookmarked}
         />
 
-        {poem.comments.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Comments</h2>
-            <div className="space-y-4">
-              {poem.comments.map((comment) => (
-                <div key={comment.id} className="flex space-x-3">
-                  <button 
-                    onClick={() => navigateToProfile(comment.user.id)}
-                    className="flex items-start space-x-3 hover:opacity-80 transition-opacity"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
-                      {comment.user.avatar ? (
-                        <img
-                          src={`http://localhost:3000${comment.user.avatar}`}
-                          alt={comment.user.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-4 h-4 m-2 text-gray-500 dark:text-gray-400" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium hover:underline">
-                        {comment.user.name}
-                      </p>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        {comment.content}
-                      </p>
-                    </div>
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <PoemDetailComments 
+          comments={poem.comments}
+          onUserClick={(userId) => navigate(`/profile/${userId}`)}
+        />
       </Card>
     </div>
   );

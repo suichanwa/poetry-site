@@ -69,7 +69,6 @@ router.get('/:id/bookmark/status', authMiddleware, async (req: any, res) => {
 });
 
 // Bookmark a poem
-// Bookmark a poem
 router.post('/:id/bookmark', authMiddleware, async (req: any, res) => {
   try {
     const poemId = parseInt(req.params.id);
@@ -171,7 +170,7 @@ router.get('/:id', async (req, res) => {
       include: {
         author: {
           select: {
-            id: true,      // Add this
+            id: true,
             name: true,
             email: true,
             avatar: true
@@ -181,7 +180,7 @@ router.get('/:id', async (req, res) => {
           include: {
             user: {
               select: {
-                id: true,  // Add this
+                id: true,
                 name: true,
                 avatar: true
               }
@@ -202,5 +201,268 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch poem' });
   }
 });
+
+router.post('/:id/comments', authMiddleware, async (req: any, res) => {
+  try {
+    const poemId = parseInt(req.params.id);
+    const { content } = req.body;
+    const userId = req.user.id;
+
+    const comment = await prisma.comment.create({
+      data: {
+        content,
+        userId,
+        poemId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    res.json(comment);
+  } catch (error) {
+    console.error('Error creating comment:', error);
+    res.status(500).json({ error: 'Failed to create comment' });
+  }
+});
+
+// Get comments for a poem
+router.get('/:id/comments', authMiddleware, async (req: any, res) => {
+  try {
+    const poemId = parseInt(req.params.id);
+    const comments = await prisma.comment.findMany({
+      where: {
+        poemId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    res.json(comments);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ error: 'Failed to fetch comments' });
+  }
+});
+
+// Get like status
+router.get('/:id/like/status', authMiddleware, async (req: any, res) => {
+  try {
+    const poemId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    const like = await prisma.like.findFirst({
+      where: {
+        poemId,
+        userId,
+      },
+    });
+
+    const likeCount = await prisma.like.count({
+      where: {
+        poemId,
+      },
+    });
+
+    res.json({ 
+      liked: !!like,
+      likeCount 
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get like status' });
+  }
+});
+
+router.post('/:id/like', authMiddleware, async (req: any, res) => {
+  try {
+    const poemId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    const existingLike = await prisma.like.findFirst({
+      where: {
+        poemId,
+        userId,
+        commentId: null // Important: Only handle poem likes
+      },
+    });
+
+    if (existingLike) {
+      await prisma.like.delete({
+        where: {
+          id: existingLike.id
+        }
+      });
+    } else {
+      await prisma.like.create({
+        data: {
+          userId,
+          poemId,
+        }
+      });
+    }
+
+    // Get updated like count
+    const likeCount = await prisma.like.count({
+      where: {
+        poemId,
+        commentId: null
+      }
+    });
+
+    res.json({ 
+      liked: !existingLike,
+      likeCount 
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Failed to toggle like' });
+  }
+});
+
+// Get comment like status
+router.get('/comments/:id/like/status', authMiddleware, async (req: any, res) => {
+  try {
+    const commentId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    const like = await prisma.like.findFirst({
+      where: {
+        commentId,
+        userId,
+      },
+    });
+
+    const likeCount = await prisma.like.count({
+      where: {
+        commentId,
+      },
+    });
+
+    res.json({ 
+      liked: !!like,
+      likeCount 
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get like status' });
+  }
+});
+
+// Toggle comment like
+router.post('/comments/:id/like', authMiddleware, async (req: any, res) => {
+  try {
+    const commentId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    const existingLike = await prisma.like.findFirst({
+      where: {
+        commentId,
+        userId,
+      },
+    });
+
+    if (existingLike) {
+      await prisma.like.delete({
+        where: {
+          id: existingLike.id
+        }
+      });
+    } else {
+      await prisma.like.create({
+        data: {
+          userId,
+          commentId,
+        }
+      });
+    }
+
+    const likeCount = await prisma.like.count({
+      where: {
+        commentId,
+      }
+    });
+
+    res.json({ 
+      liked: !existingLike,
+      likeCount 
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Failed to toggle like' });
+  }
+});
+
+// Get all tags
+router.get('/tags', async (req, res) => {
+  try {
+    const tags = await prisma.tag.findMany({
+      include: {
+        _count: {
+          select: {
+            poems: true
+          }
+        }
+      }
+    });
+    res.json(tags);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch tags' });
+  }
+});
+
+// Add tags to poem
+router.post('/:id/tags', authMiddleware, async (req: any, res) => {
+  try {
+    const poemId = parseInt(req.params.id);
+    const { tags } = req.body;
+    
+    // Check if user owns the poem
+    const poem = await prisma.poem.findFirst({
+      where: {
+        id: poemId,
+        authorId: req.user.id
+      }
+    });
+
+    if (!poem) {
+      return res.status(403).json({ error: 'Not authorized to modify this poem' });
+    }
+
+    const updatedPoem = await prisma.poem.update({
+      where: { id: poemId },
+      data: {
+        tags: {
+          connectOrCreate: tags.map((tag: string) => ({
+            where: { name: tag },
+            create: { name: tag }
+          }))
+        }
+      },
+      include: {
+        tags: true
+      }
+    });
+
+    res.json(updatedPoem);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update tags' });
+  }
+});
+
 
 export default router;

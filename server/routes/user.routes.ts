@@ -113,4 +113,38 @@ router.get('/username/:username', async (req, res) => {
   }
 });
 
+// Update user profile
+router.put('/:id', authMiddleware, async (req: any, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { name, email, bio } = req.body;
+
+    // Make sure user can only update their own profile
+    if (userId !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to update this profile' });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name,
+        email,
+        bio,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        bio: true,
+        avatar: true,
+      },
+    });
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ error: 'Failed to update user profile' });
+  }
+});
+
 export default router;
