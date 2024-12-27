@@ -514,5 +514,43 @@ router.post('/:id/view', async (req, res) => {
   }
 });
 
+// Add this route to get popular poems
+router.get('/popular', async (req, res) => {
+  try {
+    const popularPoems = await prisma.poem.findMany({
+      take: 2, // Get top 2 popular poems
+      orderBy: [
+        { viewCount: 'desc' }, // First by views
+        { 
+          likes: {
+            _count: 'desc' // Then by number of likes
+          }
+        }
+      ],
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        },
+        tags: true,
+        _count: {
+          select: {
+            likes: true,
+            comments: true
+          }
+        }
+      }
+    });
+
+    res.json(popularPoems);
+  } catch (error) {
+    console.error('Error fetching popular poems:', error);
+    res.status(500).json({ error: 'Failed to fetch popular poems' });
+  }
+});
 
 export default router;

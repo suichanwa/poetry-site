@@ -1,23 +1,29 @@
-// Add new poem with tags
 router.post('/', authMiddleware, async (req: any, res) => {
   try {
-    const { title, content, tags = [] } = req.body;
+    const { name, description, isPrivate = false, rules = [] } = req.body;
     const userId = req.user.id;
 
-    const poem = await prisma.poem.create({
+    const community = await prisma.community.create({
       data: {
-        title,
-        content,
-        authorId: userId,
-        tags: {
-          connectOrCreate: tags.map((tag: string) => ({
-            where: { name: tag },
-            create: { name: tag }
+        name,
+        description,
+        isPrivate,
+        creatorId: userId,
+        members: {
+          connect: [{ id: userId }]  // Creator becomes a member
+        },
+        moderators: {
+          connect: [{ id: userId }]  // Creator becomes a moderator
+        },
+        rules: {
+          create: rules.map((rule: { title: string; description: string }) => ({
+            title: rule.title,
+            description: rule.description
           }))
         }
       },
       include: {
-        author: {
+        creator: {
           select: {
             id: true,
             name: true,
@@ -25,28 +31,26 @@ router.post('/', authMiddleware, async (req: any, res) => {
             avatar: true
           }
         },
-        tags: true
-      }
-    });
-
-    res.json(poem);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create poem' });
-  }
-});
-
-// Get all available tags
-router.get('/tags', async (req, res) => {
-  try {
-    const tags = await prisma.tag.findMany({
-      include: {
+        members: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true
+          }
+        },
+        rules: true,
         _count: {
-          select: { poems: true }
+          select: {
+            members: true,
+            posts: true
+          }
         }
       }
     });
-    res.json(tags);
+
+    res.json(community);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch tags' });
+    console.error('Error creating community:', error);
+    res.status(500).json({ error: 'Failed to create community' });
   }
 });

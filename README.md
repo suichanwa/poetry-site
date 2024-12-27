@@ -46,10 +46,10 @@ Collecting workspace information
 - Recommended poems based on interests[ifdev/]
 
 ### 5. Engagement Features
-- add email notification[indev]
+- add email notification[indev?]
 - Enable social media sharing[ifdev]
 - Add poem collections/folders[i;should]
-- the more popular post showing in the main pag[indev]
+- the more popular post showing in the main page[indev]
 
 ## 🔄 Ongoing Improvements
 
@@ -93,11 +93,6 @@ Collecting workspace information
 
 ### 3. Social Features Enhancement
 - [indev] Add poetry groups/circles
-
-### 4. UI/UX Improvements
-- [indev] Add poem animations on scroll
-- [indev] Improve mobile experience
-- [indev] Add gesture controls for poem navigation
 
 ### 5. Analytics & Insights
 - [indev] news only for admins

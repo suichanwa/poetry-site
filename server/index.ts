@@ -8,7 +8,7 @@ import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import poemRoutes from './routes/poem.routes.js';
 import followRoutes from './routes/follow.routes.js';
-import communityRoutes from './routes/community.routes';
+import communityRoutes from './routes/community.routes.js'; // Ensure this import
 
 dotenv.config();
 
@@ -32,7 +32,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/poems', poemRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/follow', followRoutes);
-app.use('/api/communities', communityRoutes);
+app.use('/api/communities', communityRoutes); 
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

@@ -30,6 +30,7 @@ interface Poem {
 export default function MainPage() {
   const [poems, setPoems] = useState<Poem[]>([]);
   const [filteredPoems, setFilteredPoems] = useState<Poem[]>([]);
+  const [popularPoems, setPopularPoems] = useState<Poem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -37,21 +38,31 @@ export default function MainPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Fetch poems and tags
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [poemsResponse, tagsResponse] = await Promise.all([
+        const [poemsResponse, popularPoemsResponse, tagsResponse] = await Promise.all([
           fetch('http://localhost:3000/api/poems'),
+          fetch('http://localhost:3000/api/poems/popular'),
           fetch('http://localhost:3000/api/poems/tags')
         ]);
 
         const poemsData = await poemsResponse.json();
+        const popularPoemsData = await popularPoemsResponse.json();
         const tagsData = await tagsResponse.json();
 
-        setPoems(poemsData);
-        setFilteredPoems(poemsData);
-        setAvailableTags(tagsData.map((tag: any) => tag.name));
+        if (Array.isArray(poemsData)) {
+          setPoems(poemsData);
+          setFilteredPoems(poemsData);
+        }
+
+        if (Array.isArray(popularPoemsData)) {
+          setPopularPoems(popularPoemsData);
+        }
+
+        if (Array.isArray(tagsData)) {
+          setAvailableTags(tagsData.map((tag: { name: string }) => tag.name));
+        }
       } catch (error) {
         console.error('Failed to fetch data:', error);
       } finally {
@@ -62,18 +73,15 @@ export default function MainPage() {
     fetchData();
   }, []);
 
-  // Filter poems based on search query and selected tags
   useEffect(() => {
     const filterPoems = () => {
       const query = searchQuery.toLowerCase();
       const filtered = poems.filter(poem => {
-        // Match search query
         const matchesSearch = 
           poem.title.toLowerCase().includes(query) || 
           poem.author.name.toLowerCase().includes(query) ||
           poem.content.toLowerCase().includes(query);
 
-        // Match selected tags
         const matchesTags = 
           selectedTags.length === 0 || 
           selectedTags.every(tag => 
@@ -105,6 +113,23 @@ export default function MainPage() {
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
+        {!isLoading && popularPoems.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Popular Poems</h2>
+            <div className="space-y-4">
+              {popularPoems.map((poem) => (
+                <PoemCard 
+                  key={`popular-${poem.id}`}
+                  {...poem} 
+                  tags={poem.tags}
+                  viewCount={poem.viewCount}
+                  label="Popular"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col space-y-4 mb-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <h1 className="text-3xl font-bold">Poetry Feed</h1>
@@ -180,14 +205,17 @@ export default function MainPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {filteredPoems.map((poem) => (
-                  <PoemCard 
-                    key={poem.id} 
-                    {...poem} 
-                    tags={poem.tags}
-                    viewCount={poem.viewCount}
-                  />
-                ))}
+                {filteredPoems
+                  .filter(poem => !Array.isArray(popularPoems) || 
+                    !popularPoems.some(p => p.id === poem.id))
+                  .map((poem) => (
+                    <PoemCard 
+                      key={poem.id} 
+                      {...poem} 
+                      tags={poem.tags}
+                      viewCount={poem.viewCount}
+                    />
+                  ))}
               </div>
             )}
           </>

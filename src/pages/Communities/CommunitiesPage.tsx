@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Search, Plus } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { LoadingState } from "@/components/LoadingState";
+import { CreateCommunityModal } from "@/components/Communities/CreateCommunityModal";
+import { CommunityCard } from "@/components/Communities/CommunityCard";
 
 interface Community {
   id: number;
@@ -55,6 +57,11 @@ export default function CommunitiesPage() {
     setFilteredCommunities(filtered);
   }, [searchQuery, communities]);
 
+  const handleCommunityCreated = (newCommunity: Community) => {
+    setCommunities(prev => [newCommunity, ...prev]);
+    setFilteredCommunities(prev => [newCommunity, ...prev]);
+  };
+
   if (isLoading) return <LoadingState />;
 
   return (
@@ -73,10 +80,12 @@ export default function CommunitiesPage() {
                 className="pl-10 w-full sm:w-[300px]"
               />
             </div>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Community
-            </Button>
+            {user && (
+              <Button onClick={() => setIsCreateModalOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Community
+              </Button>
+            )}
           </div>
         </div>
 
@@ -91,17 +100,19 @@ export default function CommunitiesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredCommunities.map((community) => (
-              <Card key={community.id} className="p-4">
-                {/* Placeholder for CommunityCard component */}
-                <h2 className="text-xl font-semibold">{community.name}</h2>
-                <p className="text-gray-500 mt-2">{community.description}</p>
-                <div className="mt-4 text-sm text-gray-400">
-                  {community._count.members} members • {community._count.posts} posts
-                </div>
-              </Card>
+              <CommunityCard
+                key={community.id}
+                {...community}
+              />
             ))}
           </div>
         )}
+
+        <CreateCommunityModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onCommunityCreated={handleCommunityCreated}
+        />
       </div>
     </div>
   );

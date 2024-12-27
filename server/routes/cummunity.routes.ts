@@ -6,7 +6,6 @@ import { authMiddleware } from '../middleware/auth.middleware';
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Create community
 router.post('/', authMiddleware, async (req: any, res) => {
   try {
     const { name, description, isPrivate = false, rules = [] } = req.body;
@@ -64,7 +63,6 @@ router.post('/', authMiddleware, async (req: any, res) => {
   }
 });
 
-// Get all communities
 router.get('/', async (req, res) => {
   try {
     const communities = await prisma.community.findMany({

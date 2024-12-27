@@ -1,4 +1,3 @@
-// src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainPage from "./pages/MainPage";
 import LoginPage from "./pages/LoginPage";
@@ -8,9 +7,11 @@ import AccountSettingsPage from "./pages/AccountSettings/AccountSettingsPage";
 import BookmarksPage from "./pages/BookmarksPage";
 import ProfileSetupPage from "./pages/ProfileSetup/ProfileSetup";
 import PoemDetail from "./pages/PoemDetail";
+import CommunitiesPage from "./pages/Communities/CommunitiesPage";  // Add this import
 import Layout from "@/components/Layout";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import CommunityDetail from "@/pages/Communities/CommunityDetail";
 
 function App() {
   return (
@@ -30,8 +31,6 @@ function App() {
               <Route path='/profile/:id' element={<ProfilePage />} />
               <Route path="/communities" element={<CommunitiesPage />} />
               <Route path="/communities/:id" element={<CommunityDetail />} />
-              <Route path="/communities/:id/settings" element={<CommunitySettings />} />
-              <Route path="/communities/:id/members" element={<CommunityMembers />} />
             </Routes>
           </Layout>
         </Router>
