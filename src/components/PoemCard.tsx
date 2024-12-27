@@ -9,7 +9,7 @@ import { PoemActions } from "@/components/subcomponents/PoemActions";
 import { PoemComments } from "@/components/subcomponents/PoemComments";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Trash2, Eye, Tag } from "lucide-react";
 
 export interface PoemCardProps {
   title: string;
@@ -29,6 +29,8 @@ export interface PoemCardProps {
     alignment?: 'left' | 'center' | 'right';
     fontSize?: 'small' | 'medium' | 'large';
   };
+  viewCount?: number;
+  tags?: { name: string }[];
 }
 
 export function PoemCard({ 
@@ -38,10 +40,13 @@ export function PoemCard({
   label, 
   id, 
   isPreview = true,
-  formatting = {}
+  formatting = {},
+  viewCount = 0,
+  tags = []
 }: PoemCardProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [comments, setComments] = useState<string[]>([]);
+  const [views, setViews] = useState(viewCount);
   const { user } = useAuth();
   const navigate = useNavigate();
   const isAuthor = user?.id === author.id;
@@ -170,7 +175,26 @@ export function PoemCard({
       onClick={handleNavigate}
     >
       <div className="flex justify-between items-start mb-4">
-        <PoemHeader title={title} author={author} label={label} isPreview={isPreview} />
+        <div className="flex flex-col">
+          <PoemHeader title={title} author={author} label={label} isPreview={isPreview} />
+          <div className="flex items-center gap-1 mt-2 text-gray-500 text-sm">
+            <Eye className="w-4 h-4" />
+            <span>{views} views</span>
+          </div>
+          {tags && tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-primary/10 text-primary"
+                >
+                  <Tag className="w-3 h-3" />
+                  {tag.name}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
         {isAuthor && (
           <div className="flex gap-2">
             <Button

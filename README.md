@@ -30,29 +30,26 @@ Collecting workspace information
 ### 1. Enhance Social Features
 - Add likes functionality for poems[done]
 - Implement comment system[done]
-- Add view count for poems[??]
+- Add view count for poems[done]
 
 ### 2. User Profile Improvements
-- Add user statistics (poems written, likes received)[??]
 - Implement "Follow" system [done]
 
 ### 3. Poem Management
-- Add categories/tags for poems [indev]
+- Add categories/tags for poems [done]
 - Enable poem editing and deletion[indev]
 - Add rich text formatting[indev]
 - Implement draft saving[??]
 
 ### 4. Search & Discovery
-- Advanced search filters[done]
-- Trending poems section[??]
-- Featured poets section[??]
-- Recommended poems based on interests[??]
+- Advanced search filters[done?]
+- Recommended poems based on interests[ifdev/]
 
 ### 5. Engagement Features
-- Add notifications system[ifdev]
+- add email notification[indev]
 - Enable social media sharing[ifdev]
 - Add poem collections/folders[i;should]
-- Implement "Poetry Challenge" feature[??]
+- the more popular post showing in the main pag[indev]
 
 ## 🔄 Ongoing Improvements
 
@@ -80,39 +77,30 @@ Collecting workspace information
 ## 🎯 Priority Features
 
 ### 1. Enhanced Poetry Experience
-- [ ] Add poetry reading timer (estimated read time)
-- [ ] Implement verse/stanza support with proper formatting
-- [ ] Add poetry templates (Haiku, Sonnet, etc.)
-- [ ] Support multiple languages for poems
-- [ ] Add audio recording/playback for poems
+- [??] Add poetry reading timer (estimated read time)
+- [indev] Implement verse/stanza support with proper formatting
+- [indev] Support multiple languages for poems
+
+### adding audio inplem 
+- [] Add audio recording/playback for poems
+
+
+### adding .pdf/.doc files and making post out of it???
 
 ### 2. Advanced Interaction Features
-- [ ] Add reactions beyond likes (love, inspiring, beautiful)
-- [ ] Implement poem revision history
-- [ ] Add collaborative poetry writing
-- [ ] Create poetry challenges/prompts
-- [ ] Add poetry competitions with voting
+- [??] Implement poem revision history
+- [??] Add collaborative poetry writing 
 
 ### 3. Social Features Enhancement
-- [ ] Add poetry groups/circles
-- [ ] Implement direct messaging between poets
-- [ ] Add mentorship system
-- [ ] Create poetry workshops
-- [ ] Add events calendar for poetry readings
+- [indev] Add poetry groups/circles
 
 ### 4. UI/UX Improvements
-- [ ] Add poem animations on scroll
-- [ ] Implement custom themes for poems
-- [ ] Add poem card layouts/templates
-- [ ] Improve mobile experience
-- [ ] Add gesture controls for poem navigation
+- [indev] Add poem animations on scroll
+- [indev] Improve mobile experience
+- [indev] Add gesture controls for poem navigation
 
 ### 5. Analytics & Insights
-- [ ] Add poet analytics dashboard
-- [ ] Track poem performance metrics
-- [ ] Implement reader engagement stats
-- [ ] Add popular times/days insights
-- [ ] Create trending topics analysis
+- [indev] news only for admins
 
 ## 🛠️ Technical Improvements
 

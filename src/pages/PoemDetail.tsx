@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Tag } from "lucide-react";
 import { PoemActions } from "@/components/subcomponents/PoemActions";
 import { PoemDetailHeader } from "@/components/subcomponents/PoemDetailHeader";
 import { PoemDetailComments } from "@/components/subcomponents/PoemDetailComments";
@@ -31,6 +31,7 @@ interface Poem {
     };
     likes: number;
   }>;
+  tags: Array<{ name: string }>;
   formatting?: {
     isBold?: boolean;
     isItalic?: boolean;
@@ -136,6 +137,22 @@ export default function PoemDetail() {
     }
   };
 
+  useEffect(() => {
+    const incrementViewCount = async () => {
+      if (!id) return;
+      
+      try {
+        await fetch(`http://localhost:3000/api/poems/${id}/view`, {
+          method: 'POST'
+        });
+      } catch (error) {
+        console.error('Error incrementing view count:', error);
+      }
+    };
+
+    incrementViewCount();
+  }, [id]);
+
   const handleBookmark = async () => {
     if (!user) {
       navigate('/login');
@@ -181,6 +198,20 @@ export default function PoemDetail() {
           author={poem.author} 
           createdAt={poem.createdAt} 
         />
+
+        {poem.tags && poem.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 my-4">
+            {poem.tags.map((tag, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-primary/10 text-primary"
+              >
+                <Tag className="w-3 h-3" />
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="prose dark:prose-invert max-w-none my-6">
           <p className={`whitespace-pre-wrap ${

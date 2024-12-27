@@ -28,9 +28,10 @@ router.get('/', async (req, res) => {
 });
 
 // Add poem (protected route)
+// Add new poem with tags
 router.post('/', authMiddleware, async (req: any, res) => {
   try {
-    const { title, content } = req.body;
+    const { title, content, tags = [] } = req.body;
     const userId = req.user.id;
 
     const poem = await prisma.poem.create({
@@ -38,7 +39,24 @@ router.post('/', authMiddleware, async (req: any, res) => {
         title,
         content,
         authorId: userId,
+        tags: {
+          connectOrCreate: tags.map((tag: string) => ({
+            where: { name: tag },
+            create: { name: tag }
+          }))
+        }
       },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        },
+        tags: true
+      }
     });
 
     res.json(poem);
@@ -417,14 +435,13 @@ router.post('/comments/:id/like', authMiddleware, async (req: any, res) => {
 });
 
 // Get all tags
+// Get all available tags
 router.get('/tags', async (req, res) => {
   try {
     const tags = await prisma.tag.findMany({
       include: {
         _count: {
-          select: {
-            poems: true
-          }
+          select: { poems: true }
         }
       }
     });
@@ -470,6 +487,30 @@ router.post('/:id/tags', authMiddleware, async (req: any, res) => {
     res.json(updatedPoem);
   } catch (error) {
     res.status(500).json({ error: 'Failed to update tags' });
+  }
+});
+
+router.post('/:id/view', async (req, res) => {
+  try {
+    const poemId = parseInt(req.params.id);
+    
+    if (isNaN(poemId)) {
+      return res.status(400).json({ error: 'Invalid poem ID' });
+    }
+
+    const updatedPoem = await prisma.poem.update({
+      where: { id: poemId },
+      data: {
+        viewCount: {
+          increment: 1
+        }
+      }
+    });
+
+    res.json({ viewCount: updatedPoem.viewCount });
+  } catch (error) {
+    console.error('Error incrementing view count:', error);
+    res.status(500).json({ error: 'Failed to increment view count' });
   }
 });
 
