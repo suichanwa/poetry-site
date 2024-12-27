@@ -64,6 +64,11 @@ router.post('/:id/avatar', authMiddleware, upload.single('avatar'), async (req: 
 router.get('/:id', authMiddleware, async (req: any, res) => {
   try {
     const userId = parseInt(req.params.id);
+    
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {

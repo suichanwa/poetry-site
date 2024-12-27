@@ -29,7 +29,14 @@ interface Poem {
       name: string;
       avatar?: string;
     };
+    likes: number;
   }>;
+  formatting?: {
+    isBold?: boolean;
+    isItalic?: boolean;
+    alignment?: 'left' | 'center' | 'right';
+    fontSize?: 'small' | 'medium' | 'large';
+  };
 }
 
 export default function PoemDetail() {
@@ -41,41 +48,42 @@ export default function PoemDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-const addComment = async (comment: string) => {
-  if (!user || !poem) return;
+  const addComment = async (comment: string) => {
+    if (!user || !poem) return;
 
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:3000/api/poems/${id}/comments`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ content: comment }),
-    });
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/poems/${id}/comments`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: comment }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to add comment');
+      if (!response.ok) throw new Error('Failed to add comment');
+
+      const newComment = await response.json();
+      setPoem(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          comments: [newComment, ...prev.comments]
+        };
+      });
+    } catch (error) {
+      console.error('Error adding comment:', error);
     }
-
-    const newComment = await response.json();
-    setPoem(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        comments: [newComment, ...prev.comments]
-      };
-    });
-  } catch (error) {
-    console.error('Error adding comment:', error);
-  }
-};
-
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        if (!id || isNaN(parseInt(id))) {
+          throw new Error('Invalid poem ID');
+        }
+
         const [poemResponse, bookmarkResponse] = await Promise.all([
           fetch(`http://localhost:3000/api/poems/${id}`),
           user ? fetch(`http://localhost:3000/api/poems/${id}/bookmark/status`, {
@@ -86,6 +94,9 @@ const addComment = async (comment: string) => {
         ]);
 
         if (!poemResponse.ok) {
+          if (poemResponse.status === 404) {
+            throw new Error('Poem not found');
+          }
           throw new Error('Failed to fetch poem');
         }
 
@@ -97,8 +108,8 @@ const addComment = async (comment: string) => {
           setIsBookmarked(bookmarkData.bookmarked);
         }
       } catch (error) {
-        console.error('Error:', error);
-        setError('Failed to load poem');
+        const message = error instanceof Error ? error.message : 'Failed to load poem';
+        setError(message);
       } finally {
         setIsLoading(false);
       }
@@ -140,9 +151,7 @@ const addComment = async (comment: string) => {
         },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to bookmark poem');
-      }
+      if (!response.ok) throw new Error('Failed to bookmark poem');
 
       const data = await response.json();
       setIsBookmarked(data.bookmarked);
@@ -151,13 +160,8 @@ const addComment = async (comment: string) => {
     }
   };
 
-  if (isLoading) {
-    return <LoadingState />;
-  }
-
-  if (error || !poem) {
-    return <ErrorState error={error} onBack={() => navigate(-1)} />;
-  }
+  if (isLoading) return <LoadingState />;
+  if (error || !poem) return <ErrorState error={error} onBack={() => navigate(-1)} />;
 
   return (
     <div className="min-h-screen p-6">
@@ -178,11 +182,18 @@ const addComment = async (comment: string) => {
           createdAt={poem.createdAt} 
         />
 
-        <div className="prose dark:prose-invert max-w-none mb-6">
-          <p className="whitespace-pre-wrap">{poem.content}</p>
+        <div className="prose dark:prose-invert max-w-none my-6">
+          <p className={`whitespace-pre-wrap ${
+            poem.formatting?.isBold ? 'font-bold' : ''
+          } ${
+            poem.formatting?.isItalic ? 'italic' : ''
+          } text-${poem.formatting?.alignment || 'left'}`}>
+            {poem.content}
+          </p>
         </div>
 
         <PoemActions
+          poemId={poem.id}
           onAddComment={addComment}
           onShare={handleShare}
           onBookmark={handleBookmark}

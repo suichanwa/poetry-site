@@ -57,6 +57,10 @@ router.get('/:id/status', authMiddleware, async (req: any, res) => {
     const followingId = parseInt(req.params.id);
     const followerId = req.user.id;
 
+    if (isNaN(followingId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
     const follow = await prisma.follow.findUnique({
       where: {
         followerId_followingId: {

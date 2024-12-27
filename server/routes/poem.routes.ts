@@ -162,9 +162,15 @@ router.get('/user/:id/bookmarks', authMiddleware, async (req: any, res) => {
   }
 });
 
+// Get single poem
 router.get('/:id', async (req, res) => {
   try {
     const poemId = parseInt(req.params.id);
+    
+    if (isNaN(poemId)) {
+      return res.status(400).json({ error: 'Invalid poem ID' });
+    }
+
     const poem = await prisma.poem.findUnique({
       where: { id: poemId },
       include: {
@@ -185,9 +191,12 @@ router.get('/:id', async (req, res) => {
                 avatar: true
               }
             }
+          },
+          orderBy: {
+            createdAt: 'desc'
           }
         },
-        likes: true
+        tags: true
       }
     });
 
