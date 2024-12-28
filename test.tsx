@@ -1,80 +1,41 @@
-// Get all poems
-router.get('/', async (req, res) => {
+router.post('/', authMiddleware, async (req: any, res) => {
   try {
-    const poems = await prisma.poem.findMany({
-      orderBy: {
-        createdAt: 'desc'
+    const { name, description, isPrivate = false } = req.body;
+    const userId = req.user.id;
+
+    const community = await prisma.community.create({
+      data: {
+        name,
+        description,
+        isPrivate,
+        creatorId: userId,
+        members: {
+          connect: [{ id: userId }] // Creator becomes a member
+        },
+        moderators: {
+          connect: [{ id: userId }] // Creator becomes a moderator
+        }
       },
       include: {
-        author: {
+        creator: {
           select: {
             id: true,
             name: true,
-            email: true,
             avatar: true
           }
         },
-        tags: true,
         _count: {
           select: {
-            likes: true,
-            comments: true
+            members: true,
+            posts: true
           }
         }
       }
     });
-    res.json(poems);
-  } catch (error) {
-    console.error('Error fetching poems:', error);
-    res.status(500).json({ error: 'Failed to fetch poems' });
-  }
-});
 
-// Get popular poems
-router.get('/popular', async (req, res) => {
-  try {
-    const popularPoems = await prisma.poem.findMany({
-      take: 2,
-      orderBy: [
-        { viewCount: 'desc' },
-        { createdAt: 'desc' }
-      ],
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true
-          }
-        },
-        tags: true,
-        _count: {
-          select: {
-            likes: true,
-            comments: true
-          }
-        }
-      }
-    });
-    res.json(popularPoems);
+    res.json(community);
   } catch (error) {
-    console.error('Error fetching popular poems:', error);
-    res.status(500).json({ error: 'Failed to fetch popular poems' });
-  }
-});
-
-// Get all tags
-router.get('/tags', async (req, res) => {
-  try {
-    const tags = await prisma.tag.findMany({
-      orderBy: {
-        name: 'asc'
-      }
-    });
-    res.json(tags);
-  } catch (error) {
-    console.error('Error fetching tags:', error);
-    res.status(500).json({ error: 'Failed to fetch tags' });
+    console.error('Error creating community:', error);
+    res.status(500).json({ error: 'Failed to create community' });
   }
 });

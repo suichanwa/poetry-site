@@ -30,24 +30,35 @@ export default function CommunitiesPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { user } = useAuth();
 
-  useEffect(() => {
-    const fetchCommunities = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/api/communities');
-        if (!response.ok) throw new Error('Failed to fetch communities');
-        
-        const data = await response.json();
+useEffect(() => {
+  const fetchCommunities = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/communities', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch communities');
+      }
+      
+      const data = await response.json();
+      if (Array.isArray(data)) {
         setCommunities(data);
         setFilteredCommunities(data);
-      } catch (error) {
-        console.error('Error fetching communities:', error);
-      } finally {
-        setIsLoading(false);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching communities:', error);
+      // Add error state handling if needed
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    fetchCommunities();
-  }, []);
+  fetchCommunities();
+}, []);
 
   useEffect(() => {
     const filtered = communities.filter(community =>

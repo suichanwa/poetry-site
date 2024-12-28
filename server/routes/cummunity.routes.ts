@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 router.post('/', authMiddleware, async (req: any, res) => {
   try {
-    const { name, description, isPrivate = false, rules = [] } = req.body;
+    const { name, description, isPrivate = false } = req.body;
     const userId = req.user.id;
 
     const community = await prisma.community.create({
@@ -18,16 +18,10 @@ router.post('/', authMiddleware, async (req: any, res) => {
         isPrivate,
         creatorId: userId,
         members: {
-          connect: [{ id: userId }]  // Creator becomes a member
+          connect: [{ id: userId }] // Creator becomes a member
         },
         moderators: {
-          connect: [{ id: userId }]  // Creator becomes a moderator
-        },
-        rules: {
-          create: rules.map((rule: { title: string; description: string }) => ({
-            title: rule.title,
-            description: rule.description
-          }))
+          connect: [{ id: userId }] // Creator becomes a moderator
         }
       },
       include: {
@@ -35,18 +29,9 @@ router.post('/', authMiddleware, async (req: any, res) => {
           select: {
             id: true,
             name: true,
-            email: true,
             avatar: true
           }
         },
-        members: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true
-          }
-        },
-        rules: true,
         _count: {
           select: {
             members: true,
@@ -62,6 +47,7 @@ router.post('/', authMiddleware, async (req: any, res) => {
     res.status(500).json({ error: 'Failed to create community' });
   }
 });
+
 
 router.get('/', async (req, res) => {
   try {
@@ -80,9 +66,11 @@ router.get('/', async (req, res) => {
             posts: true
           }
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
-
     res.json(communities);
   } catch (error) {
     console.error('Error fetching communities:', error);
