@@ -78,17 +78,36 @@ router.get('/:id/status', authMiddleware, async (req: any, res) => {
 });
 
 // Get followers
-router.get('/:id/followers', authMiddleware, async (req: any, res) => {
+router.get('/:id/followers', async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
+    
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    // Check if user exists first
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
     const followers = await prisma.follow.findMany({
       where: {
         followingId: userId,
       },
       include: {
-        follower: true,
-      },
+        follower: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true
+          }
+        }
+      }
     });
 
     res.json(followers.map(f => f.follower));
@@ -99,17 +118,36 @@ router.get('/:id/followers', authMiddleware, async (req: any, res) => {
 });
 
 // Get following
-router.get('/:id/following', authMiddleware, async (req: any, res) => {
+router.get('/:id/following', async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
+    
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    // Check if user exists first
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
     const following = await prisma.follow.findMany({
       where: {
         followerId: userId,
       },
       include: {
-        following: true,
-      },
+        following: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true
+          }
+        }
+      }
     });
 
     res.json(following.map(f => f.following));
@@ -118,5 +156,4 @@ router.get('/:id/following', authMiddleware, async (req: any, res) => {
     res.status(500).json({ error: 'Failed to fetch following' });
   }
 });
-
 export default router;

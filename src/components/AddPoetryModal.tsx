@@ -1,14 +1,21 @@
 import { useState } from "react";
-import { Modal } from "@/components/ui/modal";
+import { 
+  Modal,
+  DialogTitle,
+  DialogDescription
+} from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/context/AuthContext";
-import { PoemFormatting } from "./subcomponents/PoemFormatting";
-import { PoemTags } from "./subcomponents/PoemTags";
-import { Loader2, X } from "lucide-react";
-import { cn } from "@/lib/utils"; // Add this import
+import { PoemTags } from "@/components/subcomponents/PoemTags";
+import { PoemFormatting } from "@/components/subcomponents/PoemFormatting";
+import { Upload, FileText, Type, Text, Tag as TagIcon, X, Loader2, FileIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
+interface PoemFile {
+  file: File;
+  type: 'pdf' | 'doc';
+}
 
 interface AddPoetryModalProps {
   isOpen: boolean;
@@ -18,6 +25,7 @@ interface AddPoetryModalProps {
     content: string; 
     author: string;
     tags: string[];
+    poemFile?: PoemFile;
     formatting?: {
       isBold?: boolean;
       isItalic?: boolean;
@@ -31,8 +39,9 @@ export function AddPoetryModal({ isOpen, onClose, onAddPoetry }: AddPoetryModalP
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [tags, setTags] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [poemFile, setPoemFile] = useState<PoemFile | null>(null);
   const [formatting, setFormatting] = useState({
     isBold: false,
     isItalic: false,
@@ -40,32 +49,72 @@ export function AddPoetryModal({ isOpen, onClose, onAddPoetry }: AddPoetryModalP
     fontSize: 'medium' as const
   });
 
-  const handleAddPoetry = async () => {
+  const resetForm = () => {
+    setTitle("");
+    setContent("");
+    setTags([]);
+    setPoemFile(null);
+    setFormatting({
+      isBold: false,
+      isItalic: false,
+      alignment: 'left',
+      fontSize: 'medium'
+    });
+    setError("");
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type === 'application/pdf' || 
+        file.type === 'application/msword' || 
+        file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      setPoemFile({
+        file,
+        type: file.type.includes('pdf') ? 'pdf' : 'doc'
+      });
+    } else {
+      setError('Only PDF and DOC files are allowed');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!title.trim() || !content.trim()) return;
     
     setIsSubmitting(true);
     setError("");
 
     try {
+      const formData = new FormData();
+      formData.append('data', JSON.stringify({
+        title,
+        content,
+        tags,
+        formatting
+      }));
+      
+      if (poemFile) {
+        formData.append('poemFile', poemFile.file);
+      }
+
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3000/api/poems', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          title, 
-          content,
-          tags,
-          formatting
-        }),
+        body: formData
       });
 
-      if (!response.ok) throw new Error('Failed to create poem');
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to create poem');
+      }
 
       const newPoem = await response.json();
-      onAddPoetry({ ...newPoem, formatting, tags });
+      onAddPoetry({ ...newPoem, formatting, tags, poemFile });
       resetForm();
       onClose();
     } catch (error) {
@@ -75,78 +124,95 @@ export function AddPoetryModal({ isOpen, onClose, onAddPoetry }: AddPoetryModalP
     }
   };
 
-  const resetForm = () => {
-    setTitle("");
-    setContent("");
-    setTags([]);
-    setFormatting({
-      isBold: false,
-      isItalic: false,
-      alignment: 'left',
-      fontSize: 'medium'
-    });
-  };
-
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="space-y-4 p-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Add a New Poem</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+      <div className="relative max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 z-10 bg-background pt-6 pb-4 border-b">
+          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+            <FileText className="w-6 h-6" />
+            New Poem
+          </DialogTitle>
+          <DialogDescription>
+            Create a new poem to share with the community.
+          </DialogDescription>
         </div>
 
         {error && (
-          <div className="bg-red-100 dark:bg-red-900/20 border border-red-400 text-red-700 dark:text-red-400 px-4 py-3 rounded">
+          <div className="mt-4 bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-md">
             {error}
           </div>
         )}
 
-        <form onSubmit={(e) => { e.preventDefault(); handleAddPoetry(); }} className="space-y-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium mb-1">Title</label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full"
-              required
-              placeholder="Enter your poem's title"
-              disabled={isSubmitting}
-            />
+        <form onSubmit={handleSubmit} className="space-y-6 pt-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Type className="w-4 h-4 text-muted-foreground" />
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Title"
+                required
+                disabled={isSubmitting}
+              />
+            </div>
           </div>
-          
-          <div className="space-y-2">
-            <label className="block text-sm font-medium mb-1">Content</label>
+
+          <div>
             <PoemFormatting formatting={formatting} setFormatting={setFormatting} />
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className={cn(
-                "w-full min-h-[200px] transition-all duration-200",
-                formatting.isBold && "font-bold",
-                formatting.isItalic && "italic",
-                `text-${formatting.alignment}`,
-                {
-                  'text-sm': formatting.fontSize === 'small',
-                  'text-base': formatting.fontSize === 'medium',
-                  'text-lg': formatting.fontSize === 'large'
-                }
-              )}
-              placeholder="Write your poem here..."
-              required
+            <div className="flex items-center gap-2">
+              <Text className="w-4 h-4 text-muted-foreground" />
+              <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className={cn(
+                  "min-h-[200px] resize-none",
+                  formatting.isBold && "font-bold",
+                  formatting.isItalic && "italic",
+                  `text-${formatting.alignment}`,
+                  {
+                    'text-sm': formatting.fontSize === 'small',
+                    'text-base': formatting.fontSize === 'medium',
+                    'text-lg': formatting.fontSize === 'large'
+                  }
+                )}
+                placeholder="Write your poem..."
+                required
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <TagIcon className="w-4 h-4 text-muted-foreground" />
+            <PoemTags tags={tags} setTags={setTags} />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Upload className="w-4 h-4 text-muted-foreground" />
+            <Input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={handleFileUpload}
               disabled={isSubmitting}
             />
           </div>
 
-          <PoemTags tags={tags} setTags={setTags} />
+          {poemFile && (
+            <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+              <FileIcon className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm">{poemFile.file.name}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPoemFile(null)}
+                className="ml-auto"
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+          )}
 
-          <div className="flex justify-end gap-2 pt-4 border-t">
+          <div className="sticky bottom-0 pt-4 pb-6 bg-background border-t flex justify-end gap-2">
             <Button 
               type="button" 
               variant="outline" 
@@ -160,12 +226,15 @@ export function AddPoetryModal({ isOpen, onClose, onAddPoetry }: AddPoetryModalP
               disabled={!title.trim() || !content.trim() || isSubmitting}
             >
               {isSubmitting ? (
-                <div className="flex items-center">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Creating...
-                </div>
+                </>
               ) : (
-                'Create Poem'
+                <>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Create Poem
+                </>
               )}
             </Button>
           </div>

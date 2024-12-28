@@ -2,48 +2,33 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { UserPlus, UserMinus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface FollowButtonProps {
   userId: number;
+  initialIsFollowing?: boolean;
   onFollowChange?: (isFollowing: boolean) => void;
 }
 
-export function FollowButton({ userId, onFollowChange }: FollowButtonProps) {
-  const [isFollowing, setIsFollowing] = useState(false);
+export function FollowButton({ userId, initialIsFollowing = false, onFollowChange }: FollowButtonProps) {
+  const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const checkFollowStatus = async () => {
-      if (!user || user.id === userId) return;
-
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3000/api/follow/${userId}/status`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(await response.text());
-        }
-
-        const data = await response.json();
-        setIsFollowing(!!data.isFollowing);
-      } catch (error) {
-        console.error('Error checking follow status:', error);
-      }
-    };
-
-    checkFollowStatus();
-  }, [userId, user]);
+    setIsFollowing(initialIsFollowing);
+  }, [initialIsFollowing]);
 
   const handleFollow = async () => {
-    if (!user || user.id === userId) return;
-    setIsLoading(true);
+    if (!user) {
+      navigate('/login');
+      return;
+    }
 
+    if (user.id === userId) return;
+
+    setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3000/api/follow/${userId}`, {
@@ -77,7 +62,9 @@ export function FollowButton({ userId, onFollowChange }: FollowButtonProps) {
       disabled={isLoading}
       className="flex items-center gap-2"
     >
-      {isFollowing ? (
+      {isLoading ? (
+        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+      ) : isFollowing ? (
         <>
           <UserMinus className="w-4 h-4" />
           Unfollow

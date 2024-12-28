@@ -1,51 +1,100 @@
 // server/routes/poem.routes.ts
 import express from 'express';
+import multer from 'multer';
+import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import { authMiddleware } from '../middleware/auth.middleware';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/poems/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `poem-${uniqueSuffix}${path.extname(file.originalname)}`);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only PDF and DOC files are allowed'));
+    }
+  }
+});
+
+// Get all poems
 // Get all poems
 router.get('/', async (req, res) => {
   try {
     const poems = await prisma.poem.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      },
       include: {
         author: {
           select: {
+            id: true,
             name: true,
-            email: true
+            email: true,
+            avatar: true
           }
         },
-        comments: true,
-        likes: true
+        tags: true,
+        _count: {
+          select: {
+            likes: true,
+            comments: true
+          }
+        }
       }
     });
     res.json(poems);
   } catch (error) {
+    console.error('Error fetching poems:', error);
     res.status(500).json({ error: 'Failed to fetch poems' });
   }
 });
 
-// Add poem (protected route)
-// Add new poem with tags
-router.post('/', authMiddleware, async (req: any, res) => {
+
+router.post('/', authMiddleware, upload.single('poemFile'), async (req: any, res) => {
   try {
-    const { title, content, tags = [] } = req.body;
+    const { title, content, tags = [], formatting = {} } = JSON.parse(req.body.data);
     const userId = req.user.id;
 
+    const poemData: any = {
+      title,
+      content,
+      authorId: userId,
+      formatting: formatting ? JSON.stringify(formatting) : null, // Convert to string for JSON field
+      tags: {
+        connectOrCreate: tags.map((tag: string) => ({
+          where: { name: tag },
+          create: { name: tag }
+        }))
+      }
+    };
+
+    if (req.file) {
+      poemData.file = `/uploads/poems/${req.file.filename}`;
+    }
+
     const poem = await prisma.poem.create({
-      data: {
-        title,
-        content,
-        authorId: userId,
-        tags: {
-          connectOrCreate: tags.map((tag: string) => ({
-            where: { name: tag },
-            create: { name: tag }
-          }))
-        }
-      },
+      data: poemData,
       include: {
         author: {
           select: {
@@ -59,8 +108,15 @@ router.post('/', authMiddleware, async (req: any, res) => {
       }
     });
 
-    res.json(poem);
+    // Parse formatting back to object before sending response
+    const responsePoem = {
+      ...poem,
+      formatting: poem.formatting ? JSON.parse(poem.formatting as string) : null
+    };
+
+    res.json(responsePoem);
   } catch (error) {
+    console.error('Error creating poem:', error);
     res.status(500).json({ error: 'Failed to create poem' });
   }
 });
@@ -435,18 +491,16 @@ router.post('/comments/:id/like', authMiddleware, async (req: any, res) => {
 });
 
 // Get all tags
-// Get all available tags
 router.get('/tags', async (req, res) => {
   try {
     const tags = await prisma.tag.findMany({
-      include: {
-        _count: {
-          select: { poems: true }
-        }
+      orderBy: {
+        name: 'asc'
       }
     });
     res.json(tags);
   } catch (error) {
+    console.error('Error fetching tags:', error);
     res.status(500).json({ error: 'Failed to fetch tags' });
   }
 });
@@ -518,14 +572,10 @@ router.post('/:id/view', async (req, res) => {
 router.get('/popular', async (req, res) => {
   try {
     const popularPoems = await prisma.poem.findMany({
-      take: 2, // Get top 2 popular poems
+      take: 2,
       orderBy: [
-        { viewCount: 'desc' }, // First by views
-        { 
-          likes: {
-            _count: 'desc' // Then by number of likes
-          }
-        }
+        { viewCount: 'desc' },
+        { createdAt: 'desc' }
       ],
       include: {
         author: {
@@ -545,12 +595,12 @@ router.get('/popular', async (req, res) => {
         }
       }
     });
-
     res.json(popularPoems);
   } catch (error) {
     console.error('Error fetching popular poems:', error);
     res.status(500).json({ error: 'Failed to fetch popular poems' });
   }
 });
+
 
 export default router;

@@ -109,3 +109,6 @@
 2. Create basic CommunitiesPage
 3. Implement community creation
 4. Add join/leave functionality
+
+
+### icon for burger menu instead of addidas lines

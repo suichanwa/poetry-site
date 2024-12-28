@@ -97,6 +97,11 @@ Collecting workspace information
 ### 5. Analytics & Insights
 - [indev] news only for admins
 
+
+### 6. new features
+- [done] Instead of poetry feed, to be "for you" n "following" sections of posts specified for an user
+- [done] Instead of so many's fucking texts lables switching them up to just proper icons
+
 ## 🛠️ Technical Improvements
 
 ### Performance
