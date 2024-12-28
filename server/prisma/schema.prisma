@@ -137,15 +137,13 @@ model Community {
   description String?
   avatar      String?
   banner      String?
+  topics      Topic[]   // Add topics relation
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
-  // Relations
   creator     User      @relation("CommunityCreator", fields: [creatorId], references: [id])
   creatorId   Int
   members     User[]    @relation("CommunityMembers")
   moderators  User[]    @relation("CommunityModerators")
-  posts       Poem[]    @relation("CommunityPosts")
   rules       Rule[]
   isPrivate   Boolean   @default(false)
 }
@@ -157,4 +155,53 @@ model Rule {
   community    Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
   communityId  Int
   createdAt    DateTime  @default(now())
+}
+
+// Add Thread and ThreadComment models
+model Thread {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId     Int
+  author      User     @relation("ThreadAuthor", fields: [authorId], references: [id])
+  authorId    Int
+  isPinned    Boolean  @default(false)
+  isLocked    Boolean  @default(false)
+  viewCount   Int      @default(0)
+  comments    ThreadComment[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ThreadComment {
+  id          Int      @id @default(autoincrement())
+  content     String
+  thread      Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  threadId    Int
+  author      User     @relation(fields: [authorId], references: [id])
+  authorId    Int
+  
+  // For nested comments
+  parentId    Int?
+  parent      ThreadComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies     ThreadComment[] @relation("CommentReplies")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Topic {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  communityId Int
+  threads     Thread[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isPinned    Boolean   @default(false)
+  isLocked    Boolean   @default(false)
+  createdBy   User      @relation("TopicCreator", fields: [createdById], references: [id])
+  createdById Int
 }
