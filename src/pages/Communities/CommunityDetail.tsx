@@ -1,12 +1,14 @@
+// src/pages/Communities/CommunityDetail.tsx
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { PoemCard } from "@/components/PoemCard";
-import { Users, Settings, BookOpen, Shield } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { LoadingState } from "@/components/LoadingState";
+import { CommunityInfo } from "./CommunityInfo";
+import { MemberList } from "./MemberList";
+import { CommunityRules } from "./CommunityRules";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PoemCard } from "@/components/PoemCard";
+import { BookOpen, Users, Shield } from "lucide-react";
 
 interface Community {
   id: number;
@@ -56,6 +58,7 @@ export default function CommunityDetail() {
   const { id } = useParams();
   const [community, setCommunity] = useState<Community | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("posts");
 
@@ -67,6 +70,7 @@ export default function CommunityDetail() {
         const data = await response.json();
         setCommunity(data);
       } catch (error) {
+        setError(error instanceof Error ? error.message : 'An error occurred');
         console.error('Error fetching community:', error);
       } finally {
         setIsLoading(false);
@@ -76,8 +80,52 @@ export default function CommunityDetail() {
     fetchCommunity();
   }, [id]);
 
+  const handleJoinCommunity = async () => {
+    if (!user || !community) return;
+    try {
+      const response = await fetch(`http://localhost:3000/api/communities/${id}/join`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to join community');
+      const updatedCommunity = await response.json();
+      setCommunity(prev => ({
+        ...prev!,
+        members: [...prev!.members, user],
+        _count: { ...prev!._count, members: prev!._count.members + 1 }
+      }));
+    } catch (error) {
+      console.error('Error joining community:', error);
+    }
+  };
+
+  const handleLeaveCommunity = async () => {
+    if (!user || !community) return;
+    try {
+      const response = await fetch(`http://localhost:3000/api/communities/${id}/leave`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to leave community');
+      setCommunity(prev => ({
+        ...prev!,
+        members: prev!.members.filter(member => member.id !== user.id),
+        _count: { ...prev!._count, members: prev!._count.members - 1 }
+      }));
+    } catch (error) {
+      console.error('Error leaving community:', error);
+    }
+  };
+
   if (isLoading) return <LoadingState />;
-  if (!community) return <div>Community not found</div>;
+  if (error) return <div className="text-center py-8 text-red-500">{error}</div>;
+  if (!community) return <div className="text-center py-8">Community not found</div>;
 
   const isMember = community.members.some(member => member.id === user?.id);
   const isModerator = user?.id === community.creator.id;
@@ -85,54 +133,24 @@ export default function CommunityDetail() {
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Community Header */}
-        <Card className="p-6 mb-6">
-          <div className="flex items-start gap-6">
-            <div className="w-24 h-24 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden">
-              {community.avatar ? (
-                <img 
-                  src={`http://localhost:3000${community.avatar}`}
-                  alt={community.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Users className="w-12 h-12 text-primary" />
-              )}
-            </div>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">{community.name}</h1>
-              <p className="text-muted-foreground mb-4">{community.description}</p>
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground">
-                  {community._count.members} members • {community._count.posts} posts
-                </span>
-                {!isMember && user && (
-                  <Button onClick={() => {}}>Join Community</Button>
-                )}
-                {isMember && !isModerator && user && (
-                  <Button variant="outline" onClick={() => {}}>Leave Community</Button>
-                )}
-                {isModerator && (
-                  <Button variant="outline">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Manage Community
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </Card>
+        <CommunityInfo
+          community={community}
+          isMember={isMember}
+          isModerator={isModerator}
+          onJoin={handleJoinCommunity}
+          onLeave={handleLeaveCommunity}
+          user={user}
+        />
 
-        {/* Community Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="posts">
               <BookOpen className="w-4 h-4 mr-2" />
-              Posts
+              Posts ({community._count.posts})
             </TabsTrigger>
             <TabsTrigger value="members">
               <Users className="w-4 h-4 mr-2" />
-              Members
+              Members ({community._count.members})
             </TabsTrigger>
             <TabsTrigger value="rules">
               <Shield className="w-4 h-4 mr-2" />
@@ -142,60 +160,27 @@ export default function CommunityDetail() {
 
           <TabsContent value="posts" className="mt-6">
             <div className="space-y-4">
-              {community.posts.map(post => (
-                <PoemCard key={post.id} {...post} />
-              ))}
+              {community.posts.length > 0 ? (
+                community.posts.map(post => (
+                  <PoemCard key={post.id} {...post} />
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No posts yet. Be the first to share a poem!
+                </div>
+              )}
             </div>
           </TabsContent>
 
           <TabsContent value="members" className="mt-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {community.members.map(member => (
-                <Card key={member.id} className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                      {member.avatar ? (
-                        <img 
-                          src={`http://localhost:3000${member.avatar}`}
-                          alt={member.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Users className="w-5 h-5 text-primary" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium">{member.name}</p>
-                      {member.id === community.creator.id && (
-                        <span className="text-xs text-primary">Creator</span>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+            <MemberList 
+              members={community.members} 
+              creatorId={community.creator.id} 
+            />
           </TabsContent>
 
           <TabsContent value="rules" className="mt-6">
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Community Rules</h2>
-              {community.rules.length > 0 ? (
-                <div className="space-y-4">
-                  {community.rules.map((rule, index) => (
-                    <div key={rule.id} className="border-b last:border-0 pb-4 last:pb-0">
-                      <h3 className="font-medium">
-                        {index + 1}. {rule.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {rule.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground">No rules have been set for this community.</p>
-              )}
-            </Card>
+            <CommunityRules rules={community.rules} />
           </TabsContent>
         </Tabs>
       </div>

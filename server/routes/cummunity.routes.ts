@@ -90,7 +90,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get community by ID
 router.get('/:id', async (req, res) => {
   try {
     const communityId = parseInt(req.params.id);

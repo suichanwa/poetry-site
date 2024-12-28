@@ -28,7 +28,6 @@ interface AddPoetryModalProps {
 }
 
 export function AddPoetryModal({ isOpen, onClose, onAddPoetry }: AddPoetryModalProps) {
-  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [tags, setTags] = useState<string[]>([]);

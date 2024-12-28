@@ -17,10 +17,9 @@
   - [x] Display basic info (name, description, member count)
   - [ ] Add join/leave button
   - [ ] Show community avatar/banner
-- [ ] Create CreateCommunityModal component
-  - [ ] Add form fields (name, description, privacy)
-  - [ ] Add avatar/banner upload
-  - [ ] Add community rules section
+- [x] Create CreateCommunityModal component
+  - [x] Add form fields (name, description, privacy)
+  - [] Add community rules section
 
 ## 3. API Routes [Phase 1]
 - [x] Add basic CRUD routes
