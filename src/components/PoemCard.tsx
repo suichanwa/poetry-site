@@ -1,4 +1,3 @@
-// src/components/PoemCard.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -47,6 +46,7 @@ export function PoemCard({
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [comments, setComments] = useState<string[]>([]);
   const [views, setViews] = useState(viewCount);
+  const [isExpanded, setIsExpanded] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const isAuthor = user?.id === author.id;
@@ -71,6 +71,13 @@ export function PoemCard({
 
     fetchBookmarkStatus();
   }, [id, user]);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Only navigate if clicking the card itself, not its interactive children
+    if (e.target === e.currentTarget && id) {
+      navigate(`/poem/${id}`);
+    }
+  };
 
   const handleAddComment = async (comment: string) => {
     if (!user || !id) return;
@@ -160,19 +167,13 @@ export function PoemCard({
     navigate(`/edit-poem/${id}`);
   };
 
-  const handleNavigate = () => {
-    if (isPreview && id) {
-      navigate(`/poem/${id}`);
-    }
-  };
-
   return (
     <Card 
       className={cn(
         "transform transition-all duration-300 hover:shadow-lg bg-white dark:bg-gray-800 animate-fadeIn p-3 sm:p-4",
         isPreview && id && "hover:scale-[1.01] cursor-pointer"
       )}
-      onClick={handleNavigate}
+      onClick={handleCardClick}
     >
       <div className="flex justify-between items-start mb-4">
         <div className="flex flex-col">
@@ -222,9 +223,14 @@ export function PoemCard({
       <PoemContent 
         content={content} 
         isPreview={isPreview} 
-        onClick={handleNavigate}
         formatting={formatting}
+        isExpanded={isExpanded}
+        onToggleExpand={(e) => {
+          e.stopPropagation();
+          setIsExpanded(!isExpanded);
+        }}
       />
+      
       {id && (
         <PoemActions 
           poemId={id}

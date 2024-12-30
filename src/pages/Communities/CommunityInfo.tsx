@@ -2,13 +2,22 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Settings, Calendar } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useState } from 'react';
+import { ManageCommunityModal } from '../../components/Communities/ManageCommunityModal';
 
 interface CommunityInfoProps {
   community: {
+    id: number;
     name: string;
     description: string;
     avatar?: string;
     createdAt: string;
+    isPrivate: boolean;
+    rules: {
+      id: number;
+      title: string;
+      description: string;
+    }[];
     _count: {
       members: number;
       posts: number;
@@ -18,6 +27,7 @@ interface CommunityInfoProps {
   isModerator: boolean;
   onJoin: () => void;
   onLeave: () => void;
+  onUpdate: (updatedCommunity: any) => void;
   user: any | null;
 }
 
@@ -26,9 +36,12 @@ export function CommunityInfo({
   isMember, 
   isModerator, 
   onJoin, 
-  onLeave, 
+  onLeave,
+  onUpdate,
   user 
 }: CommunityInfoProps) {
+  const [isManageModalOpen, setIsManageModalOpen] = useState(false);
+
   return (
     <Card className="p-6 mb-6">
       <div className="flex items-start gap-6">
@@ -70,7 +83,10 @@ export function CommunityInfo({
                   </Button>
                 )}
                 {isModerator && (
-                  <Button variant="outline">
+                  <Button 
+                    variant="outline"
+                    onClick={() => setIsManageModalOpen(true)}
+                  >
                     <Settings className="w-4 h-4 mr-2" />
                     Manage Community
                   </Button>
@@ -80,6 +96,13 @@ export function CommunityInfo({
           </div>
         </div>
       </div>
+
+      <ManageCommunityModal
+        isOpen={isManageModalOpen}
+        onClose={() => setIsManageModalOpen(false)}
+        community={community}
+        onUpdate={onUpdate}
+      />
     </Card>
   );
 }

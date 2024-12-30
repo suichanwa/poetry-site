@@ -71,7 +71,6 @@ Collecting workspace information
 - Add end-to-end tests
 - Create user documentation
 
-
 ## new planing feature for 12/27/2024 - 12/28/2024
 
 ## 🎯 Priority Features
@@ -84,23 +83,12 @@ Collecting workspace information
 ### adding audio inplem 
 - [] Add audio recording/playback for poems
 
-
-### adding .pdf/.doc files and making post out of it???
-
 ### 2. Advanced Interaction Features
-- [??] Implement poem revision history
-- [??] Add collaborative poetry writing 
-
-### 3. Social Features Enhancement
-- [indev] Add poetry groups/circles
+- [indev] Implement poem revision history
+- [indev] tagging people by their username to an poem and they'd get an notification
 
 ### 5. Analytics & Insights
 - [indev] news only for admins
-
-
-### 6. new features
-- [done] Instead of poetry feed, to be "for you" n "following" sections of posts specified for an user
-- [done] Instead of so many's fucking texts lables switching them up to just proper icons
 
 ## 🛠️ Technical Improvements
 

@@ -62,6 +62,10 @@ export default function CommunityDetail() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("posts");
 
+  const handleCommunityUpdate = (updatedCommunity: Community) => {
+    setCommunity(updatedCommunity);
+  };
+
   useEffect(() => {
     const fetchCommunity = async () => {
       try {
@@ -139,6 +143,7 @@ export default function CommunityDetail() {
           isModerator={isModerator}
           onJoin={handleJoinCommunity}
           onLeave={handleLeaveCommunity}
+          onUpdate={handleCommunityUpdate}
           user={user}
         />
 

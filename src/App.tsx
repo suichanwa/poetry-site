@@ -7,11 +7,12 @@ import AccountSettingsPage from "./pages/AccountSettings/AccountSettingsPage";
 import BookmarksPage from "./pages/BookmarksPage";
 import ProfileSetupPage from "./pages/ProfileSetup/ProfileSetup";
 import PoemDetail from "./pages/PoemDetail";
-import CommunitiesPage from "./pages/Communities/CommunitiesPage";  // Add this import
+import CommunitiesPage from "./pages/Communities/CommunitiesPage";
+import CommunityDetail from "./pages/Communities/CommunityDetail";
+import CommunityManagePage from "./pages/Communities/CommunityManagePage"; // Add this import
 import Layout from "@/components/Layout";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
-import CommunityDetail from "@/pages/Communities/CommunityDetail";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
               <Route path='/profile/:id' element={<ProfilePage />} />
               <Route path="/communities" element={<CommunitiesPage />} />
               <Route path="/communities/:id" element={<CommunityDetail />} />
+              <Route path="/communities/:id/manage" element={<CommunityManagePage />} />
             </Routes>
           </Layout>
         </Router>

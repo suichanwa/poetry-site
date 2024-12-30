@@ -8,24 +8,31 @@ generator client {
 }
 
 model User {
-  id         Int        @id @default(autoincrement())
-  email      String     @unique
-  name       String    
-  password   String
-  avatar     String?
-  bio        String?
-  poems      Poem[]
-  mangas     Manga[]    // Add this relation
-  comments   Comment[]
-  likes      Like[]
-  bookmarks  Bookmark[]
-  followers  Follow[]   @relation("followers")
-  following  Follow[]   @relation("following")
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  createdCommunities Community[] @relation("CommunityCreator")
-  moderatedCommunities Community[] @relation("CommunityModerators")
-  joinedCommunities Community[] @relation("CommunityMembers")
+  id                   Int             @id @default(autoincrement())
+  email                String          @unique
+  name                 String
+  password             String
+  avatar               String?
+  bio                  String?
+  poems                Poem[]
+  mangas               Manga[]
+  comments             Comment[]
+  likes                Like[]
+  bookmarks            Bookmark[]
+  followers            Follow[]        @relation("followers")
+  following            Follow[]        @relation("following")
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  createdCommunities   Community[]     @relation("CommunityCreator")
+  moderatedCommunities Community[]     @relation("CommunityModerators")
+  joinedCommunities    Community[]     @relation("CommunityMembers")
+  // Add these new relations
+  authoredThreads      Thread[]        @relation("ThreadAuthor")
+  threadComments       ThreadComment[]
+  createdTopics        Topic[]         @relation("TopicCreator")
+  receivedNotifications Notification[] @relation("ReceivedNotifications")
+  sentNotifications    Notification[] @relation("SentNotifications")
+  notificationPreferences NotificationPreferences?
 }
 
 model Follow {
@@ -44,7 +51,7 @@ model Poem {
   title       String
   content     String
   file        String?
-  formatting  Json?      // Add this line
+  formatting  Json?
   viewCount   Int        @default(0)
   author      User       @relation(fields: [authorId], references: [id])
   authorId    Int
@@ -56,13 +63,14 @@ model Poem {
   updatedAt   DateTime   @updatedAt
   community   Community? @relation("CommunityPosts", fields: [communityId], references: [id])
   communityId Int?
+  notifications Notification[] // Add this relation
 }
 
 model Tag {
   id        Int      @id @default(autoincrement())
   name      String   @unique
   poems     Poem[]   @relation("PoemToTag")
-  mangas    Manga[]  @relation("MangaToTag")  // Add this relation
+  mangas    Manga[]  @relation("MangaToTag") // Add this relation
   createdAt DateTime @default(now())
 }
 
@@ -73,9 +81,10 @@ model Comment {
   userId    Int
   poem      Poem     @relation(fields: [poemId], references: [id])
   poemId    Int
-  likes     Like[]   // Add this line to establish the opposite relation
+  likes     Like[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  notifications Notification[] // Add this relation
 }
 
 model Like {
@@ -137,7 +146,7 @@ model Community {
   description String?
   avatar      String?
   banner      String?
-  topics      Topic[]   // Add topics relation
+  topics      Topic[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   creator     User      @relation("CommunityCreator", fields: [creatorId], references: [id])
@@ -146,49 +155,51 @@ model Community {
   moderators  User[]    @relation("CommunityModerators")
   rules       Rule[]
   isPrivate   Boolean   @default(false)
+  posts       Poem[]    @relation("CommunityPosts")
+  notifications Notification[] // Add this relation
 }
 
 model Rule {
-  id           Int       @id @default(autoincrement())
-  title        String
-  description  String
-  community    Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  communityId  Int
-  createdAt    DateTime  @default(now())
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  communityId Int
+  createdAt   DateTime  @default(now())
 }
 
-// Add Thread and ThreadComment models
 model Thread {
-  id          Int      @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   title       String
   content     String
-  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topic       Topic           @relation(fields: [topicId], references: [id], onDelete: Cascade)
   topicId     Int
-  author      User     @relation("ThreadAuthor", fields: [authorId], references: [id])
+  author      User            @relation("ThreadAuthor", fields: [authorId], references: [id])
   authorId    Int
-  isPinned    Boolean  @default(false)
-  isLocked    Boolean  @default(false)
-  viewCount   Int      @default(0)
+  isPinned    Boolean         @default(false)
+  isLocked    Boolean         @default(false)
+  viewCount   Int             @default(0)
   comments    ThreadComment[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  notifications Notification[] // Add this relation
 }
 
 model ThreadComment {
-  id          Int      @id @default(autoincrement())
-  content     String
-  thread      Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  threadId    Int
-  author      User     @relation(fields: [authorId], references: [id])
-  authorId    Int
-  
+  id       Int    @id @default(autoincrement())
+  content  String
+  thread   Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  threadId Int
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId Int
+
   // For nested comments
-  parentId    Int?
-  parent      ThreadComment?  @relation("CommentReplies", fields: [parentId], references: [id])
-  replies     ThreadComment[] @relation("CommentReplies")
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  parentId Int?
+  parent   ThreadComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  ThreadComment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Topic {
@@ -204,4 +215,61 @@ model Topic {
   isLocked    Boolean   @default(false)
   createdBy   User      @relation("TopicCreator", fields: [createdById], references: [id])
   createdById Int
+}
+
+enum NotificationType {
+  MENTION
+  LIKE
+  COMMENT
+  FOLLOW
+  SYSTEM
+  THREAD_REPLY
+  COMMUNITY_INVITE
+}
+
+model Notification {
+  id          Int             @id @default(autoincrement())
+  type        NotificationType
+  content     String
+  link        String?
+  isRead      Boolean         @default(false)
+  
+  recipient   User            @relation("ReceivedNotifications", fields: [recipientId], references: [id])
+  recipientId Int
+  
+  sender      User?           @relation("SentNotifications", fields: [senderId], references: [id])
+  senderId    Int?
+  
+  poemId      Int?
+  poem        Poem?           @relation(fields: [poemId], references: [id])
+  
+  commentId   Int?
+  comment     Comment?        @relation(fields: [commentId], references: [id])
+  
+  communityId Int?
+  community   Community?      @relation(fields: [communityId], references: [id])
+  
+  threadId    Int?
+  thread      Thread?         @relation(fields: [threadId], references: [id])
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([recipientId])
+  @@index([type])
+  @@index([isRead])
+}
+
+model NotificationPreferences {
+  id            Int      @id @default(autoincrement())
+  user          User     @relation(fields: [userId], references: [id])
+  userId        Int      @unique
+  emailLikes    Boolean  @default(false)
+  emailComments Boolean  @default(false)
+  emailFollows  Boolean  @default(false)
+  pushLikes     Boolean  @default(false)
+  pushComments  Boolean  @default(false)
+  pushFollows   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
