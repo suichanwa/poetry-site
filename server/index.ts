@@ -11,11 +11,15 @@ import followRoutes from './routes/follow.routes.js';
 import communityRoutes from './routes/community.routes.js'; 
 import notificationRoutes from './routes/notification.routes.js'
 import notificationPreferencesRoutes from './routes/notification.preferences.routes';
+import { createServer } from 'http';
+import { initWebSocket } from './services/websocket.service';
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+const server = createServer(app);
+initWebSocket(server);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

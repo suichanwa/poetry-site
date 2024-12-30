@@ -18,6 +18,7 @@ interface NotificationPreferences {
 
 export function NotificationSettings() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     emailLikes: false,
     emailComments: false,

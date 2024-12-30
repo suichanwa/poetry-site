@@ -13,6 +13,7 @@ import CommunityManagePage from "./pages/Communities/CommunityManagePage"; // Ad
 import Layout from "@/components/Layout";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import NotificationsPage from './pages/NotificationsPage';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
               <Route path="/communities" element={<CommunitiesPage />} />
               <Route path="/communities/:id" element={<CommunityDetail />} />
               <Route path="/communities/:id/manage" element={<CommunityManagePage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
             </Routes>
           </Layout>
         </Router>

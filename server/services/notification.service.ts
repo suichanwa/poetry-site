@@ -1,6 +1,7 @@
 import { PrismaClient, NotificationType, Notification } from '@prisma/client';
 import { WebSocket } from 'ws';
 import { EmailService } from './email.service';
+import { wsService } from './websocket.service';
 
 const prisma = new PrismaClient();
 const emailService = new EmailService();
