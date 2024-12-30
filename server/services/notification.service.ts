@@ -1,39 +1,68 @@
 import { PrismaClient, NotificationType, Notification } from '@prisma/client';
 import { WebSocket } from 'ws';
-import { EmailService } from './email.service';
-import { wsService } from './websocket.service';
 
 const prisma = new PrismaClient();
-const emailService = new EmailService();
-
-interface CreateNotificationParams {
-  type: NotificationType;
-  content: string;
-  recipientId: number;
-  senderId?: number;
-  link?: string;
-  poemId?: number;
-  commentId?: number;
-  communityId?: number;
-  threadId?: number;
-}
 
 class NotificationService {
   private wsConnections: Map<number, WebSocket> = new Map();
 
-  async createNotification(params: CreateNotificationParams): Promise<Notification> {
+  async getUserNotifications(userId: number, page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+    
+    try {
+      const [notifications, totalCount] = await Promise.all([
+        prisma.notification.findMany({
+          where: { recipientId: userId },
+          include: {
+            sender: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit
+        }),
+        prisma.notification.count({
+          where: { recipientId: userId }
+        })
+      ]);
+
+      return {
+        notifications,
+        pagination: {
+          total: totalCount,
+          pages: Math.ceil(totalCount / limit),
+          currentPage: page,
+          perPage: limit
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      throw error;
+    }
+  }
+
+  async createNotification(data: {
+    type: NotificationType;
+    content: string;
+    recipientId: number;
+    senderId?: number;
+    poemId?: number;
+    link?: string;
+  }) {
     try {
       const notification = await prisma.notification.create({
         data: {
-          type: params.type,
-          content: params.content,
-          link: params.link,
-          recipient: { connect: { id: params.recipientId } },
-          sender: params.senderId ? { connect: { id: params.senderId } } : undefined,
-          poem: params.poemId ? { connect: { id: params.poemId } } : undefined,
-          comment: params.commentId ? { connect: { id: params.commentId } } : undefined,
-          community: params.communityId ? { connect: { id: params.communityId } } : undefined,
-          thread: params.threadId ? { connect: { id: params.threadId } } : undefined,
+          type: data.type,
+          content: data.content,
+          recipient: { connect: { id: data.recipientId } },
+          sender: data.senderId ? { connect: { id: data.senderId } } : undefined,
+          poem: data.poemId ? { connect: { id: data.poemId } } : undefined,
+          link: data.link
         },
         include: {
           sender: {
@@ -46,12 +75,7 @@ class NotificationService {
         }
       });
 
-      // Send WebSocket notification if user is connected
-      this.sendRealtimeNotification(params.recipientId, notification);
-
-      // Send email notification
-      await this.sendEmailNotification(notification);
-
+      this.sendRealtimeNotification(data.recipientId, notification);
       return notification;
     } catch (error) {
       console.error('Error creating notification:', error);
@@ -59,42 +83,7 @@ class NotificationService {
     }
   }
 
-  async getUserNotifications(userId: number, page = 1, limit = 20) {
-    const skip = (page - 1) * limit;
-    
-    const [notifications, totalCount] = await Promise.all([
-      prisma.notification.findMany({
-        where: { recipientId: userId },
-        include: {
-          sender: {
-            select: {
-              id: true,
-              name: true,
-              avatar: true
-            }
-          }
-        },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit
-      }),
-      prisma.notification.count({
-        where: { recipientId: userId }
-      })
-    ]);
-
-    return {
-      notifications,
-      pagination: {
-        total: totalCount,
-        pages: Math.ceil(totalCount / limit),
-        currentPage: page,
-        perPage: limit
-      }
-    };
-  }
-
-  async markAsRead(notificationId: number, userId: number): Promise<Notification> {
+  async markAsRead(notificationId: number, userId: number) {
     return prisma.notification.update({
       where: {
         id: notificationId,
@@ -104,8 +93,8 @@ class NotificationService {
     });
   }
 
-  async markAllAsRead(userId: number): Promise<void> {
-    await prisma.notification.updateMany({
+  async markAllAsRead(userId: number) {
+    return prisma.notification.updateMany({
       where: {
         recipientId: userId,
         isRead: false
@@ -114,49 +103,24 @@ class NotificationService {
     });
   }
 
-  async deleteNotification(id: number, userId: number): Promise<void> {
-    await prisma.notification.delete({
-      where: {
-        id,
-        recipientId: userId
-      }
-    });
-  }
-
-  private async sendEmailNotification(notification: Notification) {
-    try {
-      const recipient = await prisma.user.findUnique({
-        where: { id: notification.recipientId }
-      });
-
-      if (recipient?.email) {
-        await emailService.sendNotificationEmail(
-          recipient.email,
-          notification.content,
-          notification.link
-        );
-      }
-    } catch (error) {
-      console.error('Error sending email notification:', error);
-    }
-  }
-
   private sendRealtimeNotification(userId: number, notification: Notification) {
     const userSocket = this.wsConnections.get(userId);
-    if (userSocket) {
+    if (userSocket?.readyState === WebSocket.OPEN) {
       userSocket.send(JSON.stringify({
         type: 'NEW_NOTIFICATION',
-        notification
+        notification: {
+          ...notification,
+          createdAt: notification.createdAt.toISOString()
+        }
       }));
     }
   }
 
-  // WebSocket connection management
-  addWSConnection(userId: number, ws: WebSocket) {
+  addConnection(userId: number, ws: WebSocket) {
     this.wsConnections.set(userId, ws);
   }
 
-  removeWSConnection(userId: number) {
+  removeConnection(userId: number) {
     this.wsConnections.delete(userId);
   }
 }

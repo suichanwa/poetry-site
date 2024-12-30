@@ -9,8 +9,8 @@ import userRoutes from './routes/user.routes.js';
 import poemRoutes from './routes/poem.routes.js';
 import followRoutes from './routes/follow.routes.js';
 import communityRoutes from './routes/community.routes.js'; 
-import notificationRoutes from './routes/notification.routes.js'
 import notificationPreferencesRoutes from './routes/notification.preferences.routes';
+import notificationRoutes from './routes/notification.routes.js';
 import { createServer } from 'http';
 import { initWebSocket } from './services/websocket.service';
 
@@ -39,8 +39,8 @@ app.use('/api/poems', poemRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/follow', followRoutes);
 app.use('/api/communities', communityRoutes); 
-app.use('api/notification', notificationRoutes);
-app.use('/api/notifications', notificationPreferencesRoutes);
+app.use('/api/notifications', notificationRoutes); // Changed from 'api/notification'
+app.use('/api/notifications/preferences', notificationPreferencesRoutes);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

@@ -72,23 +72,34 @@ export default function MainPage() {
   }, []);
 
   useEffect(() => {
-    const fetchFollowingPosts = async () => {
-      if (!user || activeTab !== "following") return;
-      try {
-        const response = await fetch('http://localhost:3000/api/poems/following', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          }
-        });
-        const data = await response.json();
-        if (Array.isArray(data)) setFollowingPoems(data);
-      } catch (error) {
-        console.error('Failed to fetch following posts:', error);
-      }
-    };
+  const fetchFollowingPosts = async () => {
+    if (!user) {
+      setFollowingPoems([]);
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/poems/following', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-    fetchFollowingPosts();
-  }, [activeTab, user]);
+      if (!response.ok) {
+        throw new Error('Failed to fetch following posts');
+      }
+
+      const data = await response.json();
+      setFollowingPoems(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to fetch following posts:', error);
+      setFollowingPoems([]);
+    }
+  };
+
+  fetchFollowingPosts();
+}, [user, activeTab]);
 
   useEffect(() => {
     const filterPoems = () => {
@@ -129,9 +140,13 @@ export default function MainPage() {
 
 
   return (
-  <div className="min-h-screen p-6">
-    <div className="max-w-4xl mx-auto">
-      <PopularPoems poems={popularPoems} isLoading={isLoading} />
+    <div className="min-h-screen md:p-6 p-2"> {/* Reduced padding on mobile */}
+      <div className="max-w-4xl mx-auto space-y-4"> {/* Added space between elements */}
+        <PopularPoems 
+          poems={popularPoems} 
+          isLoading={isLoading} 
+          className="mb-4" // Added margin bottom
+        />
 
       <FeedTabs
         activeTab={activeTab}
@@ -150,6 +165,7 @@ export default function MainPage() {
         toggleTag={toggleTag}
         clearFilters={clearFilters}
         onAddPoem={() => setIsModalOpen(true)}
+        className="pb-16 md:pb-0" // Added padding bottom for mobile nav
       />
       
       <AddPoetryModal

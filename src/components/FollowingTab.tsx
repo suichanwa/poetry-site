@@ -38,10 +38,10 @@ export function FollowingTab({ user, followingPoems }: FollowingTabProps) {
   if (followingPoems.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500 dark:text-gray-400">
+        <p className="text-gray-500 dark:text-gray-400 mb-2">
           No posts from people you follow yet.
         </p>
-        <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+        <p className="text-sm text-gray-400 dark:text-gray-500">
           Start following people to see their poems here!
         </p>
       </div>

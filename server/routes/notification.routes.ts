@@ -11,7 +11,7 @@ const paginationSchema = z.object({
   limit: z.string().optional().transform(val => parseInt(val || '20'))
 });
 
-// Get user notifications with pagination
+// GET /api/notifications
 router.get('/', authMiddleware, async (req: any, res) => {
   try {
     const { page, limit } = paginationSchema.parse(req.query);
@@ -23,7 +23,7 @@ router.get('/', authMiddleware, async (req: any, res) => {
   }
 });
 
-// Mark notification as read
+// POST /api/notifications/:id/mark-read
 router.post('/:id/mark-read', authMiddleware, async (req: any, res) => {
   try {
     const notification = await notificationService.markAsRead(
@@ -37,7 +37,7 @@ router.post('/:id/mark-read', authMiddleware, async (req: any, res) => {
   }
 });
 
-// Mark all notifications as read
+// POST /api/notifications/mark-all-read
 router.post('/mark-all-read', authMiddleware, async (req: any, res) => {
   try {
     await notificationService.markAllAsRead(req.user.id);
@@ -45,17 +45,6 @@ router.post('/mark-all-read', authMiddleware, async (req: any, res) => {
   } catch (error) {
     console.error('Error marking all notifications as read:', error);
     res.status(500).json({ error: 'Failed to mark all notifications as read' });
-  }
-});
-
-// Delete notification
-router.delete('/:id', authMiddleware, async (req: any, res) => {
-  try {
-    await notificationService.deleteNotification(parseInt(req.params.id), req.user.id);
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting notification:', error);
-    res.status(500).json({ error: 'Failed to delete notification' });
   }
 });
 

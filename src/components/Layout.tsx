@@ -1,51 +1,57 @@
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
-import { User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import BurgerMenu from "@/components/BurgerMenu";
-import React, { ReactNode } from "react";
+import { ReactNode } from 'react';
+import { MobileNavBar } from './navigation/MobileNavBar';
+import BurgerMenu from './BurgerMenu';
+import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { User } from 'lucide-react';
 
-function Layout({ children }: { children: ReactNode }) {
-  const navigate = useNavigate();
+interface LayoutProps {
+  children: ReactNode;
+}
+
+export default function Layout({ children }: LayoutProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-hidden">
-      <header className="flex justify-between items-center p-4 bg-card text-card-foreground shadow-md">
-        <BurgerMenu />
-        {user ? (
-          <Button
-            variant="ghost"
-            className="flex items-center space-x-2"
-            onClick={() => navigate("/profile")}
-          >
-            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-              {user?.avatar ? (
-                <img 
-                  src={`http://localhost:3000${user.avatar}`}
-                  alt={user.name} 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-              )}
-            </div>
-            <span className="font-medium">{user.name}</span>
-          </Button>
-        ) : (
-          <div className="space-x-2">
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </Button>
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center justify-between">
+          <div className="hidden md:flex"> {/* Changed from sm:flex to md:flex */}
+            <BurgerMenu />
           </div>
-        )}
+
+          {user && (
+            <div className="flex items-center gap-2 ml-auto">
+              <Button 
+                variant="ghost" 
+                className="flex items-center gap-2 hover:bg-accent"
+                onClick={() => navigate(`/profile/${user.id}`)}
+              >
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                  {user.avatar ? (
+                    <img
+                      src={`http://localhost:3000${user.avatar}`}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </div>
+                <span className="font-medium hidden md:inline-block">
+                  {user.name}
+                </span>
+              </Button>
+            </div>
+          )}
+        </div>
       </header>
-      <main className="p-4">{children}</main>
+      <main className="pb-20 md:pb-0"> {/* Increased bottom padding for mobile */}
+        {children}
+      </main>
+      <MobileNavBar />
     </div>
   );
 }
-
-export default Layout;

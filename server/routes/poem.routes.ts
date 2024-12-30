@@ -372,16 +372,32 @@ router.get('/:id/like/status', authMiddleware, async (req: any, res) => {
   }
 });
 
+// In the like endpoint
 router.post('/:id/like', authMiddleware, async (req: any, res) => {
   try {
     const poemId = parseInt(req.params.id);
     const userId = req.user.id;
 
+    const poem = await prisma.poem.findUnique({
+      where: { id: poemId },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
+    });
+
+    if (!poem) {
+      return res.status(404).json({ error: 'Poem not found' });
+    }
+
     const existingLike = await prisma.like.findFirst({
       where: {
         poemId,
         userId,
-        commentId: null // Important: Only handle poem likes
       },
     });
 
@@ -398,13 +414,23 @@ router.post('/:id/like', authMiddleware, async (req: any, res) => {
           poemId,
         }
       });
+
+      // Create notification only if the liker is not the poem author
+      if (poem.author.id !== userId) {
+        await notificationService.createNotification({
+          type: 'LIKE',
+          content: `${req.user.name} liked your poem "${poem.title}"`,
+          recipientId: poem.author.id,
+          senderId: userId,
+          poemId: poemId,
+          link: `/poem/${poemId}`
+        });
+      }
     }
 
-    // Get updated like count
     const likeCount = await prisma.like.count({
       where: {
         poemId,
-        commentId: null
       }
     });
 
@@ -602,5 +628,63 @@ router.get('/popular', async (req, res) => {
   }
 });
 
+// Get poems from followed users
+// Move this route BEFORE any routes with :id parameter to prevent conflicts
+// Get poems from followed users
+router.get('/following', authMiddleware, async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    console.log('Fetching following posts for user:', userId);
+
+    // First get all users that the current user follows
+    const following = await prisma.follow.findMany({
+      where: {
+        followerId: userId
+      },
+      select: {
+        followingId: true
+      }
+    });
+
+    const followingIds = following.map(f => f.followingId);
+    if (followingIds.length === 0) {
+      return res.json([]);
+    }
+
+    // Then get all poems from those users
+    const poems = await prisma.poem.findMany({
+      where: {
+        authorId: {
+          in: followingIds
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        },
+        tags: true,
+        _count: {
+          select: {
+            likes: true,
+            comments: true
+          }
+        }
+      }
+    });
+
+    return res.json(poems);
+  } catch (error) {
+    console.error('Error fetching following poems:', error);
+    return res.status(500).json({ error: 'Failed to fetch following poems' });
+  }
+});
 
 export default router;
