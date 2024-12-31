@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { User } from 'lucide-react';
+import { Snowfall } from '@/components/Snowfall';
 
 interface LayoutProps {
   children: ReactNode;
@@ -15,6 +16,8 @@ export default function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
 
   return (
+    <div className="theme-winter">
+      <Snowfall />
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center justify-between">
@@ -52,6 +55,7 @@ export default function Layout({ children }: LayoutProps) {
         {children}
       </main>
       <MobileNavBar />
+    </div>
     </div>
   );
 }

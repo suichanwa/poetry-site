@@ -38,6 +38,8 @@ model User {
   avatarAnimation: String? // For storing animation type
   isAnimatedAvatar: Boolean @default(false)
   customCardStyle: Json? // For storing card style settings
+  themeSettings Json? // Store custom colors and seasonal preferences
+  seasonalThemeEnabled Boolean @default(false)
 }
 
 model Follow {
