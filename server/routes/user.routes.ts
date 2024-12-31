@@ -30,6 +30,36 @@ const storage = multer.diskStorage({
   }
 });
 
+const bannerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadsDir = path.join(process.cwd(), 'uploads', 'banners');
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `banner-${uniqueSuffix}${path.extname(file.originalname)}`);
+  }
+});
+
+const uploadBanner = multer({
+  storage: bannerStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.mimetype)) {
+      cb(new Error('Invalid file type. Only JPEG, PNG and WebP are allowed'));
+      return;
+    }
+    cb(null, true);
+  }
+});
+
 const upload = multer({ storage });
 
 // Avatar upload endpoint
@@ -76,6 +106,7 @@ router.get('/:id', authMiddleware, async (req: any, res) => {
         name: true,
         email: true,
         avatar: true,
+        banner: true, // Include banner in the response
         bio: true
       }
     });
@@ -87,7 +118,7 @@ router.get('/:id', authMiddleware, async (req: any, res) => {
     res.json(user);
   } catch (error) {
     console.error('Error fetching user:', error);
-    res.status(500).json({ error: 'Failed to fetch user' });
+    res.status(500).json({ error: 'Failed to fetch user data' });
   }
 });
 
@@ -170,6 +201,35 @@ router.put('/:id/avatar-settings', authMiddleware, async (req: any, res) => {
   } catch (error) {
     console.error('Error updating avatar settings:', error);
     res.status(500).json({ error: 'Failed to update avatar settings' });
+  }
+});
+
+router.post('/:id/banner', authMiddleware, uploadBanner.single('banner'), async (req: any, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    
+    if (userId !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to update this profile' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const bannerPath = `/uploads/banners/${req.file.filename}`;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { banner: bannerPath }
+    });
+
+    res.json({ 
+      banner: updatedUser.banner,
+      message: 'Banner updated successfully' 
+    });
+  } catch (error) {
+    console.error('Error uploading banner:', error);
+    res.status(500).json({ error: 'Failed to upload banner' });
   }
 });
 

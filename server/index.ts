@@ -77,7 +77,14 @@ app.get('/uploads/community-avatars/:filename', (req, res) => {
   }
 });
 
-// Routes
+app.use('/uploads/banners', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Cache-Control', 'public, max-age=31536000');
+  next();
+}, express.static(path.join(process.cwd(), 'uploads', 'banners')));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/poems', poemRoutes);
 app.use('/api/users', userRoutes);

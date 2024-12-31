@@ -17,7 +17,9 @@ model User {
   poems                Poem[]
   mangas               Manga[]
   comments             Comment[]
+  banner               String?
   likes                Like[]
+  subscription  Subscription?
   bookmarks            Bookmark[]
   followers            Follow[]        @relation("followers")
   following            Follow[]        @relation("following")
@@ -26,20 +28,19 @@ model User {
   createdCommunities   Community[]     @relation("CommunityCreator")
   moderatedCommunities Community[]     @relation("CommunityModerators")
   joinedCommunities    Community[]     @relation("CommunityMembers")
-  // Add these new relations
   authoredThreads      Thread[]        @relation("ThreadAuthor")
   threadComments       ThreadComment[]
   createdTopics        Topic[]         @relation("TopicCreator")
   receivedNotifications Notification[] @relation("ReceivedNotifications")
-  sentNotifications    Notification[] @relation("SentNotifications")
+  sentNotifications    Notification[]  @relation("SentNotifications")
   notificationPreferences NotificationPreferences?
-  communityPosts CommunityPost[] // Add this line for author relation
-  avatarStyle: String? // For storing card style preference
-  avatarAnimation: String? // For storing animation type
-  isAnimatedAvatar: Boolean @default(false)
-  customCardStyle: Json? // For storing card style settings
-  themeSettings Json? // Store custom colors and seasonal preferences
-  seasonalThemeEnabled Boolean @default(false)
+  communityPosts       CommunityPost[] 
+  avatarStyle         String?         // For storing card style preference
+  avatarAnimation     String?         // For storing animation type
+  isAnimatedAvatar    Boolean         @default(false)
+  customCardStyle     Json?           // For storing card style settings
+  themeSettings       Json?           // Store custom colors and seasonal preferences
+  seasonalThemeEnabled Boolean         @default(false)
 }
 
 model Follow {
@@ -302,4 +303,45 @@ model CommunityPost {
 
   @@index([communityId])
   @@index([authorId])
+}
+
+enum SubscriptionTier {
+  FREE
+  PREMIUM
+}
+
+enum BillingPeriod {
+  MONTHLY
+  QUARTERLY
+  SEMI_ANNUAL
+  ANNUAL
+}
+
+model Subscription {
+  id            Int             @id @default(autoincrement())
+  userId        Int
+  user          User           @relation(fields: [userId], references: [id])
+  tier          SubscriptionTier @default(FREE)
+  billingPeriod BillingPeriod?
+  price         Float?
+  startDate     DateTime       @default(now())
+  endDate       DateTime?
+  status        String         @default("ACTIVE") // ACTIVE, CANCELLED, EXPIRED
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model DigitalProduct {
+  id            Int       @id @default(autoincrement())
+  title         String
+  description   String
+  price         Float
+  type          ProductType
+  coverImage    String?
+  authorId      Int
+  author        User      @relation(fields: [authorId], references: [id])
+  sales         Sale[]
+  chapters      Chapter[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }

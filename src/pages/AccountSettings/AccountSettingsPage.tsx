@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ProfileInformation } from "./ProfileInformation";
 import { ChangePassword } from "./ChangePassword";
 import { AvatarUpload } from "./AvatarUpload";
+import { BannerUpload } from "./BannerUpload";
 import { ThemeCustomizer } from "@/components/ThemeCustomizer";
 import { Card } from "@/components/ui/card";
 import { LoadingState } from "@/components/LoadingState";
@@ -42,6 +43,7 @@ export default function AccountSettingsPage() {
           ) : (
             <div className="space-y-6">
               <ProfileInformation setError={setError} setSuccess={setSuccess} />
+              <BannerUpload />
               <AvatarUpload />
               <ThemeCustomizer />
               <ChangePassword setError={setError} setSuccess={setSuccess} />
