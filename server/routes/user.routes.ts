@@ -152,4 +152,25 @@ router.put('/:id', authMiddleware, async (req: any, res) => {
   }
 });
 
+router.put('/:id/avatar-settings', authMiddleware, async (req: any, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { isAnimatedAvatar, avatarAnimation, avatarStyle } = req.body;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        isAnimatedAvatar,
+        avatarAnimation,
+        avatarStyle
+      }
+    });
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error updating avatar settings:', error);
+    res.status(500).json({ error: 'Failed to update avatar settings' });
+  }
+});
+
 export default router;

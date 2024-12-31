@@ -4,6 +4,7 @@ import multer from 'multer';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { poemService } from '../services/poem.service';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -37,39 +38,15 @@ const upload = multer({
   }
 });
 
-// Get all poems
-// Get all poems
 router.get('/', async (req, res) => {
   try {
-    const poems = await prisma.poem.findMany({
-      orderBy: {
-        createdAt: 'desc'
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true
-          }
-        },
-        tags: true,
-        _count: {
-          select: {
-            likes: true,
-            comments: true
-          }
-        }
-      }
-    });
+    const poems = await poemService.getPoemsWithDetails();
     res.json(poems);
   } catch (error) {
     console.error('Error fetching poems:', error);
     res.status(500).json({ error: 'Failed to fetch poems' });
   }
 });
-
 
 router.post('/', authMiddleware, upload.single('poemFile'), async (req: any, res) => {
   try {
@@ -125,63 +102,31 @@ router.post('/', authMiddleware, upload.single('poemFile'), async (req: any, res
 router.get('/:id/bookmark/status', authMiddleware, async (req: any, res) => {
   try {
     const poemId = parseInt(req.params.id);
-    const userId = req.user.id;
+    if (isNaN(poemId)) {
+      return res.status(400).json({ error: 'Invalid poem ID' });
+    }
 
-    const bookmark = await prisma.bookmark.findUnique({
-      where: {
-        userId_poemId: {
-          userId: userId,
-          poemId: poemId
-        }
-      }
-    });
-
-    res.json({ bookmarked: !!bookmark });
+    const result = await poemService.getBookmarkStatus(req.user.id, poemId);
+    res.json(result);
   } catch (error) {
+    console.error('Bookmark status error:', error);
     res.status(500).json({ error: 'Failed to get bookmark status' });
   }
 });
 
-// Bookmark a poem
+// Toggle bookmark
 router.post('/:id/bookmark', authMiddleware, async (req: any, res) => {
   try {
     const poemId = parseInt(req.params.id);
-    const userId = req.user.id;
-
-    console.log('User ID:', userId);
-    console.log('Poem ID:', poemId);
-
-    const existingBookmark = await prisma.bookmark.findUnique({
-      where: {
-        userId_poemId: {
-          userId: userId,
-          poemId: poemId
-        }
-      }
-    });
-
-    if (existingBookmark) {
-      await prisma.bookmark.delete({
-        where: {
-          userId_poemId: {
-            userId: userId,
-            poemId: poemId
-          }
-        }
-      });
-      res.json({ bookmarked: false });
-    } else {
-      await prisma.bookmark.create({
-        data: {
-          userId: userId,
-          poemId: poemId
-        }
-      });
-      res.json({ bookmarked: true });
+    if (isNaN(poemId)) {
+      return res.status(400).json({ error: 'Invalid poem ID' });
     }
+
+    const result = await poemService.toggleBookmark(req.user.id, poemId);
+    res.json(result);
   } catch (error) {
-    console.error('Error bookmarking poem:', error);
-    res.status(500).json({ error: 'Failed to bookmark poem' });
+    console.error('Bookmark toggle error:', error);
+    res.status(500).json({ error: 'Failed to toggle bookmark' });
   }
 });
 
@@ -212,6 +157,17 @@ router.get('/user/:id', authMiddleware, async (req: any, res) => {
 router.get('/user/:id/bookmarks', authMiddleware, async (req: any, res) => {
   try {
     const userId = parseInt(req.params.id);
+    
+    // Check if userId is valid
+    if (!userId || isNaN(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    // Verify if the user is requesting their own bookmarks
+    if (userId !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to view these bookmarks' });
+    }
+
     const bookmarks = await prisma.bookmark.findMany({
       where: {
         userId: userId
@@ -221,17 +177,31 @@ router.get('/user/:id/bookmarks', authMiddleware, async (req: any, res) => {
           include: {
             author: {
               select: {
+                id: true,
                 name: true,
-                email: true
+                avatar: true
+              }
+            },
+            tags: true,
+            _count: {
+              select: {
+                likes: true,
+                comments: true
               }
             }
           }
         }
       }
     });
-    const poems = bookmarks.map(bookmark => bookmark.poem);
+
+    const poems = bookmarks.map(bookmark => ({
+      ...bookmark.poem,
+      isBookmarked: true
+    }));
+
     res.json(poems);
   } catch (error) {
+    console.error('Error fetching bookmarked poems:', error);
     res.status(500).json({ error: 'Failed to fetch bookmarked poems' });
   }
 });

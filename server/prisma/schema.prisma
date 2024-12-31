@@ -33,7 +33,11 @@ model User {
   receivedNotifications Notification[] @relation("ReceivedNotifications")
   sentNotifications    Notification[] @relation("SentNotifications")
   notificationPreferences NotificationPreferences?
-    communityPosts CommunityPost[] // Add this line for author relation
+  communityPosts CommunityPost[] // Add this line for author relation
+  avatarStyle: String? // For storing card style preference
+  avatarAnimation: String? // For storing animation type
+  isAnimatedAvatar: Boolean @default(false)
+  customCardStyle: Json? // For storing card style settings
 }
 
 model Follow {
