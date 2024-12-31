@@ -1,10 +1,45 @@
-// server/routes/community.routes.ts
 import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
+import { fileURLToPath } from 'url'; // Add this import
 import { authMiddleware } from '../middleware/auth.middleware';
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadsDir = path.join(__dirname, '../../uploads/community-avatars');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, `community-${uniqueSuffix}${ext}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
 
 router.post('/', authMiddleware, async (req: any, res) => {
   try {
@@ -389,6 +424,61 @@ router.get('/:id/members', async (req, res) => {
   } catch (error) {
     console.error('Error fetching community members:', error);
     res.status(500).json({ error: 'Failed to fetch community members' });
+  }
+});
+
+router.post('/:id/avatar', authMiddleware, upload.single('avatar'), async (req: any, res) => {
+  try {
+    const communityId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Check if user is creator or moderator
+    const community = await prisma.community.findFirst({
+      where: {
+        id: communityId,
+        OR: [
+          { creatorId: userId },
+          { moderators: { some: { id: userId } } }
+        ]
+      }
+    });
+
+    if (!community) {
+      return res.status(403).json({ error: 'Not authorized to update this community' });
+    }
+
+    // Create relative path for storage
+    const relativePath = `/uploads/community-avatars/${req.file.filename}`;
+
+    // Update community's avatar in database
+    const updatedCommunity = await prisma.community.update({
+      where: { id: communityId },
+      data: { avatar: relativePath },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true
+          }
+        },
+        _count: {
+          select: {
+            members: true,
+            posts: true
+          }
+        }
+      }
+    });
+
+    res.json(updatedCommunity);
+  } catch (error) {
+    console.error('Error uploading community avatar:', error);
+    res.status(500).json({ error: 'Failed to upload avatar' });
   }
 });
 

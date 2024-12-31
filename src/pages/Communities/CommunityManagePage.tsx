@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
-import { ArrowLeft, Plus, Trash2, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, Users, Upload } from "lucide-react";
 
 interface Rule {
   id?: number;
@@ -26,6 +26,9 @@ export default function CommunityManagePage() {
   const [description, setDescription] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [rules, setRules] = useState<Rule[]>([]);
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   useEffect(() => {
     const fetchCommunity = async () => {
@@ -40,7 +43,6 @@ export default function CommunityManagePage() {
         
         const community = await response.json();
         
-        // Verify if user is moderator
         if (community.creator.id !== user?.id) {
           navigate(`/communities/${id}`);
           return;
@@ -50,9 +52,11 @@ export default function CommunityManagePage() {
         setDescription(community.description);
         setIsPrivate(community.isPrivate);
         setRules(community.rules);
+        if (community.avatar) {
+          setAvatarPreview(`http://localhost:3000${community.avatar}`);
+        }
       } catch (error) {
         setError('Failed to load community');
-        console.error('Error:', error);
       } finally {
         setIsLoading(false);
       }
@@ -60,6 +64,56 @@ export default function CommunityManagePage() {
 
     fetchCommunity();
   }, [id, user, navigate]);
+
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setError("Avatar file size must be less than 5MB");
+        return;
+      }
+      
+      setAvatar(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      setError("");
+    }
+  };
+
+  const handleAvatarUpload = async () => {
+    if (!avatar) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', avatar);
+
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/communities/${id}/avatar`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload avatar');
+      }
+
+      const data = await response.json();
+      setAvatarPreview(`http://localhost:3000${data.avatar}`);
+      setAvatar(null);
+      setError("");
+    } catch (error) {
+      setError('Failed to upload avatar');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
 
   const handleAddRule = () => {
     setRules([...rules, { title: '', description: '' }]);
@@ -141,6 +195,53 @@ export default function CommunityManagePage() {
             {error}
           </div>
         )}
+
+        <div className="flex flex-col items-center mb-8">
+          <div className="relative w-32 h-32 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden group">
+            {(avatarPreview) ? (
+              <img 
+                src={avatarPreview}
+                alt="Community avatar"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <Users className="w-16 h-16 text-primary" />
+            )}
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <label className="cursor-pointer text-white text-sm">
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  disabled={isUploadingAvatar}
+                />
+                Change Photo
+              </label>
+            </div>
+          </div>
+          {avatar && (
+            <Button
+              type="button"
+              size="sm"
+              className="mt-4"
+              onClick={handleAvatarUpload}
+              disabled={isUploadingAvatar}
+            >
+              {isUploadingAvatar ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Avatar
+                </>
+              )}
+            </Button>
+          )}
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">

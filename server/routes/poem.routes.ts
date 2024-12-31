@@ -807,4 +807,71 @@ router.delete('/comments/:id/like', authMiddleware, async (req: any, res) => {
   }
 });
 
+// Update poem
+router.put('/:id', authMiddleware, async (req: any, res) => {
+  try {
+    const poemId = parseInt(req.params.id);
+    const { title, content, tags, formatting } = req.body;
+    const userId = req.user.id;
+
+    // First check if user owns this poem
+    const poem = await prisma.poem.findFirst({
+      where: {
+        id: poemId,
+        authorId: userId
+      }
+    });
+
+    if (!poem) {
+      return res.status(403).json({ error: 'Not authorized to edit this poem' });
+    }
+
+    // Update poem
+    const updatedPoem = await prisma.poem.update({
+      where: { id: poemId },
+      data: {
+        title,
+        content,
+        formatting: formatting ? JSON.stringify(formatting) : null,
+        // Remove all existing tags and add new ones
+        tags: {
+          set: [], // Clear existing tags
+          connectOrCreate: tags.map((tag: string) => ({
+            where: { name: tag },
+            create: { name: tag }
+          }))
+        }
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        },
+        tags: true,
+        _count: {
+          select: {
+            likes: true,
+            comments: true
+          }
+        }
+      }
+    });
+
+    // Parse formatting back to object before sending response
+    const responsePoem = {
+      ...updatedPoem,
+      formatting: updatedPoem.formatting ? JSON.parse(updatedPoem.formatting as string) : null
+    };
+
+    res.json(responsePoem);
+  } catch (error) {
+    console.error('Error updating poem:', error);
+    res.status(500).json({ error: 'Failed to update poem' });
+  }
+});
+
 export default router;

@@ -1,9 +1,8 @@
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Settings, Calendar } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { useState } from 'react';
-import { ManageCommunityModal } from '../../components/Communities/ManageCommunityModal';
 
 interface CommunityInfoProps {
   community: {
@@ -12,22 +11,14 @@ interface CommunityInfoProps {
     description: string;
     avatar?: string;
     createdAt: string;
-    isPrivate: boolean;
-    rules: {
-      id: number;
-      title: string;
-      description: string;
-    }[];
     _count: {
       members: number;
-      posts: number;
     };
   };
   isMember: boolean;
   isModerator: boolean;
   onJoin: () => void;
   onLeave: () => void;
-  onUpdate: (updatedCommunity: any) => void;
   user: any | null;
 }
 
@@ -37,10 +28,9 @@ export function CommunityInfo({
   isModerator, 
   onJoin, 
   onLeave,
-  onUpdate,
   user 
 }: CommunityInfoProps) {
-  const [isManageModalOpen, setIsManageModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <Card className="p-6 mb-6">
@@ -85,7 +75,7 @@ export function CommunityInfo({
                 {isModerator && (
                   <Button 
                     variant="outline"
-                    onClick={() => setIsManageModalOpen(true)}
+                    onClick={() => navigate(`/communities/${community.id}/manage`)}
                   >
                     <Settings className="w-4 h-4 mr-2" />
                     Manage Community
@@ -96,13 +86,6 @@ export function CommunityInfo({
           </div>
         </div>
       </div>
-
-      <ManageCommunityModal
-        isOpen={isManageModalOpen}
-        onClose={() => setIsManageModalOpen(false)}
-        community={community}
-        onUpdate={onUpdate}
-      />
     </Card>
   );
 }
