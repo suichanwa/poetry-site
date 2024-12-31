@@ -13,6 +13,7 @@ import notificationPreferencesRoutes from './routes/notification.preferences.rou
 import notificationRoutes from './routes/notification.routes.js';
 import { createServer } from 'http';
 import { initWebSocket } from './services/websocket.service';
+import communityPostRoutes from './routes/community.post.routes.js';
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.use('/api/follow', followRoutes);
 app.use('/api/communities', communityRoutes); 
 app.use('/api/notifications', notificationRoutes); // Changed from 'api/notification'
 app.use('/api/notifications/preferences', notificationPreferencesRoutes);
+app.use('/api/communities/posts', communityPostRoutes);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

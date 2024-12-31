@@ -316,31 +316,86 @@ router.post('/:id/comments', authMiddleware, async (req: any, res) => {
 });
 
 // Get comments for a poem
-router.get('/:id/comments', authMiddleware, async (req: any, res) => {
+// Get poem comments
+router.get('/:id/comments', async (req, res) => {
   try {
     const poemId = parseInt(req.params.id);
+    
     const comments = await prisma.comment.findMany({
       where: {
-        poemId,
+        poemId
+      },
+      orderBy: {
+        createdAt: 'desc'
       },
       include: {
         user: {
           select: {
             id: true,
             name: true,
-            avatar: true,
-          },
+            avatar: true
+          }
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+        _count: {
+          select: {
+            likes: true
+          }
+        }
+      }
     });
 
-    res.json(comments);
+    // Transform the data to include like count
+    const commentsWithLikes = comments.map(comment => ({
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      user: comment.user,
+      likes: comment._count.likes
+    }));
+
+    res.json(commentsWithLikes);
   } catch (error) {
     console.error('Error fetching comments:', error);
     res.status(500).json({ error: 'Failed to fetch comments' });
+  }
+});
+
+// Move this route BEFORE any routes with :id parameter to prevent conflicts
+router.delete('/:id/like', authMiddleware, async (req: any, res) => {
+  try {
+    const poemId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    const existingLike = await prisma.like.findFirst({
+      where: {
+        poemId,
+        userId,
+        commentId: null // Only handle poem likes
+      }
+    });
+
+    if (existingLike) {
+      await prisma.like.delete({
+        where: {
+          id: existingLike.id
+        }
+      });
+    }
+
+    const likeCount = await prisma.like.count({
+      where: {
+        poemId,
+        commentId: null // Only count poem likes
+      }
+    });
+
+    res.json({ 
+      liked: false,
+      likeCount 
+    });
+  } catch (error) {
+    console.error('Error removing like:', error);
+    res.status(500).json({ error: 'Failed to remove like' });
   }
 });
 
@@ -454,13 +509,13 @@ router.get('/comments/:id/like/status', authMiddleware, async (req: any, res) =>
       where: {
         commentId,
         userId,
-      },
+      }
     });
 
     const likeCount = await prisma.like.count({
       where: {
-        commentId,
-      },
+        commentId
+      }
     });
 
     res.json({ 
@@ -468,7 +523,7 @@ router.get('/comments/:id/like/status', authMiddleware, async (req: any, res) =>
       likeCount 
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get like status' });
+    res.status(500).json({ error: 'Failed to get comment like status' });
   }
 });
 
@@ -478,11 +533,19 @@ router.post('/comments/:id/like', authMiddleware, async (req: any, res) => {
     const commentId = parseInt(req.params.id);
     const userId = req.user.id;
 
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId }
+    });
+
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
     const existingLike = await prisma.like.findFirst({
       where: {
         commentId,
         userId,
-      },
+      }
     });
 
     if (existingLike) {
@@ -498,11 +561,23 @@ router.post('/comments/:id/like', authMiddleware, async (req: any, res) => {
           commentId,
         }
       });
+
+      // Create notification if someone else likes the comment
+      if (comment.userId !== userId) {
+        await notificationService.createNotification({
+          type: 'LIKE',
+          content: `${req.user.name} liked your comment`,
+          recipientId: comment.userId,
+          senderId: userId,
+          commentId: commentId,
+          link: `/poem/${comment.poemId}#comment-${commentId}`
+        });
+      }
     }
 
     const likeCount = await prisma.like.count({
       where: {
-        commentId,
+        commentId
       }
     });
 
@@ -511,7 +586,7 @@ router.post('/comments/:id/like', authMiddleware, async (req: any, res) => {
       likeCount 
     });
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error toggling comment like:', error);
     res.status(500).json({ error: 'Failed to toggle like' });
   }
 });
@@ -684,6 +759,51 @@ router.get('/following', authMiddleware, async (req: any, res) => {
   } catch (error) {
     console.error('Error fetching following poems:', error);
     return res.status(500).json({ error: 'Failed to fetch following poems' });
+  }
+});
+
+// Toggle comment like
+router.delete('/comments/:id/like', authMiddleware, async (req: any, res) => {
+  try {
+    const commentId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId }
+    });
+
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
+    const existingLike = await prisma.like.findFirst({
+      where: {
+        commentId,
+        userId,
+      }
+    });
+
+    if (existingLike) {
+      await prisma.like.delete({
+        where: {
+          id: existingLike.id
+        }
+      });
+    }
+
+    const likeCount = await prisma.like.count({
+      where: {
+        commentId
+      }
+    });
+
+    res.json({ 
+      liked: false,
+      likeCount 
+    });
+  } catch (error) {
+    console.error('Error removing comment like:', error);
+    res.status(500).json({ error: 'Failed to remove like' });
   }
 });
 

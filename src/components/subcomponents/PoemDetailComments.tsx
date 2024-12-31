@@ -32,7 +32,7 @@ export function PoemDetailComments({ comments, onUserClick }: PoemDetailComments
     // Initialize like counts from comments
     const initialLikeCounts = comments.reduce((acc, comment) => ({
       ...acc,
-      [comment.id]: comment.likes
+      [comment.id]: comment.likes || 0
     }), {});
     setLikeCounts(initialLikeCounts);
 
@@ -46,15 +46,15 @@ export function PoemDetailComments({ comments, onUserClick }: PoemDetailComments
           comments.map(comment => 
             fetch(`http://localhost:3000/api/poems/comments/${comment.id}/like/status`, {
               headers: {
-                'Authorization': `Bearer ${token}`,
-              },
+                'Authorization': `Bearer ${token}`
+              }
             }).then(res => res.json())
           )
         );
 
         const newLikedComments = comments.reduce((acc, comment, index) => ({
           ...acc,
-          [comment.id]: statuses[index].liked
+          [comment.id]: statuses[index]?.liked || false
         }), {});
 
         setLikedComments(newLikedComments);
@@ -75,15 +75,18 @@ export function PoemDetailComments({ comments, onUserClick }: PoemDetailComments
 
     try {
       const token = localStorage.getItem('token');
+      const method = likedComments[commentId] ? 'DELETE' : 'POST';
       const response = await fetch(`http://localhost:3000/api/poems/comments/${commentId}/like`, {
-        method: likedComments[commentId] ? 'DELETE' : 'POST',
+        method,
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+          'Content-Type': 'application/json'
+        }
       });
 
-      if (!response.ok) throw new Error('Failed to toggle like');
+      if (!response.ok) {
+        throw new Error('Failed to toggle like');
+      }
 
       const data = await response.json();
       setLikedComments(prev => ({ ...prev, [commentId]: data.liked }));
@@ -125,7 +128,10 @@ export function PoemDetailComments({ comments, onUserClick }: PoemDetailComments
               </div>
             </button>
             <div className="flex-grow">
-              <p className="font-medium hover:underline cursor-pointer" onClick={() => onUserClick(comment.user.id)}>
+              <p 
+                className="font-medium hover:underline cursor-pointer" 
+                onClick={() => onUserClick(comment.user.id)}
+              >
                 {comment.user.name}
               </p>
               <p className="text-gray-600 dark:text-gray-300">

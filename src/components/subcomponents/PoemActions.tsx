@@ -63,18 +63,16 @@ export function PoemActions({
     return;
   }
 
-  e.stopPropagation();
-  if(!user || !poemId) return;
-
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/poems/${poemId}/like`, {
-        method: isLiked ? 'DELETE' : 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+  try {
+    const token = localStorage.getItem('token');
+    const method = isLiked ? 'DELETE' : 'POST';
+    const response = await fetch(`http://localhost:3000/api/poems/${poemId}/like`, {
+      method,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!response.ok) throw new Error('Failed to toggle like');
 
@@ -84,7 +82,7 @@ export function PoemActions({
   } catch (error) {
     console.error('Error toggling like:', error);
   }
-}; 
+};
 
   return (
     <div className="border-t pt-2 flex justify-between items-center">

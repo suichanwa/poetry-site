@@ -33,6 +33,7 @@ model User {
   receivedNotifications Notification[] @relation("ReceivedNotifications")
   sentNotifications    Notification[] @relation("SentNotifications")
   notificationPreferences NotificationPreferences?
+    communityPosts CommunityPost[] // Add this line for author relation
 }
 
 model Follow {
@@ -85,6 +86,8 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   notifications Notification[] // Add this relation
+  communityPost   CommunityPost? @relation(fields: [communityPostId], references: [id])
+  communityPostId Int?
 }
 
 model Like {
@@ -96,6 +99,8 @@ model Like {
   comment   Comment? @relation(fields: [commentId], references: [id])
   commentId Int?
   createdAt DateTime @default(now())
+  communityPost   CommunityPost? @relation(fields: [communityPostId], references: [id])
+  communityPostId Int?
 }
 
 model Bookmark {
@@ -157,6 +162,7 @@ model Community {
   isPrivate   Boolean   @default(false)
   posts       Poem[]    @relation("CommunityPosts")
   notifications Notification[] // Add this relation
+    communityPosts CommunityPost[] // Add this line for community relation
 }
 
 model Rule {
@@ -272,4 +278,22 @@ model NotificationPreferences {
   pushFollows   Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model CommunityPost {
+  id          Int       @id @default(autoincrement())
+  title       String
+  content     String
+  images      String[]  // Array of image URLs
+  author      User      @relation(fields: [authorId], references: [id])
+  authorId    Int
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  communityId Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  likes       Like[]
+  comments    Comment[]
+
+  @@index([communityId])
+  @@index([authorId])
 }
