@@ -2,15 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
-import { ProfileAvatar } from "./ProfileAvatar";
-import { ProfileInfo } from "./ProfileInfo";
-import { ProfileActions } from "./ProfileActions";
-import { ProfilePoems } from "./ProfilePoems";
-import { BookOpen, Users, Star, Settings } from "lucide-react";
 import { LoadingState } from "@/components/LoadingState";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { FollowButton } from "@/components/FollowButton";
+import { ProfileBanner } from "./ProfileBanner";
+import { ProfileContent } from "./ProfileContent";
 
 interface Poem {
   id: number;
@@ -56,45 +50,31 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    if (!user || isOwnProfile || !id) return;
-
-    const checkFollowStatus = async () => {
-      try {
-        const response = await fetch(`http://localhost:3000/api/follow/${id}/status`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          }
-        });
-
-        if (!response.ok) throw new Error('Failed to fetch follow status');
-        
-        const data = await response.json();
-        setFollowStats(prev => ({
-          ...prev,
-          isFollowing: data.isFollowing
-        }));
-      } catch (error) {
-        console.error('Error checking follow status:', error);
-      }
-    };
-
-    checkFollowStatus();
-  }, [id, user, isOwnProfile]);
-
-  useEffect(() => {
     const fetchData = async () => {
       if (!id && !user?.id) return;
       setIsLoading(true);
 
       try {
         const userId = id || user?.id;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+
         const userRes = await fetch(`http://localhost:3000/api/users/${userId}`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${token}`,
           }
         });
 
         if (!userRes.ok) {
+          if (userRes.status === 401) {
+            localStorage.removeItem('token');
+            navigate('/login');
+            return;
+          }
           throw new Error('User not found');
         }
 
@@ -104,11 +84,19 @@ export default function Profile() {
         const [poemsRes, followersRes, followingRes] = await Promise.all([
           fetch(`http://localhost:3000/api/poems/user/${userId}`, {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'Authorization': `Bearer ${token}`,
             }
           }),
-          fetch(`http://localhost:3000/api/follow/${userId}/followers`),
-          fetch(`http://localhost:3000/api/follow/${userId}/following`)
+          fetch(`http://localhost:3000/api/follow/${userId}/followers`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            }
+          }),
+          fetch(`http://localhost:3000/api/follow/${userId}/following`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            }
+          })
         ]);
 
         const [poems, followers, following] = await Promise.all([
@@ -132,7 +120,7 @@ export default function Profile() {
     };
 
     fetchData();
-  }, [id, user?.id]);
+  }, [id, user?.id, navigate]);
 
   if (isLoading) return <LoadingState />;
 
@@ -152,88 +140,17 @@ export default function Profile() {
     <div className="min-h-screen p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         <Card className="overflow-visible bg-card">
-          {/* Banner Section */}
-          <div className="relative h-48">
-            {userData.banner ? (
-              <img 
-                src={`http://localhost:3000${userData.banner}`}
-                alt="Profile banner"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-r from-primary/10 via-primary/5 to-transparent" />
-            )}
-          </div>
-
-          {/* Profile Content */}
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="relative">
-              {/* Avatar - positioned absolutely to overlap banner */}
-              <div className="absolute -top-16 left-4">
-                <ProfileAvatar
-                  avatar={userData.avatar}
-                  name={userData.name}
-                  size="lg"
-                />
-              </div>
-
-              {/* Profile Info and Actions */}
-              <div className="pt-20 pb-6"> {/* Added padding-top to account for avatar */}
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                  <ProfileInfo
-                    name={userData.name}
-                    email={userData.email}
-                    bio={userData.bio}
-                    followStats={followStats}
-                  />
-                  <div className="flex items-center gap-2">
-                    {!isOwnProfile && id && (
-                      <FollowButton 
-                        userId={parseInt(id)}
-                        initialIsFollowing={followStats.isFollowing}
-                        onFollowChange={onFollowChange}
-                      />
-                    )}
-                    {isOwnProfile && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        onClick={() => navigate('/settings')}
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <Settings className="h-5 w-5" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Stats Bar */}
-                <div className="flex gap-6 mt-6 pb-6 border-b">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-primary" />
-                    <span className="font-bold">{userPoems.length}</span>
-                  </div>
-                </div>
-
-                {/* Poems Section */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="mt-6"
-                >
-                  <div className="border rounded-lg p-4 bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <ProfilePoems
-                      poems={userPoems}
-                      isOwnProfile={isOwnProfile}
-                      userName={userData.name}
-                      error={error}
-                    />
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </div>
+          <ProfileBanner banner={userData.banner} userData={userData} />
+          <ProfileContent 
+            userData={userData}
+            followStats={followStats}
+            isOwnProfile={isOwnProfile}
+            userId={id}
+            userPoems={userPoems}
+            onFollowChange={onFollowChange}
+            onLogout={logout}
+            error={error}
+          />
         </Card>
       </div>
     </div>

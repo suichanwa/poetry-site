@@ -19,7 +19,7 @@ model User {
   comments             Comment[]
   banner               String?
   likes                Like[]
-  subscription  Subscription?
+  subscription         Subscription?
   bookmarks            Bookmark[]
   followers            Follow[]        @relation("followers")
   following            Follow[]        @relation("following")
@@ -34,12 +34,14 @@ model User {
   receivedNotifications Notification[] @relation("ReceivedNotifications")
   sentNotifications    Notification[]  @relation("SentNotifications")
   notificationPreferences NotificationPreferences?
-  communityPosts       CommunityPost[] 
-  avatarStyle         String?         // For storing card style preference
-  avatarAnimation     String?         // For storing animation type
+  communityPosts       CommunityPost[]
+  digitalProducts      DigitalProduct[] // Add this for DigitalProduct relation
+  purchases           Sale[]          // Add this for Sale relation
+  avatarStyle         String?
+  avatarAnimation     String?
   isAnimatedAvatar    Boolean         @default(false)
-  customCardStyle     Json?           // For storing card style settings
-  themeSettings       Json?           // Store custom colors and seasonal preferences
+  customCardStyle     Json?
+  themeSettings       Json?
   seasonalThemeEnabled Boolean         @default(false)
 }
 
@@ -127,20 +129,10 @@ model Manga {
   description String?
   author      User      @relation(fields: [authorId], references: [id])
   authorId    Int
-  chapters    Chapter[]
+  chapters    Chapter[] @relation("MangaToChapter") // Updated relation name
   tags        Tag[]     @relation("MangaToTag")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-}
-
-model Chapter {
-  id        Int      @id @default(autoincrement())
-  number    Int
-  title     String?
-  manga     Manga    @relation(fields: [mangaId], references: [id])
-  mangaId   Int
-  pages     Page[]
-  createdAt DateTime @default(now())
 }
 
 model Page {
@@ -318,17 +310,20 @@ enum BillingPeriod {
 }
 
 model Subscription {
-  id            Int             @id @default(autoincrement())
-  userId        Int
-  user          User           @relation(fields: [userId], references: [id])
-  tier          SubscriptionTier @default(FREE)
-  billingPeriod BillingPeriod?
-  price         Float?
-  startDate     DateTime       @default(now())
-  endDate       DateTime?
-  status        String         @default("ACTIVE") // ACTIVE, CANCELLED, EXPIRED
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id                  Int             @id @default(autoincrement())
+  userId              Int             @unique
+  user                User            @relation(fields: [userId], references: [id])
+  tier                SubscriptionTier @default(FREE)
+  billingPeriod       BillingPeriod?
+  price               Float?
+  startDate           DateTime        @default(now())
+  endDate             DateTime?
+  stripeSubscriptionId String?
+  status              String          @default("ACTIVE")
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@index([userId])
 }
 
 model DigitalProduct {
@@ -344,4 +339,46 @@ model DigitalProduct {
   chapters      Chapter[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+enum ProductType {
+  COMIC
+  LIGHT_NOVEL
+  MANGA
+}
+
+model Chapter {
+  id          Int       @id @default(autoincrement())
+  title       String
+  content     String?
+  images      String[]
+  productId   Int?
+  product     DigitalProduct? @relation(fields: [productId], references: [id])
+  mangaId     Int?
+  manga       Manga?    @relation("MangaToChapter", fields: [mangaId], references: [id]) // Updated to match
+  orderIndex  Int?
+  price       Float?
+  pages       Page[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Sale {
+  id              Int            @id @default(autoincrement())
+  productId       Int
+  product         DigitalProduct @relation(fields: [productId], references: [id])
+  buyerId         Int
+  buyer           User           @relation(fields: [buyerId], references: [id])
+  amount          Float
+  commission      Float
+  status          SaleStatus
+  stripePaymentId String
+  createdAt       DateTime       @default(now())
+}
+
+enum SaleStatus {
+  PENDING
+  COMPLETED
+  REFUNDED
+  FAILED
 }

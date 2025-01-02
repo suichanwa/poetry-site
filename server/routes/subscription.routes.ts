@@ -18,17 +18,12 @@ router.post('/subscribe', authMiddleware, async (req, res) => {
   }
 });
 
-router.get('/status', authMiddleware, async (req, res) => {
+router.post('/cancel', authMiddleware, async (req, res) => {
   try {
-    const subscription = await prisma.subscription.findFirst({
-      where: { 
-        userId: req.user.id,
-        status: 'ACTIVE'
-      }
-    });
+    const subscription = await subscriptionService.cancelSubscription(req.user.id);
     res.json(subscription);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch subscription status' });
+    res.status(500).json({ error: 'Failed to cancel subscription' });
   }
 });
 

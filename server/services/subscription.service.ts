@@ -18,22 +18,23 @@ export class SubscriptionService {
     });
 
     if (!user) throw new Error('User not found');
-    
-    // Create Stripe customer if doesn't exist
-    if (!user.stripeCustomerId) {
+
+    // Create or get Stripe customer
+    let stripeCustomerId = user.stripeCustomerId;
+    if (!stripeCustomerId) {
       const customer = await stripe.customers.create({
         email: user.email,
         metadata: { userId: user.id.toString() }
       });
-
-      await prisma.user.update({
-        where: { id: userId },
-        data: { stripeCustomerId: customer.id }
-      });
+      stripeCustomerId = customer.id;
     }
 
-    const price = SUBSCRIPTION_PRICES[billingPeriod];
-    const endDate = this.calculateEndDate(billingPeriod);
+    // Create Stripe subscription
+    const stripeSubscription = await stripe.subscriptions.create({
+      customer: stripeCustomerId,
+      items: [{ price: SUBSCRIPTION_PRICES[billingPeriod].toString() }],
+      metadata: { userId: user.id.toString() }
+    });
 
     // Create subscription in database
     const subscription = await prisma.subscription.create({
@@ -41,8 +42,9 @@ export class SubscriptionService {
         userId,
         tier: 'PREMIUM',
         billingPeriod,
-        price,
-        endDate,
+        price: SUBSCRIPTION_PRICES[billingPeriod],
+        endDate: new Date(stripeSubscription.current_period_end * 1000),
+        stripeSubscriptionId: stripeSubscription.id,
         status: 'ACTIVE'
       }
     });
@@ -50,17 +52,20 @@ export class SubscriptionService {
     return subscription;
   }
 
-  private calculateEndDate(billingPeriod: BillingPeriod): Date {
-    const now = new Date();
-    switch (billingPeriod) {
-      case 'MONTHLY':
-        return new Date(now.setMonth(now.getMonth() + 1));
-      case 'QUARTERLY':
-        return new Date(now.setMonth(now.getMonth() + 3));
-      case 'SEMI_ANNUAL':
-        return new Date(now.setMonth(now.getMonth() + 6));
-      case 'ANNUAL':
-        return new Date(now.setFullYear(now.getFullYear() + 1));
+  async cancelSubscription(userId: number) {
+    const subscription = await prisma.subscription.findUnique({
+      where: { userId }
+    });
+
+    if (!subscription) throw new Error('Subscription not found');
+
+    if (subscription.stripeSubscriptionId) {
+      await stripe.subscriptions.cancel(subscription.stripeSubscriptionId);
     }
+
+    return await prisma.subscription.update({
+      where: { userId },
+      data: { status: 'CANCELLED' }
+    });
   }
 }

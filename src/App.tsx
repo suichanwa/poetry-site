@@ -9,11 +9,12 @@ import ProfileSetupPage from "./pages/ProfileSetup/ProfileSetup";
 import PoemDetail from "./pages/PoemDetail";
 import CommunitiesPage from "./pages/Communities/CommunitiesPage";
 import CommunityDetail from "./pages/Communities/CommunityDetail";
-import CommunityManagePage from "./pages/Communities/CommunityManagePage"; // Add this import
+import CommunityManagePage from "./pages/Communities/CommunityManagePage"; 
 import Layout from "@/components/Layout";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import NotificationsPage from './pages/NotificationsPage';
+import PaymentPage from "./pages/PaymentPage"; 
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
               <Route path="/communities/:id" element={<CommunityDetail />} />
               <Route path="/communities/:id/manage" element={<CommunityManagePage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/payment" element={<PaymentPage />} />
             </Routes>
           </Layout>
         </Router>

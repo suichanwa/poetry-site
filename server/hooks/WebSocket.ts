@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 
+
 export function useWebSocket() {
   const ws = useRef<WebSocket | null>(null);
   const { user } = useAuth();
