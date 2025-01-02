@@ -1,22 +1,32 @@
 import express from 'express';
 import { authMiddleware } from '../middleware/auth.middleware';
-import { notificationService } from '../services/notification.service';
-import { z } from 'zod';
+import { PrismaClient } from '@prisma/client';
 
 const router = express.Router();
+const prisma = new PrismaClient();
 
-// Validation schemas
-const paginationSchema = z.object({
-  page: z.string().optional().transform(val => parseInt(val || '1')),
-  limit: z.string().optional().transform(val => parseInt(val || '20'))
-});
-
-// GET /api/notifications
+// GET /api/notifications - Get user's notifications
 router.get('/', authMiddleware, async (req: any, res) => {
   try {
-    const { page, limit } = paginationSchema.parse(req.query);
-    const notifications = await notificationService.getUserNotifications(req.user.id, page, limit);
-    res.json(notifications);
+    const notifications = await prisma.notification.findMany({
+      where: {
+        recipientId: req.user.id
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    res.json({ notifications });
   } catch (error) {
     console.error('Error fetching notifications:', error);
     res.status(500).json({ error: 'Failed to fetch notifications' });
@@ -26,10 +36,15 @@ router.get('/', authMiddleware, async (req: any, res) => {
 // POST /api/notifications/:id/mark-read
 router.post('/:id/mark-read', authMiddleware, async (req: any, res) => {
   try {
-    const notification = await notificationService.markAsRead(
-      parseInt(req.params.id),
-      req.user.id
-    );
+    const notification = await prisma.notification.update({
+      where: {
+        id: parseInt(req.params.id),
+        recipientId: req.user.id
+      },
+      data: {
+        isRead: true
+      }
+    });
     res.json(notification);
   } catch (error) {
     console.error('Error marking notification as read:', error);
@@ -40,7 +55,15 @@ router.post('/:id/mark-read', authMiddleware, async (req: any, res) => {
 // POST /api/notifications/mark-all-read
 router.post('/mark-all-read', authMiddleware, async (req: any, res) => {
   try {
-    await notificationService.markAllAsRead(req.user.id);
+    await prisma.notification.updateMany({
+      where: {
+        recipientId: req.user.id,
+        isRead: false
+      },
+      data: {
+        isRead: true
+      }
+    });
     res.json({ success: true });
   } catch (error) {
     console.error('Error marking all notifications as read:', error);

@@ -8,41 +8,41 @@ generator client {
 }
 
 model User {
-  id                   Int             @id @default(autoincrement())
-  email                String          @unique
-  name                 String
-  password             String
-  avatar               String?
-  bio                  String?
-  poems                Poem[]
-  mangas               Manga[]
-  comments             Comment[]
-  banner               String?
-  likes                Like[]
-  subscription         Subscription?
-  bookmarks            Bookmark[]
-  followers            Follow[]        @relation("followers")
-  following            Follow[]        @relation("following")
-  createdAt            DateTime        @default(now())
-  updatedAt            DateTime        @updatedAt
-  createdCommunities   Community[]     @relation("CommunityCreator")
-  moderatedCommunities Community[]     @relation("CommunityModerators")
-  joinedCommunities    Community[]     @relation("CommunityMembers")
-  authoredThreads      Thread[]        @relation("ThreadAuthor")
-  threadComments       ThreadComment[]
-  createdTopics        Topic[]         @relation("TopicCreator")
-  receivedNotifications Notification[] @relation("ReceivedNotifications")
-  sentNotifications    Notification[]  @relation("SentNotifications")
+  id                      Int                      @id @default(autoincrement())
+  email                   String                   @unique
+  name                    String
+  password                String
+  avatar                  String?
+  bio                     String?
+  poems                   Poem[]
+  mangas                  Manga[]
+  comments                Comment[]
+  banner                  String?
+  likes                   Like[]
+  subscription            Subscription?
+  bookmarks               Bookmark[]
+  followers               Follow[]                 @relation("followers")
+  following               Follow[]                 @relation("following")
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  createdCommunities      Community[]              @relation("CommunityCreator")
+  moderatedCommunities    Community[]              @relation("CommunityModerators")
+  joinedCommunities       Community[]              @relation("CommunityMembers")
+  authoredThreads         Thread[]                 @relation("ThreadAuthor")
+  threadComments          ThreadComment[]
+  createdTopics           Topic[]                  @relation("TopicCreator")
+  receivedNotifications   Notification[]           @relation("ReceivedNotifications")
+  sentNotifications       Notification[]           @relation("SentNotifications")
   notificationPreferences NotificationPreferences?
-  communityPosts       CommunityPost[]
-  digitalProducts      DigitalProduct[] // Add this for DigitalProduct relation
-  purchases           Sale[]          // Add this for Sale relation
-  avatarStyle         String?
-  avatarAnimation     String?
-  isAnimatedAvatar    Boolean         @default(false)
-  customCardStyle     Json?
-  themeSettings       Json?
-  seasonalThemeEnabled Boolean         @default(false)
+  communityPosts          CommunityPost[]
+  digitalProducts         DigitalProduct[] // Add this for DigitalProduct relation
+  purchases               Sale[] // Add this for Sale relation
+  avatarStyle             String?
+  avatarAnimation         String?
+  isAnimatedAvatar        Boolean                  @default(false)
+  customCardStyle         Json?
+  themeSettings           Json?
+  seasonalThemeEnabled    Boolean                  @default(false)
 }
 
 model Follow {
@@ -57,22 +57,22 @@ model Follow {
 }
 
 model Poem {
-  id          Int        @id @default(autoincrement())
-  title       String
-  content     String
-  file        String?
-  formatting  Json?
-  viewCount   Int        @default(0)
-  author      User       @relation(fields: [authorId], references: [id])
-  authorId    Int
-  comments    Comment[]
-  likes       Like[]
-  bookmarks   Bookmark[]
-  tags        Tag[]      @relation("PoemToTag")
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  community   Community? @relation("CommunityPosts", fields: [communityId], references: [id])
-  communityId Int?
+  id            Int            @id @default(autoincrement())
+  title         String
+  content       String
+  file          String?
+  formatting    Json?
+  viewCount     Int            @default(0)
+  author        User           @relation(fields: [authorId], references: [id])
+  authorId      Int
+  comments      Comment[]
+  likes         Like[]
+  bookmarks     Bookmark[]
+  tags          Tag[]          @relation("PoemToTag")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  community     Community?     @relation("CommunityPosts", fields: [communityId], references: [id])
+  communityId   Int?
   notifications Notification[] // Add this relation
 }
 
@@ -85,29 +85,29 @@ model Tag {
 }
 
 model Comment {
-  id        Int      @id @default(autoincrement())
-  content   String
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  poem      Poem     @relation(fields: [poemId], references: [id])
-  poemId    Int
-  likes     Like[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  notifications Notification[] // Add this relation
+  id              Int            @id @default(autoincrement())
+  content         String
+  user            User           @relation(fields: [userId], references: [id])
+  userId          Int
+  poem            Poem           @relation(fields: [poemId], references: [id])
+  poemId          Int
+  likes           Like[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  notifications   Notification[] // Add this relation
   communityPost   CommunityPost? @relation(fields: [communityPostId], references: [id])
   communityPostId Int?
 }
 
 model Like {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  poem      Poem?    @relation(fields: [poemId], references: [id])
-  poemId    Int?
-  comment   Comment? @relation(fields: [commentId], references: [id])
-  commentId Int?
-  createdAt DateTime @default(now())
+  id              Int            @id @default(autoincrement())
+  user            User           @relation(fields: [userId], references: [id])
+  userId          Int
+  poem            Poem?          @relation(fields: [poemId], references: [id])
+  poemId          Int?
+  comment         Comment?       @relation(fields: [commentId], references: [id])
+  commentId       Int?
+  createdAt       DateTime       @default(now())
   communityPost   CommunityPost? @relation(fields: [communityPostId], references: [id])
   communityPostId Int?
 }
@@ -145,23 +145,23 @@ model Page {
 }
 
 model Community {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
-  description String?
-  avatar      String?
-  banner      String?
-  topics      Topic[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  creator     User      @relation("CommunityCreator", fields: [creatorId], references: [id])
-  creatorId   Int
-  members     User[]    @relation("CommunityMembers")
-  moderators  User[]    @relation("CommunityModerators")
-  rules       Rule[]
-  isPrivate   Boolean   @default(false)
-  posts       Poem[]    @relation("CommunityPosts")
-  notifications Notification[] // Add this relation
-    communityPosts CommunityPost[] // Add this line for community relation
+  id             Int             @id @default(autoincrement())
+  name           String          @unique
+  description    String?
+  avatar         String?
+  banner         String?
+  topics         Topic[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  creator        User            @relation("CommunityCreator", fields: [creatorId], references: [id])
+  creatorId      Int
+  members        User[]          @relation("CommunityMembers")
+  moderators     User[]          @relation("CommunityModerators")
+  rules          Rule[]
+  isPrivate      Boolean         @default(false)
+  posts          Poem[]          @relation("CommunityPosts")
+  notifications  Notification[] // Add this relation
+  communityPosts CommunityPost[] // Add this line for community relation
 }
 
 model Rule {
@@ -174,19 +174,19 @@ model Rule {
 }
 
 model Thread {
-  id          Int             @id @default(autoincrement())
-  title       String
-  content     String
-  topic       Topic           @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  topicId     Int
-  author      User            @relation("ThreadAuthor", fields: [authorId], references: [id])
-  authorId    Int
-  isPinned    Boolean         @default(false)
-  isLocked    Boolean         @default(false)
-  viewCount   Int             @default(0)
-  comments    ThreadComment[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id            Int             @id @default(autoincrement())
+  title         String
+  content       String
+  topic         Topic           @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId       Int
+  author        User            @relation("ThreadAuthor", fields: [authorId], references: [id])
+  authorId      Int
+  isPinned      Boolean         @default(false)
+  isLocked      Boolean         @default(false)
+  viewCount     Int             @default(0)
+  comments      ThreadComment[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   notifications Notification[] // Add this relation
 }
 
@@ -233,32 +233,24 @@ enum NotificationType {
 }
 
 model Notification {
-  id          Int             @id @default(autoincrement())
-  type        NotificationType
+  id          Int        @id @default(autoincrement())
+  type        String // e.g., 'LIKE', 'COMMENT', 'FOLLOW'
   content     String
-  link        String?
-  isRead      Boolean         @default(false)
-  
-  recipient   User            @relation("ReceivedNotifications", fields: [recipientId], references: [id])
+  isRead      Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  recipient   User       @relation("ReceivedNotifications", fields: [recipientId], references: [id])
   recipientId Int
-  
-  sender      User?           @relation("SentNotifications", fields: [senderId], references: [id])
+  sender      User?      @relation("SentNotifications", fields: [senderId], references: [id])
   senderId    Int?
-  
+  poem        Poem?      @relation(fields: [poemId], references: [id])
   poemId      Int?
-  poem        Poem?           @relation(fields: [poemId], references: [id])
-  
+  comment     Comment?   @relation(fields: [commentId], references: [id])
   commentId   Int?
-  comment     Comment?        @relation(fields: [commentId], references: [id])
-  
+  community   Community? @relation(fields: [communityId], references: [id])
   communityId Int?
-  community   Community?      @relation(fields: [communityId], references: [id])
-  
+  thread      Thread?    @relation(fields: [threadId], references: [id])
   threadId    Int?
-  thread      Thread?         @relation(fields: [threadId], references: [id])
-
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  link        String?
 
   @@index([recipientId])
   @@index([type])
@@ -283,7 +275,7 @@ model CommunityPost {
   id          Int       @id @default(autoincrement())
   title       String
   content     String
-  images      String[]  // Array of image URLs
+  images      String[] // Array of image URLs
   author      User      @relation(fields: [authorId], references: [id])
   authorId    Int
   community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
@@ -310,35 +302,35 @@ enum BillingPeriod {
 }
 
 model Subscription {
-  id                  Int             @id @default(autoincrement())
-  userId              Int             @unique
-  user                User            @relation(fields: [userId], references: [id])
-  tier                SubscriptionTier @default(FREE)
-  billingPeriod       BillingPeriod?
-  price               Float?
-  startDate           DateTime        @default(now())
-  endDate             DateTime?
+  id                   Int              @id @default(autoincrement())
+  userId               Int              @unique
+  user                 User             @relation(fields: [userId], references: [id])
+  tier                 SubscriptionTier @default(FREE)
+  billingPeriod        BillingPeriod?
+  price                Float?
+  startDate            DateTime         @default(now())
+  endDate              DateTime?
   stripeSubscriptionId String?
-  status              String          @default("ACTIVE")
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
+  status               String           @default("ACTIVE")
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
 
   @@index([userId])
 }
 
 model DigitalProduct {
-  id            Int       @id @default(autoincrement())
-  title         String
-  description   String
-  price         Float
-  type          ProductType
-  coverImage    String?
-  authorId      Int
-  author        User      @relation(fields: [authorId], references: [id])
-  sales         Sale[]
-  chapters      Chapter[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id          Int         @id @default(autoincrement())
+  title       String
+  description String
+  price       Float
+  type        ProductType
+  coverImage  String?
+  authorId    Int
+  author      User        @relation(fields: [authorId], references: [id])
+  sales       Sale[]
+  chapters    Chapter[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 enum ProductType {
@@ -348,19 +340,19 @@ enum ProductType {
 }
 
 model Chapter {
-  id          Int       @id @default(autoincrement())
-  title       String
-  content     String?
-  images      String[]
-  productId   Int?
-  product     DigitalProduct? @relation(fields: [productId], references: [id])
-  mangaId     Int?
-  manga       Manga?    @relation("MangaToChapter", fields: [mangaId], references: [id]) // Updated to match
-  orderIndex  Int?
-  price       Float?
-  pages       Page[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         Int             @id @default(autoincrement())
+  title      String
+  content    String?
+  images     String[]
+  productId  Int?
+  product    DigitalProduct? @relation(fields: [productId], references: [id])
+  mangaId    Int?
+  manga      Manga?          @relation("MangaToChapter", fields: [mangaId], references: [id]) // Updated to match
+  orderIndex Int?
+  price      Float?
+  pages      Page[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
 }
 
 model Sale {

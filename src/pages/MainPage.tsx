@@ -1,9 +1,10 @@
-// src/pages/MainPage.tsx
 import { useState, useEffect } from "react";
 import { AddPoetryModal } from "@/components/AddPoetryModal";
 import { useAuth } from "@/context/AuthContext";
 import { PopularPoems } from "../pages/ProfileSetup/PopularPoems";
 import { FeedTabs } from "../components/FeedTabs";
+import { LoadingState } from "@/components/LoadingState";
+import { Card } from "@/components/ui/card";
 
 interface Poem {
   id: number;
@@ -36,6 +37,7 @@ export default function MainPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState("for-you");
   const { user } = useAuth();
@@ -43,26 +45,24 @@ export default function MainPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [poemsResponse, popularPoemsResponse, tagsResponse] = await Promise.all([
-          fetch('http://localhost:3000/api/poems'),
-          fetch('http://localhost:3000/api/poems/popular'),
-          fetch('http://localhost:3000/api/poems/tags')
-        ]);
+        setIsLoading(true);
+        setError("");
 
-        const [poemsData, popularPoemsData, tagsData] = await Promise.all([
-          poemsResponse.json(),
-          popularPoemsResponse.json(),
-          tagsResponse.json()
-        ]);
+        const token = localStorage.getItem('token');
+        const headers = {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        };
 
-        if (Array.isArray(poemsData)) setPoems(poemsData);
-        if (Array.isArray(popularPoemsData)) setPopularPoems(popularPoemsData);
-        if (Array.isArray(tagsData)) {
-          setAvailableTags(tagsData.map((tag: { name: string }) => tag.name));
-        }
+        const poemsResponse = await fetch('http://localhost:3000/api/poems', { headers });
+        if (!poemsResponse.ok) throw new Error('Failed to fetch poems');
+        const poemsData = await poemsResponse.json();
+        setPoems(poemsData);
         setFilteredPoems(poemsData);
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
+
+      } catch (err) {
+        console.error('Failed to fetch data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load content');
       } finally {
         setIsLoading(false);
       }
@@ -72,34 +72,34 @@ export default function MainPage() {
   }, []);
 
   useEffect(() => {
-  const fetchFollowingPosts = async () => {
-    if (!user) {
-      setFollowingPoems([]);
-      return;
-    }
-    
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/poems/following', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch following posts');
+    const fetchFollowingPosts = async () => {
+      if (!user) {
+        setFollowingPoems([]);
+        return;
       }
+      
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:3000/api/poems/following', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
 
-      const data = await response.json();
-      setFollowingPoems(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Failed to fetch following posts:', error);
-      setFollowingPoems([]);
+        if (!response.ok) throw new Error('Failed to fetch following posts');
+        const data = await response.json();
+        setFollowingPoems(data);
+      } catch (error) {
+        console.error('Failed to fetch following posts:', error);
+        setFollowingPoems([]);
+      }
+    };
+
+    if (activeTab === "following") {
+      fetchFollowingPosts();
     }
-  };
-
-  fetchFollowingPosts();
-}, [user, activeTab]);
+  }, [user, activeTab]);
 
   useEffect(() => {
     const filterPoems = () => {
@@ -138,45 +138,60 @@ export default function MainPage() {
     setSearchQuery("");
   };
 
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen p-6">
+        <Card className="max-w-2xl mx-auto p-6">
+          <div className="text-center text-red-500">
+            {error}
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen md:p-6 p-2"> {/* Reduced padding on mobile */}
-      <div className="max-w-4xl mx-auto space-y-4"> {/* Added space between elements */}
+    <div className="min-h-screen md:p-6 p-2">
+      <div className="max-w-4xl mx-auto space-y-4">
         <PopularPoems 
           poems={popularPoems} 
           isLoading={isLoading} 
-          className="mb-4" // Added margin bottom
+          className="mb-4"
         />
 
-      <FeedTabs
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        isLoading={isLoading}
-        filteredPoems={filteredPoems}
-        popularPoems={popularPoems}
-        followingPoems={followingPoems}
-        user={user}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        showFilters={showFilters}
-        setShowFilters={setShowFilters}
-        selectedTags={selectedTags}
-        availableTags={availableTags}
-        toggleTag={toggleTag}
-        clearFilters={clearFilters}
-        onAddPoem={() => setIsModalOpen(true)}
-        className="pb-16 md:pb-0" // Added padding bottom for mobile nav
-      />
-      
-      <AddPoetryModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAddPoetry={(newPoem) => {
-          setPoems(prev => [newPoem, ...prev]);
-          setFilteredPoems(prev => [newPoem, ...prev]);
-        }}
-      />
+        <FeedTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isLoading={isLoading}
+          filteredPoems={filteredPoems}
+          popularPoems={popularPoems}
+          followingPoems={followingPoems}
+          user={user}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+          selectedTags={selectedTags}
+          availableTags={availableTags}
+          toggleTag={toggleTag}
+          clearFilters={clearFilters}
+          onAddPoem={() => setIsModalOpen(true)}
+          className="pb-16 md:pb-0"
+        />
+        
+        <AddPoetryModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onAddPoetry={(newPoem) => {
+            setPoems(prev => [newPoem, ...prev]);
+            setFilteredPoems(prev => [newPoem, ...prev]);
+          }}
+        />
+      </div>
     </div>
-  </div>
-);
+  );
 }

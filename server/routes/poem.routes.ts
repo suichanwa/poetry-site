@@ -40,13 +40,36 @@ const upload = multer({
 
 router.get('/', async (req, res) => {
   try {
-    const poems = await poemService.getPoemsWithDetails();
+    const poems = await prisma.poem.findMany({
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        },
+        tags: true,
+        _count: {
+          select: {
+            likes: true,
+            comments: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
     res.json(poems);
   } catch (error) {
     console.error('Error fetching poems:', error);
     res.status(500).json({ error: 'Failed to fetch poems' });
   }
 });
+
 
 router.post('/', authMiddleware, upload.single('poemFile'), async (req: any, res) => {
   try {
@@ -423,14 +446,12 @@ router.post('/:id/like', authMiddleware, async (req: any, res) => {
       where: {
         poemId,
         userId,
-      },
+      }
     });
 
     if (existingLike) {
       await prisma.like.delete({
-        where: {
-          id: existingLike.id
-        }
+        where: { id: existingLike.id }
       });
     } else {
       await prisma.like.create({
@@ -442,13 +463,16 @@ router.post('/:id/like', authMiddleware, async (req: any, res) => {
 
       // Create notification only if the liker is not the poem author
       if (poem.author.id !== userId) {
-        await notificationService.createNotification({
-          type: 'LIKE',
-          content: `${req.user.name} liked your poem "${poem.title}"`,
-          recipientId: poem.author.id,
-          senderId: userId,
-          poemId: poemId,
-          link: `/poem/${poemId}`
+        await prisma.notification.create({
+          data: {
+            type: 'LIKE',
+            content: `${req.user.name} liked your poem "${poem.title}"`,
+            recipientId: poem.author.id,
+            senderId: userId,
+            poemId: poemId,
+            link: `/poem/${poemId}`,
+            isRead: false
+          }
         });
       }
     }
@@ -643,7 +667,7 @@ router.post('/:id/view', async (req, res) => {
 router.get('/popular', async (req, res) => {
   try {
     const popularPoems = await prisma.poem.findMany({
-      take: 2,
+      take: 5,
       orderBy: [
         { viewCount: 'desc' },
         { createdAt: 'desc' }
@@ -653,7 +677,6 @@ router.get('/popular', async (req, res) => {
           select: {
             id: true,
             name: true,
-            email: true,
             avatar: true
           }
         },
@@ -674,14 +697,10 @@ router.get('/popular', async (req, res) => {
 });
 
 // Get poems from followed users
-// Move this route BEFORE any routes with :id parameter to prevent conflicts
-// Get poems from followed users
 router.get('/following', authMiddleware, async (req: any, res) => {
   try {
     const userId = req.user.id;
-    console.log('Fetching following posts for user:', userId);
 
-    // First get all users that the current user follows
     const following = await prisma.follow.findMany({
       where: {
         followerId: userId
@@ -692,11 +711,7 @@ router.get('/following', authMiddleware, async (req: any, res) => {
     });
 
     const followingIds = following.map(f => f.followingId);
-    if (followingIds.length === 0) {
-      return res.json([]);
-    }
 
-    // Then get all poems from those users
     const poems = await prisma.poem.findMany({
       where: {
         authorId: {
@@ -711,7 +726,6 @@ router.get('/following', authMiddleware, async (req: any, res) => {
           select: {
             id: true,
             name: true,
-            email: true,
             avatar: true
           }
         },
@@ -725,10 +739,10 @@ router.get('/following', authMiddleware, async (req: any, res) => {
       }
     });
 
-    return res.json(poems);
+    res.json(poems);
   } catch (error) {
     console.error('Error fetching following poems:', error);
-    return res.status(500).json({ error: 'Failed to fetch following poems' });
+    res.status(500).json({ error: 'Failed to fetch following poems' });
   }
 });
 
