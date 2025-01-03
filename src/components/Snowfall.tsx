@@ -21,11 +21,9 @@ export function Snowfall() {
       return snowflake;
     };
 
-    // Create initial snowflakes
     const initialSnowflakes = Array.from({ length: 50 }, createSnowflake);
     setSnowflakes(initialSnowflakes);
 
-    // Add new snowflakes periodically
     const interval = setInterval(() => {
       setSnowflakes(prev => [...prev.slice(-49), createSnowflake()]);
     }, 500);

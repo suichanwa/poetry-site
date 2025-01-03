@@ -171,7 +171,8 @@
   top: -10px;
   color: #fff;
   font-size: 1em;
-  text-shadow: 0 0 5px #000;
+  /* Remove this line: */
+  /* text-shadow: 0 0 5px #000; */
   pointer-events: none;
   opacity: 0;
   z-index: 100;

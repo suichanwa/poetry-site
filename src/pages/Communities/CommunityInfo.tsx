@@ -38,9 +38,16 @@ export function CommunityInfo({
         <div className="w-24 h-24 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden">
           {community.avatar ? (
             <img 
-              src={`http://localhost:3000${community.avatar}`}
+              src={community.avatar.startsWith('http') 
+                ? community.avatar 
+                : `http://localhost:3000${community.avatar}`}
               alt={community.name}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.onerror = null; // Prevent infinite loop
+                e.currentTarget.src = ''; // Clear src on error
+                console.error('Failed to load community avatar');
+              }}
             />
           ) : (
             <Users className="w-12 h-12 text-primary" />

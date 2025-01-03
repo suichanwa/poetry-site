@@ -1,11 +1,10 @@
-// src/components/NotificationSettings.tsx
 import { useState, useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast'; // Fix the import
 
 interface NotificationPreferences {
   emailLikes: boolean;
@@ -13,12 +12,12 @@ interface NotificationPreferences {
   emailFollows: boolean;
   pushLikes: boolean;
   pushComments: boolean;
-  pushFollows: boolean;
+  pushFollows: false;
 }
 
 export function NotificationSettings() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { toast } = useToast(); // Now correctly imported
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     emailLikes: false,
     emailComments: false,
@@ -34,6 +33,7 @@ export function NotificationSettings() {
       if (!user) return;
       
       try {
+        setIsLoading(true);
         const response = await fetch('http://localhost:3000/api/notifications/preferences', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -51,16 +51,17 @@ export function NotificationSettings() {
           description: "Failed to load notification preferences",
           variant: "destructive"
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchPreferences();
-  }, [user]);
+  }, [user, toast]);
 
   const handlePreferenceChange = async (key: keyof NotificationPreferences, value: boolean) => {
-    setPreferences(prev => ({ ...prev, [key]: value }));
-
     try {
+      setIsLoading(true);
       const response = await fetch('http://localhost:3000/api/notifications/preferences', {
         method: 'PUT',
         headers: {
@@ -70,21 +71,22 @@ export function NotificationSettings() {
         body: JSON.stringify({ [key]: value })
       });
 
-      if (!response.ok) throw new Error('Failed to update preference');
+      if (!response.ok) throw new Error('Failed to update preferences');
 
+      setPreferences(prev => ({ ...prev, [key]: value }));
       toast({
         title: "Success",
-        description: "Notification preferences updated",
+        description: "Notification preferences updated"
       });
     } catch (error) {
-      console.error('Error updating preference:', error);
+      console.error('Error updating preferences:', error);
       toast({
         title: "Error",
-        description: "Failed to update preference",
+        description: "Failed to update notification preferences",
         variant: "destructive"
       });
-      // Revert the change
-      setPreferences(prev => ({ ...prev, [key]: !value }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -105,66 +107,70 @@ export function NotificationSettings() {
         </Button>
       </div>
       
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Email Notifications</h3>
+      <div className="space-y-6">
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="email-likes">Likes on your posts</Label>
-            <Switch 
-              id="email-likes"
-              checked={preferences.emailLikes}
-              onCheckedChange={(checked) => handlePreferenceChange('emailLikes', checked)}
-              disabled={isLoading}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="email-comments">Comments on your posts</Label>
-            <Switch 
-              id="email-comments"
-              checked={preferences.emailComments}
-              onCheckedChange={(checked) => handlePreferenceChange('emailComments', checked)}
-              disabled={isLoading}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="email-follows">New followers</Label>
-            <Switch 
-              id="email-follows"
-              checked={preferences.emailFollows}
-              onCheckedChange={(checked) => handlePreferenceChange('emailFollows', checked)}
-              disabled={isLoading}
-            />
+          <h3 className="text-lg font-semibold">Email Notifications</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="email-likes">Likes on your posts</Label>
+              <Switch 
+                id="email-likes"
+                checked={preferences.emailLikes}
+                onCheckedChange={(checked) => handlePreferenceChange('emailLikes', checked)}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="email-comments">Comments on your posts</Label>
+              <Switch 
+                id="email-comments"
+                checked={preferences.emailComments}
+                onCheckedChange={(checked) => handlePreferenceChange('emailComments', checked)}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="email-follows">New followers</Label>
+              <Switch 
+                id="email-follows"
+                checked={preferences.emailFollows}
+                onCheckedChange={(checked) => handlePreferenceChange('emailFollows', checked)}
+                disabled={isLoading}
+              />
+            </div>
           </div>
         </div>
 
-        <h3 className="text-lg font-semibold pt-4">Push Notifications</h3>
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="push-likes">Likes on your posts</Label>
-            <Switch 
-              id="push-likes"
-              checked={preferences.pushLikes}
-              onCheckedChange={(checked) => handlePreferenceChange('pushLikes', checked)}
-              disabled={isLoading}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="push-comments">Comments on your posts</Label>
-            <Switch 
-              id="push-comments"
-              checked={preferences.pushComments}
-              onCheckedChange={(checked) => handlePreferenceChange('pushComments', checked)}
-              disabled={isLoading}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="push-follows">New followers</Label>
-            <Switch 
-              id="push-follows"
-              checked={preferences.pushFollows}
-              onCheckedChange={(checked) => handlePreferenceChange('pushFollows', checked)}
-              disabled={isLoading}
-            />
+          <h3 className="text-lg font-semibold">Push Notifications</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="push-likes">Likes on your posts</Label>
+              <Switch 
+                id="push-likes"
+                checked={preferences.pushLikes}
+                onCheckedChange={(checked) => handlePreferenceChange('pushLikes', checked)}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="push-comments">Comments on your posts</Label>
+              <Switch 
+                id="push-comments"
+                checked={preferences.pushComments}
+                onCheckedChange={(checked) => handlePreferenceChange('pushComments', checked)}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="push-follows">New followers</Label>
+              <Switch 
+                id="push-follows"
+                checked={preferences.pushFollows}
+                onCheckedChange={(checked) => handlePreferenceChange('pushFollows', checked)}
+                disabled={isLoading}
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -83,37 +83,40 @@ export default function CommunityManagePage() {
     }
   };
 
-  const handleAvatarUpload = async () => {
-    if (!avatar) return;
+const handleAvatarUpload = async () => {
+  if (!avatar) return;
 
-    setIsUploadingAvatar(true);
-    try {
-      const formData = new FormData();
-      formData.append('avatar', avatar);
+  setIsUploadingAvatar(true);
+  try {
+    const formData = new FormData();
+    formData.append('avatar', avatar);
 
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/communities/${id}/avatar`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
+    const token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:3000/api/communities/${id}/avatar`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+        // Remove Content-Type header to let browser set it with boundary for multipart/form-data
+      },
+      body: formData
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to upload avatar');
-      }
-
-      const data = await response.json();
-      setAvatarPreview(`http://localhost:3000${data.avatar}`);
-      setAvatar(null);
-      setError("");
-    } catch (error) {
-      setError('Failed to upload avatar');
-    } finally {
-      setIsUploadingAvatar(false);
+    if (!response.ok) {
+      throw new Error('Failed to upload avatar');
     }
-  };
+
+    const data = await response.json();
+    // Update the preview with the full URL
+    setAvatarPreview(`http://localhost:3000${data.avatar}`);
+    setAvatar(null);
+    setError("");
+  } catch (error) {
+    setError('Failed to upload avatar');
+    console.error('Upload error:', error);
+  } finally {
+    setIsUploadingAvatar(false);
+  }
+};
 
   const handleAddRule = () => {
     setRules([...rules, { title: '', description: '' }]);

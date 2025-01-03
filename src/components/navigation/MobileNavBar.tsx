@@ -5,15 +5,15 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export function MobileNavBar() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,6 +29,29 @@ export function MobileNavBar() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!user) return;
+      try {
+        const response = await fetch('http://localhost:3000/api/notifications', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        const data = await response.json();
+        setUnreadCount(data.notifications.filter((n: any) => !n.isRead).length);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    fetchNotifications();
+    // Set up polling for notifications
+    const interval = setInterval(fetchNotifications, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [user]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -70,8 +93,8 @@ export function MobileNavBar() {
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50",
         "bg-background/80 backdrop-blur-md border-t",
-        "md:hidden", // Show only on mobile
-        "safe-area-bottom" // iOS safety
+        "md:hidden", 
+        "safe-area-bottom" 
       )}
     >
       <nav className="flex items-center justify-around px-2 py-1.5">

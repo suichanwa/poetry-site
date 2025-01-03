@@ -11,15 +11,57 @@ router.post('/:id', authMiddleware, async (req: any, res) => {
     const followingId = parseInt(req.params.id);
     const followerId = req.user.id;
 
+    // Validate IDs
+    if (isNaN(followingId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    // Check if trying to follow self
     if (followerId === followingId) {
       return res.status(400).json({ error: 'Cannot follow yourself' });
     }
 
-    const follow = await prisma.follow.create({
+    // Check if user exists
+    const userToFollow = await prisma.user.findUnique({
+      where: { id: followingId }
+    });
+
+    if (!userToFollow) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if already following
+    const existingFollow = await prisma.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId,
+          followingId,
+        }
+      }
+    });
+
+    if (existingFollow) {
+      return res.status(400).json({ error: 'Already following this user' });
+    }
+
+    // Create follow relationship
+    await prisma.follow.create({
       data: {
         followerId,
         followingId,
-      },
+      }
+    });
+
+    // Create notification for the followed user
+    await prisma.notification.create({
+      data: {
+        type: 'FOLLOW',
+        content: `${req.user.name} started following you`,
+        recipientId: followingId,
+        senderId: followerId,
+        isRead: false,
+        link: `/profile/${followerId}`
+      }
     });
 
     res.json({ success: true, isFollowing: true });

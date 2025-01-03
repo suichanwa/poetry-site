@@ -120,7 +120,7 @@ export function PoemFilters({
           </div>
         )}
       </div>
-      <Button onClick={onAddPoem}>+ Add Poem</Button>
+      <Button onClick={onAddPoem}>+ Add </Button>
     </div>
   );
 }

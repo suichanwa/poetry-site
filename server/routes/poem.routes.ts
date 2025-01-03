@@ -278,12 +278,27 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Add comment route
 router.post('/:id/comments', authMiddleware, async (req: any, res) => {
   try {
     const poemId = parseInt(req.params.id);
     const { content } = req.body;
     const userId = req.user.id;
 
+    // First get the poem to find its author
+    const poem = await prisma.poem.findUnique({
+      where: { id: poemId },
+      select: {
+        authorId: true,
+        title: true
+      }
+    });
+
+    if (!poem) {
+      return res.status(404).json({ error: 'Poem not found' });
+    }
+
+    // Create the comment
     const comment = await prisma.comment.create({
       data: {
         content,
@@ -295,21 +310,35 @@ router.post('/:id/comments', authMiddleware, async (req: any, res) => {
           select: {
             id: true,
             name: true,
-            avatar: true,
-          },
-        },
-      },
+            avatar: true
+          }
+        }
+      }
     });
+
+    // Create notification if someone else comments on the poem
+    if (poem.authorId !== userId) {
+      await prisma.notification.create({
+        data: {
+          type: 'COMMENT',
+          content: `${req.user.name} commented on your poem "${poem.title}"`,
+          recipientId: poem.authorId,
+          senderId: userId,
+          poemId: poemId,
+          commentId: comment.id,
+          link: `/poem/${poemId}#comment-${comment.id}`,
+          isRead: false
+        }
+      });
+    }
 
     res.json(comment);
   } catch (error) {
-    console.error('Error creating comment:', error);
-    res.status(500).json({ error: 'Failed to create comment' });
+    console.error('Error adding comment:', error);
+    res.status(500).json({ error: 'Failed to add comment' });
   }
 });
 
-// Get comments for a poem
-// Get poem comments
 router.get('/:id/comments', async (req, res) => {
   try {
     const poemId = parseInt(req.params.id);
