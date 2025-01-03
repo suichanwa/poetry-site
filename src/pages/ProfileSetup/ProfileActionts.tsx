@@ -1,18 +1,5 @@
 // src/pages/ProfileSetup/ProfileActions.tsx
-import { Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { FollowButton } from "@/components/FollowButton";
-import { UserActions } from "@/components/UserActions";
-
-interface ProfileActionsProps {
-  isOwnProfile: boolean;
-  userId?: string;
-  followStats: {
-    isFollowing: boolean;
-  };
-  onFollowChange: (isFollowing: boolean) => void;
-}
+import { UserActions } from '@/components/UserActions';
 
 export function ProfileActions({ 
   isOwnProfile, 

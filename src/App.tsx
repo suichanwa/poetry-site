@@ -15,6 +15,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import NotificationsPage from './pages/NotificationsPage';
 import PaymentPage from "./pages/PaymentPage"; 
+import ChatPage from './pages/ChatPage';
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
               <Route path="/communities/:id/manage" element={<CommunityManagePage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/payment" element={<PaymentPage />} />
+              <Route path="/chats" element={<ChatPage />} />
             </Routes>
           </Layout>
         </Router>

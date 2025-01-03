@@ -10,6 +10,7 @@ import poemRoutes from '../routes/poem.routes';
 import followRoutes from '../routes/follow.routes';
 import communityRoutes from '../routes/cummunity.routes';
 import notificationRoutes from '../routes/notification.routes';
+import chatRoutes from '../routes/chat.routes';
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/follow', followRoutes);
 app.use('/api/communities', communityRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/chats', chatRoutes);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

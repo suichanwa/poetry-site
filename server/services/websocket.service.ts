@@ -20,6 +20,26 @@ class WebSocketService {
     this.setupHeartbeat();
   }
 
+    private handleMessage(message: WebSocket.Data) {
+    try {
+      const data = JSON.parse(message.toString());
+      
+      switch (data.type) {
+        case 'NEW_MESSAGE':
+          this.broadcastToChat(data.chatId, data);
+          break;
+        case 'TYPING':
+          this.broadcastToChat(data.chatId, data);
+          break;
+        case 'READ_RECEIPT':
+          this.broadcastToChat(data.chatId, data);
+          break;
+      }
+    } catch (error) {
+      console.error('Error handling message:', error);
+    }
+  }
+
   private init() {
     this.wss.on('connection', async (ws: ExtendedWebSocket, req) => {
       try {
@@ -144,6 +164,26 @@ class WebSocketService {
     if (client?.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify(data));
     }
+  }
+
+   private broadcastToChat(chatId: number, data: any) {
+    this.clients.forEach((client, userId) => {
+      if (client.readyState === WebSocket.OPEN) {
+        // Check if user is part of the chat before sending
+        prisma.chat.findFirst({
+          where: {
+            id: chatId,
+            participants: {
+              some: { id: userId }
+            }
+          }
+        }).then(chat => {
+          if (chat) {
+            client.send(JSON.stringify(data));
+          }
+        });
+      }
+    });
   }
 }
 
