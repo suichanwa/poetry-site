@@ -1,4 +1,3 @@
-// src/components/ChatComponents/ChatWindow.tsx
 import { useEffect, useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -36,7 +35,7 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
   const messageEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
   const { user } = useAuth();
-  const ws = useWebSocket();
+  const { ws, sendMessage, isConnected } = useWebSocket();
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -62,7 +61,7 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
   useEffect(() => {
     if (!ws) return;
 
-    ws.onmessage = (event) => {
+    const handleMessage = (event: MessageEvent) => {
       const data = JSON.parse(event.data);
       
       switch (data.type) {
@@ -91,7 +90,10 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
       }
     };
 
+    ws.addEventListener('message', handleMessage);
+
     return () => {
+      ws.removeEventListener('message', handleMessage);
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
@@ -103,13 +105,17 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
   };
 
   const handleTyping = () => {
-    if (!ws) return;
+    if (!ws || !isConnected || !user) return;
     
-    ws.send(JSON.stringify({
-      type: 'TYPING',
-      chatId,
-      userId: user?.id
-    }));
+    try {
+      sendMessage({
+        type: 'TYPING',
+        chatId,
+        userId: user.id
+      });
+    } catch (error) {
+      console.error('Error sending typing status:', error);
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,40 +127,37 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!newMessage.trim() && !selectedFile) || !ws || isSubmitting) return;
+    if (!newMessage.trim() || !ws || !isConnected || isSubmitting) return;
 
     setIsSubmitting(true);
     try {
-      const formData = new FormData();
-      if (selectedFile) {
-        formData.append('file', selectedFile);
-      }
-      formData.append('content', newMessage);
-      formData.append('chatId', chatId.toString());
-
       const response = await fetch('http://localhost:3000/api/chats/messages', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
         },
-        body: formData
+        body: JSON.stringify({
+          chatId,
+          content: newMessage.trim()
+        })
       });
 
-      if (!response.ok) throw new Error('Failed to send message');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to send message');
+      }
       
       const message = await response.json();
       setMessages(prev => [...prev, message]);
       setNewMessage('');
-      setSelectedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
 
-      ws.send(JSON.stringify({
+      // Notify other participants through WebSocket
+      sendMessage({
         type: 'NEW_MESSAGE',
         chatId,
         message
-      }));
+      });
 
       scrollToBottom();
     } catch (error) {

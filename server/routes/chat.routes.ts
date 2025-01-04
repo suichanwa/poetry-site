@@ -209,17 +209,47 @@ router.get('/:id/messages', authMiddleware, async (req: any, res) => {
   }
 });
 
-// Send message
 router.post('/messages', authMiddleware, async (req: any, res) => {
   try {
     const { chatId, content } = req.body;
     const userId = req.user.id;
 
+    if (!chatId) {
+      return res.status(400).json({ error: 'Chat ID is required' });
+    }
+
+    if (!content?.trim()) {
+      return res.status(400).json({ error: 'Message content is required' });
+    }
+
+    // Verify user is chat participant
+    const chat = await prisma.chat.findFirst({
+      where: {
+        id: chatId,
+        participants: {
+          some: {
+            id: userId
+          }
+        }
+      }
+    });
+
+    if (!chat) {
+      return res.status(403).json({ error: 'Not authorized to send messages in this chat' });
+    }
+
+    // Create message
     const message = await prisma.message.create({
       data: {
-        content,
-        senderId: userId,
-        chatId: chatId
+        content: content.trim(),
+        type: 'text',
+        read: false,
+        chat: {
+          connect: { id: chatId }
+        },
+        sender: {
+          connect: { id: userId }
+        }
       },
       include: {
         sender: {
@@ -232,7 +262,7 @@ router.post('/messages', authMiddleware, async (req: any, res) => {
       }
     });
 
-    // Update chat's lastMessage
+    // Update chat's lastMessage and updatedAt
     await prisma.chat.update({
       where: { id: chatId },
       data: {

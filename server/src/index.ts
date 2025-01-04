@@ -1,9 +1,12 @@
+// server/src/index.ts
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { createServer } from 'http';
+import { initWebSocket } from '../services/websocket.service';
 import authRoutes from '../routes/auth.routes';
 import userRoutes from '../routes/user.routes';
 import poemRoutes from '../routes/poem.routes';
@@ -14,32 +17,36 @@ import chatRoutes from '../routes/chat.routes';
 
 dotenv.config();
 
+// Add these lines to define __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
+// Create HTTP server
+const server = createServer(app);
 const port = process.env.PORT || 3000;
 
-// Add CSP headers
+// Initialize WebSocket server
+initWebSocket(server);
+
+// Add CSP headers with WebSocket connection allowed
 app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; img-src 'self' data: blob: *; style-src 'self' 'unsafe-inline';"
+    "default-src 'self'; img-src 'self' data: blob: *; style-src 'self' 'unsafe-inline'; connect-src 'self' ws: wss:;"
   );
   next();
 });
 
-// Define __dirname for ES module compatibility
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Rest of your middleware and route setup
+app.use(cors());
+app.use(express.json());
 
 const uploadsDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-app.use(cors());
-app.use(express.json());
-
-// Serve static files from uploads directory
-// In server/src/index.ts
 app.use('/uploads', express.static(uploadsDir));
 app.use('/api/auth', authRoutes);
 app.use('/api/poems', poemRoutes);
@@ -49,6 +56,6 @@ app.use('/api/communities', communityRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/chats', chatRoutes);
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });

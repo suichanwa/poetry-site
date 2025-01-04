@@ -1,7 +1,9 @@
 import { WebSocket, WebSocketServer } from 'ws';
 import { Server } from 'http';
 import { verifyToken } from '../middleware/auth.middleware';
-import { notificationService } from './notification.service';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 interface ExtendedWebSocket extends WebSocket {
   userId?: number;
@@ -20,44 +22,24 @@ class WebSocketService {
     this.setupHeartbeat();
   }
 
-    private handleMessage(message: WebSocket.Data) {
-    try {
-      const data = JSON.parse(message.toString());
-      
-      switch (data.type) {
-        case 'NEW_MESSAGE':
-          this.broadcastToChat(data.chatId, data);
-          break;
-        case 'TYPING':
-          this.broadcastToChat(data.chatId, data);
-          break;
-        case 'READ_RECEIPT':
-          this.broadcastToChat(data.chatId, data);
-          break;
-      }
-    } catch (error) {
-      console.error('Error handling message:', error);
-    }
-  }
-
   private init() {
     this.wss.on('connection', async (ws: ExtendedWebSocket, req) => {
       try {
-        const token = new URL(req.url!, `ws://${req.headers.host}`).searchParams.get('token');
+        const url = new URL(req.url!, `ws://${req.headers.host}`);
+        const token = url.searchParams.get('token');
+        
         if (!token) {
           ws.close(1008, 'No authentication token provided');
           return;
         }
 
-        const decoded = await verifyToken(token);
-        ws.userId = decoded.id;
+        const user = await verifyToken(token);
+        ws.userId = user.id;
         ws.isAlive = true;
 
-        // Store client connection
-        this.clients.set(decoded.id, ws);
-        this.reconnectAttempts.delete(decoded.id); // Reset reconnect attempts on successful connection
+        this.clients.set(user.id, ws);
+        this.reconnectAttempts.delete(user.id);
 
-        // Set up ping-pong for connection health check
         ws.on('pong', () => {
           ws.isAlive = true;
         });
@@ -71,11 +53,6 @@ class WebSocketService {
           }
         });
 
-        ws.on('error', (error) => {
-          console.error('WebSocket error:', error);
-          this.handleDisconnection(ws.userId!);
-        });
-
       } catch (error) {
         console.error('WebSocket connection error:', error);
         ws.close(1008, 'Authentication failed');
@@ -84,106 +61,87 @@ class WebSocketService {
   }
 
   private setupHeartbeat() {
-    const interval = setInterval(() => {
+    setInterval(() => {
       this.wss.clients.forEach((ws: ExtendedWebSocket) => {
         if (!ws.isAlive) {
           if (ws.userId) {
-            this.handleDisconnection(ws.userId);
+            const attempts = this.reconnectAttempts.get(ws.userId) || 0;
+            if (attempts >= this.MAX_RECONNECT_ATTEMPTS) {
+              ws.terminate();
+              this.reconnectAttempts.delete(ws.userId);
+              return;
+            }
+            this.reconnectAttempts.set(ws.userId, attempts + 1);
           }
-          return ws.terminate();
+          return;
         }
         ws.isAlive = false;
         ws.ping();
       });
-    }, 30000); // 30 second interval
-
-    this.wss.on('close', () => {
-      clearInterval(interval);
-    });
-  }
-
-  private handleDisconnection(userId: number) {
-    const attempts = this.reconnectAttempts.get(userId) || 0;
-    if (attempts < this.MAX_RECONNECT_ATTEMPTS) {
-      this.reconnectAttempts.set(userId, attempts + 1);
-      // Attempt reconnection after increasing delay
-      setTimeout(() => {
-        this.attemptReconnect(userId);
-      }, Math.pow(2, attempts) * 1000);
-    }
-  }
-
-  private async attemptReconnect(userId: number) {
-    try {
-      const client = this.clients.get(userId);
-      if (client?.readyState === WebSocket.CLOSED) {
-        // Trigger reconnection logic here
-        notificationService.removeConnection(userId);
-      }
-    } catch (error) {
-      console.error('Reconnection attempt failed:', error);
-    }
+    }, 30000);
   }
 
   private handleMessage(message: WebSocket.Data) {
     try {
       const data = JSON.parse(message.toString());
+      
       switch (data.type) {
-        case 'NOTIFICATION_READ':
-          this.handleNotificationRead(data);
+        case 'NEW_MESSAGE':
+          this.broadcastToChat(data.chatId, {
+            type: 'NEW_MESSAGE',
+            chatId: data.chatId,
+            message: data.message
+          });
           break;
-        case 'NOTIFICATION_CLEAR':
-          this.handleNotificationClear(data);
+        case 'TYPING':
+          this.broadcastToChat(data.chatId, {
+            type: 'TYPING',
+            chatId: data.chatId,
+            userId: data.userId
+          });
           break;
-        default:
-          console.warn('Unknown message type:', data.type);
+        case 'READ_RECEIPT':
+          this.broadcastToChat(data.chatId, {
+            type: 'READ_RECEIPT',
+            chatId: data.chatId,
+            messageId: data.messageId,
+            userId: data.userId
+          });
+          break;
       }
     } catch (error) {
       console.error('Error handling message:', error);
     }
   }
 
-  private async handleNotificationRead(data: any) {
-    // Handle notification read logic
-  }
+  private async broadcastToChat(chatId: number, data: any) {
+    try {
+      const chat = await prisma.chat.findUnique({
+        where: { id: chatId },
+        include: { participants: true }
+      });
 
-  private async handleNotificationClear(data: any) {
-    // Handle notification clear logic
-  }
+      if (!chat) return;
 
-  public broadcast(data: any) {
-    this.wss.clients.forEach(client => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(data));
-      }
-    });
-  }
-
-  public sendToUser(userId: number, data: any) {
-    const client = this.clients.get(userId);
-    if (client?.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(data));
+      chat.participants.forEach(participant => {
+        const client = this.clients.get(participant.id);
+        if (client?.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(data));
+        }
+      });
+    } catch (error) {
+      console.error('Error broadcasting to chat:', error);
     }
   }
 
-   private broadcastToChat(chatId: number, data: any) {
-    this.clients.forEach((client, userId) => {
-      if (client.readyState === WebSocket.OPEN) {
-        // Check if user is part of the chat before sending
-        prisma.chat.findFirst({
-          where: {
-            id: chatId,
-            participants: {
-              some: { id: userId }
-            }
-          }
-        }).then(chat => {
-          if (chat) {
-            client.send(JSON.stringify(data));
-          }
-        });
-      }
-    });
+  private handleDisconnection(userId: number) {
+    const attempts = this.reconnectAttempts.get(userId) || 0;
+    if (attempts < this.MAX_RECONNECT_ATTEMPTS) {
+      setTimeout(() => {
+        // Client will attempt to reconnect
+        this.reconnectAttempts.set(userId, attempts + 1);
+      }, Math.min(1000 * Math.pow(2, attempts), 10000));
+    }
   }
 }
 
