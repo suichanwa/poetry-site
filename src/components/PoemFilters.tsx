@@ -1,8 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, X, Tag as TagIcon } from "lucide-react";
+import { Search, X, Tag as TagIcon, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { AddMangaModal } from "@/components/AddMangaModal";
+import { AddLightNovelModal } from "@/components/AddLightNovelModal";
 
 interface PoemFiltersProps {
   searchQuery: string;
@@ -14,6 +22,9 @@ interface PoemFiltersProps {
   toggleTag: (tag: string) => void;
   clearFilters: () => void;
   onAddPoem: () => void;
+  onAddManga: () => void;
+  onAddBook: () => void;
+  onAddLightNovel: () => void;
 }
 
 export function PoemFilters({
@@ -25,12 +36,16 @@ export function PoemFilters({
   availableTags,
   toggleTag,
   clearFilters,
-  onAddPoem
+  onAddPoem,
+  onAddManga,
+  onAddBook,
+  onAddLightNovel
 }: PoemFiltersProps) {
   const [searchFocused, setSearchFocused] = useState(false);
+  const [isMangaModalOpen, setIsMangaModalOpen] = useState(false);
+  const [isLightNovelModalOpen, setIsLightNovelModalOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -41,6 +56,18 @@ export function PoemFilters({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setShowFilters]);
+
+  const handleMangaSubmit = (manga: any) => {
+    console.log("New manga:", manga);
+    setIsMangaModalOpen(false);
+    onAddManga();
+  };
+
+  const handleLightNovelSubmit = (lightNovel: any) => {
+    console.log("New light novel:", lightNovel);
+    setIsLightNovelModalOpen(false);
+    onAddLightNovel();
+  };
 
   return (
     <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -79,7 +106,6 @@ export function PoemFilters({
           )}
         </div>
 
-        {/* Selected Tags Display */}
         {selectedTags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {selectedTags.map(tag => (
@@ -97,7 +123,6 @@ export function PoemFilters({
           </div>
         )}
 
-        {/* Tags Dropdown */}
         {showFilters && (
           <div className="absolute z-10 mt-1 w-full bg-popover rounded-md border shadow-md">
             <div className="p-2">
@@ -120,7 +145,41 @@ export function PoemFilters({
           </div>
         )}
       </div>
-      <Button onClick={onAddPoem}>+ Add </Button>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>
+            <Plus className="h-4 w-4 mr-1" />
+            Add
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem onClick={onAddPoem}>
+            Add Poem
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setIsMangaModalOpen(true)}>
+            Add Manga
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onAddBook}>
+            Add Book
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setIsLightNovelModalOpen(true)}>
+            Add Light Novel
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AddMangaModal
+        isOpen={isMangaModalOpen}
+        onClose={() => setIsMangaModalOpen(false)}
+        onAddManga={handleMangaSubmit}
+      />
+
+      <AddLightNovelModal
+        isOpen={isLightNovelModalOpen}
+        onClose={() => setIsLightNovelModalOpen(false)}
+        onAddLightNovel={handleLightNovelSubmit}
+      />
     </div>
   );
 }

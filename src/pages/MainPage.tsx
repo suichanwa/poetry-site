@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { AddPoetryModal } from "@/components/AddPoetryModal";
+import { AddMangaModal } from "@/components/AddMangaModal";
 import { useAuth } from "@/context/AuthContext";
 import { PopularPoems } from "../pages/ProfileSetup/PopularPoems";
 import { FeedTabs } from "../components/FeedTabs";
@@ -27,12 +28,28 @@ interface Poem {
   };
 }
 
+interface Manga {
+  id: number;
+  title: string;
+  description: string;
+  author: {
+    id: number;
+    name: string;
+    email: string;
+    avatar?: string;
+  };
+  createdAt: string;
+  tags: { name: string }[];
+  fileUrl: string;
+}
+
 export default function MainPage() {
   const [poems, setPoems] = useState<Poem[]>([]);
   const [filteredPoems, setFilteredPoems] = useState<Poem[]>([]);
   const [popularPoems, setPopularPoems] = useState<Poem[]>([]);
   const [followingPoems, setFollowingPoems] = useState<Poem[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPoemModalOpen, setIsPoemModalOpen] = useState(false);
+  const [isMangaModalOpen, setIsMangaModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
@@ -47,7 +64,6 @@ export default function MainPage() {
       try {
         setIsLoading(true);
         setError("");
-
         const token = localStorage.getItem('token');
         const headers = {
           'Content-Type': 'application/json',
@@ -111,7 +127,6 @@ export default function MainPage() {
           poem.content.toLowerCase().includes(query);
 
         const matchesTags = 
-          selectedTags.length === 0 || 
           selectedTags.every(tag => 
             poem.tags.some(poemTag => poemTag.name === tag)
           );
@@ -179,16 +194,29 @@ export default function MainPage() {
           availableTags={availableTags}
           toggleTag={toggleTag}
           clearFilters={clearFilters}
-          onAddPoem={() => setIsModalOpen(true)}
+          onAddPoem={() => setIsPoemModalOpen(true)}
+          onAddManga={() => {
+            console.log("Opening Manga Modal");
+            setIsMangaModalOpen(true);
+          }}
           className="pb-16 md:pb-0"
         />
         
         <AddPoetryModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          isOpen={isPoemModalOpen}
+          onClose={() => setIsPoemModalOpen(false)}
           onAddPoetry={(newPoem) => {
             setPoems(prev => [newPoem, ...prev]);
             setFilteredPoems(prev => [newPoem, ...prev]);
+          }}
+        />
+
+        <AddMangaModal
+          isOpen={isMangaModalOpen}
+          onClose={() => setIsMangaModalOpen(false)}
+          onAddManga={(newManga) => {
+            setPoems(prev => [newManga, ...prev]);
+            setFilteredPoems(prev => [newManga, ...prev]);
           }}
         />
       </div>
