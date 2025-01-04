@@ -337,7 +337,7 @@ model DigitalProduct {
   authorId    Int
   author      User        @relation(fields: [authorId], references: [id])
   sales       Sale[]
-  chapters    Chapter[]
+  chapters    Chapter[]   @relation("ProductChapters")
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
@@ -349,46 +349,46 @@ enum ProductType {
 }
 
 model Chapter {
-  id         Int             @id @default(autoincrement())
-  title      String
-  content    String?
-  images     String[]
-  productId  Int?
-  product    DigitalProduct? @relation(fields: [productId], references: [id])
-  mangaId    Int?
-  manga      Manga?          @relation("MangaToChapter", fields: [mangaId], references: [id]) // Updated to match
-  orderIndex Int?
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-  Page       Page[]
+  id          Int             @id @default(autoincrement())
+  title       String
+  orderIndex  Int
+  pages       Page[]
+  manga       Manga?          @relation(fields: [mangaId], references: [id])
+  mangaId     Int?
+  product     DigitalProduct? @relation("ProductChapters", fields: [productId], references: [id])
+  productId   Int?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
 
 model Manga {
   id          Int       @id @default(autoincrement())
   title       String
-  description String?
+  description String
+  coverImage  String?
+  chapters    Chapter[]
   author      User      @relation(fields: [authorId], references: [id])
   authorId    Int
-  chapters    Chapter[] @relation("MangaToChapter") // Updated relation name
   tags        Tag[]     @relation("MangaToTag")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  views       Int       @default(0)
+  likes       Int       @default(0)
 }
 
 model Page {
-  id        Int      @id @default(autoincrement())
-  number    Int
-  imageUrl  String
-  chapter   Chapter  @relation(fields: [chapterId], references: [id])
-  chapterId Int
-  createdAt DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  imageUrl   String
+  pageNumber Int
+  chapter    Chapter  @relation(fields: [chapterId], references: [id])
+  chapterId  Int
 }
 
 model Tag {
   id        Int      @id @default(autoincrement())
   name      String   @unique
   poems     Poem[]   @relation("PoemToTag")
-  mangas    Manga[]  @relation("MangaToTag") // Add this relation
+  mangas    Manga[]  @relation("MangaToTag")
   createdAt DateTime @default(now())
 }
 

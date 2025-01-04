@@ -14,6 +14,7 @@ import followRoutes from '../routes/follow.routes';
 import communityRoutes from '../routes/cummunity.routes';
 import notificationRoutes from '../routes/notification.routes';
 import chatRoutes from '../routes/chat.routes';
+import mangaRoutes from '../routes/manga.routes';
 
 dotenv.config();
 
@@ -55,6 +56,7 @@ app.use('/api/follow', followRoutes);
 app.use('/api/communities', communityRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/chats', chatRoutes);
+app.use('/api/manga', mangaRoutes);
 
 server.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

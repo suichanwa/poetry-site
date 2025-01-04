@@ -43,14 +43,14 @@ I'll help you create a plan for implementing manga posting functionality. Here's
   ```
 
 ## 2. API Endpoints
-- [ ] Manga Routes
+- [x] Manga Routes
   - POST `/api/manga` - Create new manga
   - GET `/api/manga` - List all manga
   - GET `/api/manga/:id` - Get manga details
   - PUT `/api/manga/:id` - Update manga
   - DELETE `/api/manga/:id` - Delete manga
 
-- [ ] Chapter Routes
+- [x] Chapter Routes
   - POST `/api/manga/:id/chapters` - Add chapter
   - GET `/api/manga/:id/chapters` - List chapters
   - PUT `/api/manga/:id/chapters/:chapterId` - Update chapter

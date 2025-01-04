@@ -16,6 +16,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import NotificationsPage from './pages/NotificationsPage';
 import PaymentPage from "./pages/PaymentPage"; 
 import ChatPage from './pages/ChatPage';
+import MangaDetailPage from "./pages/MangaDetailPage";
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/payment" element={<PaymentPage />} />
               <Route path="/chats" element={<ChatPage />} />
+              <Route path="/manga/:id" element={<MangaDetailPage />} />
             </Routes>
           </Layout>
         </Router>
