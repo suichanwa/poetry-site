@@ -63,14 +63,14 @@ I'll help you create a plan for implementing manga posting functionality. Here's
   - Tags selection
   - Chapter upload
 
-- [ ] MangaCard
+- [x] MangaCard
   - Display manga cover
   - Title and description
   - Author info
   - View/Like counts
   - Latest chapter
 
-- [ ] MangaReader
+- [x] MangaReader
   - Chapter navigation
   - Page viewer
   - Zoom controls

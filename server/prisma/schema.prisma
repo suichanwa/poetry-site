@@ -362,18 +362,19 @@ model Chapter {
 }
 
 model Manga {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String
-  coverImage  String?
-  chapters    Chapter[]
-  author      User      @relation(fields: [authorId], references: [id])
-  authorId    Int
-  tags        Tag[]     @relation("MangaToTag")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  views       Int       @default(0)
-  likes       Int       @default(0)
+  id            Int       @id @default(autoincrement())
+  title         String
+  description   String
+  coverImage    String?
+  thumbnailImage String?
+  chapters      Chapter[]
+  author        User      @relation(fields: [authorId], references: [id])
+  authorId      Int
+  tags          Tag[]     @relation("MangaToTag") // Add relation name
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  views         Int       @default(0)
+  likes         Int       @default(0)
 }
 
 model Page {
@@ -388,7 +389,7 @@ model Tag {
   id        Int      @id @default(autoincrement())
   name      String   @unique
   poems     Poem[]   @relation("PoemToTag")
-  mangas    Manga[]  @relation("MangaToTag")
+  mangas    Manga[]  @relation("MangaToTag") // Add matching relation name
   createdAt DateTime @default(now())
 }
 

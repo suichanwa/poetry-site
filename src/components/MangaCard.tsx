@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
-import { Eye, Heart, Clock, BookOpen } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Eye, Heart, Clock, BookOpen, User } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 
 interface MangaCardProps {
@@ -62,7 +62,13 @@ export function MangaCard({ manga, onMangaClick }: MangaCardProps) {
         {/* Author Info */}
         <div className="flex items-center gap-2 mb-2">
           <Avatar className="w-6 h-6">
-            <img src={manga.author.avatar} alt={manga.author.name} />
+            {manga.author.avatar ? (
+              <AvatarImage src={manga.author.avatar} alt={manga.author.name} />
+            ) : (
+              <AvatarFallback>
+                <User className="w-4 h-4" />
+              </AvatarFallback>
+            )}
           </Avatar>
           <span className="text-sm opacity-90">{manga.author.name}</span>
         </div>

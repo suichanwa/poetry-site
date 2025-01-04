@@ -57,11 +57,13 @@ export function PoemFilters({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setShowFilters]);
 
-  const handleMangaSubmit = (manga: any) => {
-    console.log("New manga:", manga);
+    const handleMangaSubmit = (manga: any) => {
+    if (onAddManga) {
+      onAddManga(manga); // Only call if the function exists
+    }
     setIsMangaModalOpen(false);
-    onAddManga();
   };
+
 
   const handleLightNovelSubmit = (lightNovel: any) => {
     console.log("New light novel:", lightNovel);

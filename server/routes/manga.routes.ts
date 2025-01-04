@@ -1,16 +1,47 @@
 // server/routes/manga.routes.ts
 
 import { Router } from 'express';
+import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { processImages, validateImage } from '../middleware/imageProcessing.middleware';
 import multer from 'multer';
 import path from 'path';
 
 const router = Router();
 const prisma = new PrismaClient();
 
-// Configure multer for file uploads
+const createUploadDirectories = () => {
+  const dirs = [
+    'uploads/manga/covers',
+    'uploads/manga/chapters'
+  ];
+
+  dirs.forEach(dir => {
+    const fullPath = path.join(process.cwd(), dir);
+    if (!fs.existsSync(fullPath)) {
+      fs.mkdirSync(fullPath, { recursive: true });
+    }
+  });
+};
+
+createUploadDirectories();
+
 const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = file.fieldname === 'coverImage' 
+      ? path.join(process.cwd(), 'uploads/manga/covers')
+      : path.join(process.cwd(), 'uploads/manga/chapters');
+    
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
+  }
+});
+
+const coverStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/manga/covers/');
   },
@@ -20,13 +51,16 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
-  storage,
+const uploadCover = multer({
+  storage: coverStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
-      cb(new Error('Not an image! Please upload an image.'));
+      cb(new Error('Not an image! Please upload image files only.'));
     }
   }
 });
@@ -43,6 +77,9 @@ const chapterStorage = multer.diskStorage({
 
 const uploadChapterPages = multer({
   storage: chapterStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
@@ -52,24 +89,57 @@ const uploadChapterPages = multer({
   }
 });
 
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+}).fields([
+  { name: 'coverImage', maxCount: 1 },
+  { name: 'chapterPages', maxCount: 50 }
+]);
+
+
 // Create new manga
-router.post('/', authMiddleware, upload.single('coverImage'), async (req: any, res) => {
+router.post('/', authMiddleware, upload, async (req: any, res) => {
   try {
-    const { title, description, tags } = req.body;
-    const coverImage = req.file ? req.file.path : null;
-    const parsedTags = JSON.parse(tags || '[]');
+    const { title, description, chapterTitle } = req.body;
+    const tags = JSON.parse(req.body.tags || '[]');
+
+    if (!req.files?.coverImage?.[0] || !req.files?.chapterPages) {
+      return res.status(400).json({ error: 'Missing required files' });
+    }
 
     const manga = await prisma.manga.create({
       data: {
         title,
         description,
-        coverImage,
+        coverImage: req.files.coverImage[0].path,
         authorId: req.user.id,
         tags: {
-          connectOrCreate: parsedTags.map((tag: string) => ({
+          connectOrCreate: tags.map((tag: string) => ({
             where: { name: tag },
             create: { name: tag }
           }))
+        },
+        chapters: {
+          create: {
+            title: chapterTitle,
+            orderIndex: 1,
+            pages: {
+              create: req.files.chapterPages.map((file: Express.Multer.File, index: number) => ({
+                imageUrl: file.path,
+                pageNumber: index + 1
+              }))
+            }
+          }
         }
       },
       include: {
@@ -77,11 +147,15 @@ router.post('/', authMiddleware, upload.single('coverImage'), async (req: any, r
           select: {
             id: true,
             name: true,
-            email: true,
             avatar: true
           }
         },
-        tags: true
+        tags: true,
+        chapters: {
+          include: {
+            pages: true
+          }
+        }
       }
     });
 
@@ -91,7 +165,6 @@ router.post('/', authMiddleware, upload.single('coverImage'), async (req: any, r
     res.status(500).json({ error: 'Failed to create manga' });
   }
 });
-
 // Get all manga
 router.get('/', async (req, res) => {
   try {
@@ -164,7 +237,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update manga
-router.put('/:id', authMiddleware, upload.single('coverImage'), async (req: any, res) => {
+router.put('/:id', authMiddleware, uploadCover.single('coverImage'), async (req: any, res) => {
   try {
     const { id } = req.params;
     const { title, description, tags } = req.body;
