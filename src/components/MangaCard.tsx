@@ -35,6 +35,15 @@ export function MangaCard({ manga, onMangaClick }: MangaCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const latestChapter = manga.chapters[manga.chapters.length - 1];
 
+  // Function to get proper image URL
+  const getImageUrl = (path: string) => {
+    if (!path) return '/placeholder.png';
+    if (path.startsWith('http')) return path;
+    // Remove the server path prefix and fix slashes
+    const cleanPath = path.replace(/^.*[\/\\]uploads[\/\\]/, 'uploads/').replace(/\\/g, '/');
+    return `http://localhost:3000/${cleanPath}`;
+  };
+
   return (
     <Card 
       className="relative overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-lg"
@@ -45,11 +54,15 @@ export function MangaCard({ manga, onMangaClick }: MangaCardProps) {
       {/* Cover Image */}
       <div className="relative aspect-[3/4] overflow-hidden">
         <img
-          src={manga.coverImage}
+          src={getImageUrl(manga.coverImage)}
           alt={manga.title}
           className={`w-full h-full object-cover transition-transform duration-300 ${
             isHovered ? 'scale-110' : 'scale-100'
           }`}
+          onError={(e) => {
+            console.error('Error loading image:', manga.coverImage);
+            e.currentTarget.src = '/placeholder.png';
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
       </div>
@@ -63,7 +76,10 @@ export function MangaCard({ manga, onMangaClick }: MangaCardProps) {
         <div className="flex items-center gap-2 mb-2">
           <Avatar className="w-6 h-6">
             {manga.author.avatar ? (
-              <AvatarImage src={manga.author.avatar} alt={manga.author.name} />
+              <AvatarImage 
+                src={getImageUrl(manga.author.avatar)} 
+                alt={manga.author.name} 
+              />
             ) : (
               <AvatarFallback>
                 <User className="w-4 h-4" />
@@ -120,4 +136,4 @@ export function MangaCard({ manga, onMangaClick }: MangaCardProps) {
       </div>
     </Card>
   );
-}
+}   

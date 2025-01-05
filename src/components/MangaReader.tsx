@@ -1,5 +1,4 @@
 // src/components/MangaReader.tsx
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -11,7 +10,10 @@ import {
   ChevronFirst,
   ChevronLast,
   Maximize2,
-  Minimize2
+  Minimize2,
+  X,
+  Layout,
+  ScrollText
 } from "lucide-react";
 
 interface MangaReaderProps {
@@ -29,36 +31,49 @@ interface MangaReaderProps {
   onClose: () => void;
 }
 
+type ViewMode = 'paged' | 'scroll';
+
 export function MangaReader({ pages, currentChapter, onChapterChange, onClose }: MangaReaderProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [scale, setScale] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('paged');
   const readerRef = useRef<HTMLDivElement>(null);
 
-  // Handle keyboard navigation
+  // Function to get proper image URL
+  const getImageUrl = (path: string) => {
+    if (!path) return '/placeholder.png';
+    if (path.startsWith('http')) return path;
+    const cleanPath = path.replace(/^.*[\/\\]uploads[\/\\]/, 'uploads/').replace(/\\/g, '/');
+    return `http://localhost:3000/${cleanPath}`;
+  };
+
+  // Handle keyboard navigation (only in paged mode)
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      switch(e.key) {
-        case "ArrowRight":
-          handleNextPage();
-          break;
-        case "ArrowLeft":
-          handlePrevPage();
-          break;
-        case "f":
-          toggleFullscreen();
-          break;
-        case "Escape":
-          if (isFullscreen) {
+      if (viewMode === 'paged') {
+        switch(e.key) {
+          case "ArrowRight":
+            handleNextPage();
+            break;
+          case "ArrowLeft":
+            handlePrevPage();
+            break;
+          case "f":
             toggleFullscreen();
-          }
-          break;
+            break;
+          case "Escape":
+            if (isFullscreen) {
+              toggleFullscreen();
+            }
+            break;
+        }
       }
     };
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [currentPage, isFullscreen]);
+  }, [currentPage, isFullscreen, viewMode]);
 
   const handleNextPage = () => {
     if (currentPage < pages.length - 1) {
@@ -94,11 +109,14 @@ export function MangaReader({ pages, currentChapter, onChapterChange, onClose }:
     }
   };
 
+  const toggleViewMode = () => {
+    setViewMode(prev => prev === 'paged' ? 'scroll' : 'paged');
+    setCurrentPage(0); // Reset to first page when switching modes
+    setScale(1); // Reset zoom when switching modes
+  };
+
   return (
-    <div 
-      ref={readerRef}
-      className="fixed inset-0 bg-black/95 z-50 flex flex-col"
-    >
+    <div ref={readerRef} className="fixed inset-0 bg-black/95 z-50 flex flex-col">
       {/* Top Controls */}
       <div className="flex items-center justify-between p-4 bg-background/10 backdrop-blur-sm">
         <div className="flex items-center gap-2 text-white">
@@ -108,6 +126,7 @@ export function MangaReader({ pages, currentChapter, onChapterChange, onClose }:
             onClick={onClose}
             className="text-white hover:text-white/80"
           >
+            <X className="h-4 w-4 mr-2" />
             Close
           </Button>
           <span className="text-sm">
@@ -118,27 +137,43 @@ export function MangaReader({ pages, currentChapter, onChapterChange, onClose }:
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleZoomOut}
+            onClick={toggleViewMode}
             className="text-white hover:text-white/80"
           >
-            <ZoomOut className="h-4 w-4" />
+            {viewMode === 'paged' ? (
+              <ScrollText className="h-4 w-4" />
+            ) : (
+              <Layout className="h-4 w-4" />
+            )}
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={resetZoom}
-            className="text-white hover:text-white/80"
-          >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleZoomIn}
-            className="text-white hover:text-white/80"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </Button>
+          {viewMode === 'paged' && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleZoomOut}
+                className="text-white hover:text-white/80"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={resetZoom}
+                className="text-white hover:text-white/80"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleZoomIn}
+                className="text-white hover:text-white/80"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+            </>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -155,86 +190,114 @@ export function MangaReader({ pages, currentChapter, onChapterChange, onClose }:
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto relative">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <img
-            src={pages[currentPage].imageUrl}
-            alt={`Page ${pages[currentPage].pageNumber}`}
-            style={{ 
-              transform: `scale(${scale})`,
-              transition: 'transform 0.2s ease-in-out'
-            }}
-            className="max-h-full object-contain"
-          />
-        </div>
+      {viewMode === 'paged' ? (
+        // Paged View
+        <div className="flex-1 overflow-hidden relative">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <img
+              src={getImageUrl(pages[currentPage].imageUrl)}
+              alt={`Page ${pages[currentPage].pageNumber}`}
+              style={{ 
+                transform: `scale(${scale})`,
+                transition: 'transform 0.2s ease-in-out'
+              }}
+              className="max-h-full object-contain"
+              onError={(e) => {
+                console.error('Error loading page:', pages[currentPage].imageUrl);
+                e.currentTarget.src = '/placeholder.png';
+              }}
+            />
+          </div>
 
-        {/* Navigation Overlays */}
-        <div className="absolute inset-y-0 left-0 w-1/4 flex items-center">
-          <Button
-            variant="ghost"
-            className="h-full w-full opacity-0 hover:opacity-100 transition-opacity"
-            onClick={handlePrevPage}
-            disabled={currentPage === 0}
-          >
-            <ChevronLeft className="h-8 w-8 text-white" />
-          </Button>
+          {/* Navigation Overlays */}
+          <div className="absolute inset-y-0 left-0 w-1/4 flex items-center">
+            <Button
+              variant="ghost"
+              className="h-full w-full opacity-0 hover:opacity-100 transition-opacity"
+              onClick={handlePrevPage}
+              disabled={currentPage === 0}
+            >
+              <ChevronLeft className="h-8 w-8 text-white" />
+            </Button>
+          </div>
+          <div className="absolute inset-y-0 right-0 w-1/4 flex items-center">
+            <Button
+              variant="ghost"
+              className="h-full w-full opacity-0 hover:opacity-100 transition-opacity"
+              onClick={handleNextPage}
+              disabled={currentPage === pages.length - 1}
+            >
+              <ChevronRight className="h-8 w-8 text-white" />
+            </Button>
+          </div>
         </div>
-        <div className="absolute inset-y-0 right-0 w-1/4 flex items-center">
-          <Button
-            variant="ghost"
-            className="h-full w-full opacity-0 hover:opacity-100 transition-opacity"
-            onClick={handleNextPage}
-            disabled={currentPage === pages.length - 1}
-          >
-            <ChevronRight className="h-8 w-8 text-white" />
-          </Button>
+      ) : (
+        // Scroll View
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-4xl mx-auto py-4 space-y-4">
+            {pages.map((page) => (
+              <div key={page.id} className="flex justify-center">
+                <img
+                  src={getImageUrl(page.imageUrl)}
+                  alt={`Page ${page.pageNumber}`}
+                  className="max-w-full h-auto"
+                  onError={(e) => {
+                    console.error('Error loading page:', page.imageUrl);
+                    e.currentTarget.src = '/placeholder.png';
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Bottom Controls */}
-      <div className="p-4 bg-background/10 backdrop-blur-sm flex items-center justify-between">
-        <div className="text-white text-sm">
-          Page {currentPage + 1} of {pages.length}
+      {/* Bottom Controls - Only show in paged mode */}
+      {viewMode === 'paged' && (
+        <div className="p-4 bg-background/10 backdrop-blur-sm flex items-center justify-between">
+          <div className="text-white text-sm">
+            Page {currentPage + 1} of {pages.length}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentPage(0)}
+              disabled={currentPage === 0}
+              className="text-white hover:text-white/80"
+            >
+              <ChevronFirst className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handlePrevPage}
+              disabled={currentPage === 0}
+              className="text-white hover:text-white/80"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={currentPage === pages.length - 1}
+              className="text-white hover:text-white/80"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentPage(pages.length - 1)}
+              disabled={currentPage === pages.length - 1}
+              className="text-white hover:text-white/80"
+            >
+              <ChevronLast className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setCurrentPage(0)}
-            disabled={currentPage === 0}
-            className="text-white hover:text-white/80"
-          >
-            <ChevronFirst className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handlePrevPage}
-            disabled={currentPage === 0}
-            className="text-white hover:text-white/80"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleNextPage}
-            disabled={currentPage === pages.length - 1}
-            className="text-white hover:text-white/80"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setCurrentPage(pages.length - 1)}
-            disabled={currentPage === pages.length - 1}
-            className="text-white hover:text-white/80"
-          >
-            <ChevronLast className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
