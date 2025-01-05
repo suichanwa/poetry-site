@@ -1,3 +1,4 @@
+// src/components/PoemFilters.tsx
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,8 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { AddMangaModal } from "@/components/AddMangaModal";
-import { AddLightNovelModal } from "@/components/AddLightNovelModal";
+import { AddLightNovelModal } from "@/components/lightnovel/AddLightNovelModal"; // Updated import path
+import type { LightNovel } from "@/types/lightNovel";
 
 interface PoemFiltersProps {
   searchQuery: string;
@@ -22,9 +24,9 @@ interface PoemFiltersProps {
   toggleTag: (tag: string) => void;
   clearFilters: () => void;
   onAddPoem: () => void;
-  onAddManga: () => void;
+  onAddManga: (manga: any) => void;
   onAddBook: () => void;
-  onAddLightNovel: () => void;
+  onAddLightNovel: (lightNovel: LightNovel) => void;
 }
 
 export function PoemFilters({
@@ -57,18 +59,18 @@ export function PoemFilters({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setShowFilters]);
 
-    const handleMangaSubmit = (manga: any) => {
+  const handleMangaSubmit = (manga: any) => {
     if (onAddManga) {
-      onAddManga(manga); // Only call if the function exists
+      onAddManga(manga);
     }
     setIsMangaModalOpen(false);
   };
 
-
-  const handleLightNovelSubmit = (lightNovel: any) => {
-    console.log("New light novel:", lightNovel);
+  const handleLightNovelSubmit = (lightNovel: LightNovel) => {
+    if (onAddLightNovel) {
+      onAddLightNovel(lightNovel);
+    }
     setIsLightNovelModalOpen(false);
-    onAddLightNovel();
   };
 
   return (

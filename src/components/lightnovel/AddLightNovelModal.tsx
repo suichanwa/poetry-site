@@ -1,67 +1,94 @@
 import { useState } from "react";
 import { Modal, DialogTitle, DialogDescription } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Upload, FileText, Type, Text, Tag as TagIcon, X, Loader2, FileIcon } from "lucide-react";
-import { PoemTags } from "@/components/subcomponents/PoemTags";
+import { FileText, Loader2 } from "lucide-react";
+import { LightNovelBasicInfo } from "@/components/lightnovel/LightNovelBasicInfo";
+import { LightNovelCoverUpload } from "@/components/lightnovel/LightNovelCoverUpload";
+import { LightNovelChapterContent } from "@/components/lightnovel/LightNovelChapterContent";
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
+
+interface LightNovel {
+  id: number;
+  title: string;
+  description: string;
+  coverImage: string;
+  author: {
+    id: number;
+    name: string;
+    avatar?: string;
+  };
+  tags: { name: string }[];
+  chapters: Array<{
+    id: number;
+    title: string;
+    content: string;
+    orderIndex: number;
+  }>;
+}
 
 interface AddLightNovelModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddLightNovel: (lightNovel: {
-    title: string;
-    description: string;
-    tags: string[];
-    coverFile: File;
-  }) => void;
+  onAddLightNovel: (lightNovel: LightNovel) => void;
 }
 
 export function AddLightNovelModal({ isOpen, onClose, onAddLightNovel }: AddLightNovelModalProps) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [chapterTitle, setChapterTitle] = useState("");
+  const [chapterContent, setChapterContent] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
 
   const resetForm = () => {
     setTitle("");
     setDescription("");
     setTags([]);
     setCoverFile(null);
+    setChapterTitle("");
+    setChapterContent("");
     setError("");
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (file.type.startsWith('image/')) {
-      setCoverFile(file);
-    } else {
-      setError('Only image files are allowed for the cover');
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !description.trim() || !coverFile) {
-      setError("Please fill in all required fields and upload a cover image");
+
+    // Check authentication
+    if (!user) {
+      navigate('/login');
       return;
     }
-    
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError("Please log in again");
+      navigate('/login');
+      return;
+    }
+
+    // Validate inputs
+    if (!title.trim() || !description.trim() || !coverFile || !chapterTitle || !chapterContent) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
     setIsSubmitting(true);
     setError("");
 
     try {
       const formData = new FormData();
-      formData.append('title', title);
-      formData.append('description', description);
+      formData.append('title', title.trim());
+      formData.append('description', description.trim());
       formData.append('tags', JSON.stringify(tags));
       formData.append('coverFile', coverFile);
+      formData.append('chapterTitle', chapterTitle.trim());
+      formData.append('chapterContent', chapterContent.trim());
 
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3000/api/lightnovels', {
         method: 'POST',
         headers: {
@@ -69,6 +96,12 @@ export function AddLightNovelModal({ isOpen, onClose, onAddLightNovel }: AddLigh
         },
         body: formData
       });
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+        return;
+      }
 
       if (!response.ok) {
         const data = await response.json();
@@ -107,77 +140,43 @@ export function AddLightNovelModal({ isOpen, onClose, onAddLightNovel }: AddLigh
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 pt-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <Type className="w-4 h-4 text-muted-foreground" />
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Light Novel Title"
-                required
-                disabled={isSubmitting}
-              />
-            </div>
-          </div>
+          <LightNovelBasicInfo
+            title={title}
+            setTitle={setTitle}
+            description={description}
+            setDescription={setDescription}
+            tags={tags}
+            setTags={setTags}
+            isSubmitting={isSubmitting}
+          />
 
-          <div>
-            <div className="flex items-center gap-2">
-              <Text className="w-4 h-4 text-muted-foreground" />
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="min-h-[200px] resize-none"
-                placeholder="Light Novel Description"
-                required
-                disabled={isSubmitting}
-              />
-            </div>
-          </div>
+          <LightNovelCoverUpload
+            coverFile={coverFile}
+            setCoverFile={setCoverFile}
+            isSubmitting={isSubmitting}
+            onError={setError}
+          />
 
-          <div className="flex items-center gap-2">
-            <TagIcon className="w-4 h-4 text-muted-foreground" />
-            <PoemTags tags={tags} setTags={setTags} />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Upload className="w-4 h-4 text-muted-foreground" />
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
-              required
-              disabled={isSubmitting}
-            />
-          </div>
-
-          {coverFile && (
-            <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-              <FileIcon className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm">{coverFile.name}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setCoverFile(null)}
-                className="ml-auto"
-              >
-                <X className="w-3 h-3" />
-              </Button>
-            </div>
-          )}
+          <LightNovelChapterContent
+            chapterTitle={chapterTitle}
+            setChapterTitle={setChapterTitle}
+            chapterContent={chapterContent}
+            setChapterContent={setChapterContent}
+            isSubmitting={isSubmitting}
+          />
 
           <div className="sticky bottom-0 pt-4 pb-6 bg-background border-t flex justify-end gap-2">
             <Button 
               type="button" 
               variant="outline" 
-              onClick={onClose} 
+              onClick={onClose}
               disabled={isSubmitting}
             >
               Cancel
             </Button>
             <Button 
               type="submit"
-              disabled={isSubmitting || !title.trim() || !description.trim() || !coverFile}
+              disabled={isSubmitting || !title.trim() || !description.trim() || !coverFile || !chapterTitle || !chapterContent}
             >
               {isSubmitting ? (
                 <>
