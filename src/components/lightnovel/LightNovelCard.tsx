@@ -35,20 +35,20 @@ export function LightNovelCard({ novel, onNovelClick }: LightNovelCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const latestChapter = novel.chapters[novel.chapters.length - 1];
 
-  // Function to get proper image URL
-// src/components/lightnovel/LightNovelCard.tsx
+    // src/components/lightnovel/LightNovelCard.tsx
 const getImageUrl = (path: string) => {
   if (!path) return '/placeholder.png';
   if (path.startsWith('http')) return path;
-  
-  // Convert Windows path to URL path and extract relevant part
-  const normalizedPath = path.replace(/\\/g, '/');
-  const uploadsIndex = normalizedPath.indexOf('uploads/');
-  
-  if (uploadsIndex === -1) return '/placeholder.png';
-  
-  const relativePath = normalizedPath.slice(uploadsIndex);
-  return `http://localhost:3000/${relativePath}`;
+
+  // Remove the full file system path and keep only what's after 'uploads'
+  const uploadsPath = path.split('uploads').pop();
+  if (!uploadsPath) return '/placeholder.png';
+
+  // Clean up the path and ensure forward slashes
+  const cleanPath = uploadsPath.replace(/\\/g, '/');
+
+  // Construct the final URL
+  return `http://localhost:3000/uploads${cleanPath}`;
 };
 
   return (

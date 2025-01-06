@@ -1,61 +1,67 @@
-import { ReactNode } from 'react';
-import { MobileNavBar } from './navigation/MobileNavBar';
-import BurgerMenu from './BurgerMenu';
-import { useAuth } from '@/context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { User } from 'lucide-react';
-import { Snowfall } from '@/components/Snowfall';
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { SideMenu } from "@/components/SideMenu";
+import { MobileNavBar } from "@/components/navigation/MobileNavBar";
+import { Snowfall } from "@/components/Snowfall";
+import { User } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface LayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const getImageUrl = (path: string) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `http://localhost:3000${path}`;
+  };
+
   return (
     <div className="theme-winter">
       <Snowfall />
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center justify-between">
-          <div className="hidden md:flex"> {/* Changed from sm:flex to md:flex */}
-            <BurgerMenu />
-          </div>
-
-          {user && (
-            <div className="flex items-center gap-2 ml-auto">
-              <Button 
-                variant="ghost" 
-                className="flex items-center gap-2 hover:bg-accent"
-                onClick={() => navigate(`/profile/${user.id}`)}
-              >
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                  {user.avatar ? (
-                    <img
-                      src={`http://localhost:3000${user.avatar}`}
-                      alt={user.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </div>
-                <span className="font-medium hidden md:inline-block">
-                  {user.name}
-                </span>
-              </Button>
+      <div className="min-h-screen bg-background">
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container flex h-14 items-center justify-between">
+            <div className="hidden md:flex">
+              <SideMenu />
             </div>
-          )}
-        </div>
-      </header>
-      <main className="pb-20 md:pb-0"> {/* Increased bottom padding for mobile */}
-        {children}
-      </main>
-      <MobileNavBar />
-    </div>
+
+            {user && (
+              <div className="flex items-center gap-2 ml-auto">
+                <Button 
+                  variant="ghost" 
+                  className="flex items-center gap-2 hover:bg-accent"
+                  onClick={() => navigate(`/profile/${user.id}`)}
+                >
+                  <Avatar className="h-8 w-8">
+                    {user.avatar ? (
+                      <AvatarImage
+                        src={getImageUrl(user.avatar)}
+                        alt={user.name}
+                      />
+                    ) : (
+                      <AvatarFallback>
+                        <User className="h-4 w-4" />
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <span className="hidden sm:inline font-medium">
+                    {user.name}
+                  </span>
+                </Button>
+              </div>
+            )}
+          </div>
+        </header>
+
+        <main>{children}</main>
+        <MobileNavBar />
+      </div>
     </div>
   );
 }
