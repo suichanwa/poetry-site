@@ -53,10 +53,8 @@ export function LightNovelBasicInfo({
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-2">Tags</label>
-        <PoemTags tags={tags} setTags={setTags} />
-      </div>
+      {/* Remove the label here since PoemTags already includes it */}
+      <PoemTags tags={tags} setTags={setTags} />
     </div>
   );
 }
