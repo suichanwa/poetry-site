@@ -40,7 +40,6 @@ export function MangaReader({ pages, currentChapter, onChapterChange, onClose }:
   const [viewMode, setViewMode] = useState<ViewMode>('paged');
   const readerRef = useRef<HTMLDivElement>(null);
 
-  // Function to get proper image URL
   const getImageUrl = (path: string) => {
     if (!path) return '/placeholder.png';
     if (path.startsWith('http')) return path;
@@ -48,7 +47,6 @@ export function MangaReader({ pages, currentChapter, onChapterChange, onClose }:
     return `http://localhost:3000/${cleanPath}`;
   };
 
-  // Handle keyboard navigation (only in paged mode)
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (viewMode === 'paged') {
@@ -111,8 +109,8 @@ export function MangaReader({ pages, currentChapter, onChapterChange, onClose }:
 
   const toggleViewMode = () => {
     setViewMode(prev => prev === 'paged' ? 'scroll' : 'paged');
-    setCurrentPage(0); // Reset to first page when switching modes
-    setScale(1); // Reset zoom when switching modes
+    setCurrentPage(0);
+    setScale(1);
   };
 
   return (
@@ -233,14 +231,14 @@ export function MangaReader({ pages, currentChapter, onChapterChange, onClose }:
         </div>
       ) : (
         // Scroll View
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
+          <div className="max-w-4xl mx-auto">
             {pages.map((page) => (
               <div key={page.id} className="flex justify-center">
                 <img
                   src={getImageUrl(page.imageUrl)}
                   alt={`Page ${page.pageNumber}`}
-                  className="max-w-full h-auto"
+                  className="max-w-full w-full h-auto"
                   onError={(e) => {
                     console.error('Error loading page:', page.imageUrl);
                     e.currentTarget.src = '/placeholder.png';

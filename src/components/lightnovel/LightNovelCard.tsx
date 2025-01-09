@@ -1,4 +1,5 @@
-// src/components/LightNovelCard.tsx
+// src/components/lightnovel/LightNovelCard.tsx
+
 import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,25 +32,18 @@ interface LightNovelCardProps {
   onNovelClick: (novelId: number) => void;
 }
 
+// Function to get proper image URL
+function getImageUrl(path: string) {
+  if (!path) return '/placeholder.png';
+  if (path.startsWith('http')) return path;
+  // Remove the server path prefix and fix slashes
+  const cleanPath = path.replace(/^.*[\/\\]uploads[\/\\]/, 'uploads/').replace(/\\/g, '/');
+  return `http://localhost:3000/${cleanPath}`;
+}
+
 export function LightNovelCard({ novel, onNovelClick }: LightNovelCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const latestChapter = novel.chapters[novel.chapters.length - 1];
-
-    // src/components/lightnovel/LightNovelCard.tsx
-const getImageUrl = (path: string) => {
-  if (!path) return '/placeholder.png';
-  if (path.startsWith('http')) return path;
-
-  // Remove the full file system path and keep only what's after 'uploads'
-  const uploadsPath = path.split('uploads').pop();
-  if (!uploadsPath) return '/placeholder.png';
-
-  // Clean up the path and ensure forward slashes
-  const cleanPath = uploadsPath.replace(/\\/g, '/');
-
-  // Construct the final URL
-  return `http://localhost:3000/uploads${cleanPath}`;
-};
 
   return (
     <Card 

@@ -19,19 +19,23 @@ const prisma = new PrismaClient();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configure multer for cover image uploads
+// In the multer storage configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadsDir = path.join(__dirname, '../../uploads/novels/covers');
+    const uploadsDir = path.join(process.cwd(), 'uploads/novels/covers');
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    cb(null, `coverImage-${Date.now()}-${Math.random() * 1000000}${path.extname(file.originalname)}`);
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+    const ext = path.extname(file.originalname);
+    cb(null, `coverImage-${uniqueSuffix}${ext}`);
   }
 });
+
+// In your POST route handler, convert the full path to a relative
 
 const uploadCover = multer({ 
   storage,
@@ -64,10 +68,15 @@ router.post('/',
         return res.status(400).json({ error: 'Description is required' });
       }
 
+      // Create relative path for storage
+      const relativePath = req.file 
+        ? `/uploads/novels/covers/${path.basename(req.file.path)}`
+        : null;
+
       const novelData: LightNovelCreateData = {
         title: title.trim(),
         description: description.trim(),
-        coverImage: req.file?.path,
+        coverImage: relativePath, // Store relative path instead of full path
         authorId: req.user.id,
         tags: parsedTags
       };

@@ -1,3 +1,4 @@
+// src/components/lightnovel/AddLightNovelModal.tsx
 import { useState } from "react";
 import { Modal, DialogTitle, DialogDescription } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -58,7 +59,6 @@ export function AddLightNovelModal({ isOpen, onClose, onAddLightNovel }: AddLigh
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Check authentication
     if (!user) {
       navigate('/login');
       return;
@@ -71,7 +71,6 @@ export function AddLightNovelModal({ isOpen, onClose, onAddLightNovel }: AddLigh
       return;
     }
 
-    // Validate inputs
     if (!title.trim() || !description.trim() || !coverFile || !chapterTitle || !chapterContent) {
       setError("Please fill in all required fields");
       return;

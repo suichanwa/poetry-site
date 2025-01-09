@@ -1,3 +1,5 @@
+// src/pages/ProfileSetup/ProfileSetup.tsx
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ProfileHeader } from "./ProfileHeader";
@@ -38,51 +40,59 @@ export default function ProfileSetupPage() {
     navigate('/');
   };
 
- const handleUpload = async () => {
-  if (!image || !user) return;
+  const handleUpload = async () => {
+    if (!image || !user) return;
 
-  setIsUploading(true);
-  setError("");
-  
-  try {
-    // First upload the avatar
-    const formData = new FormData();
-    formData.append('avatar', image);
-
-    const response = await fetch(`http://localhost:3000/api/users/${user.id}/avatar`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error uploading avatar:', errorText);
-      setError(errorText);
-      return;
-    }
-
-    const data = await response.json();
+    setIsUploading(true);
+    setError("");
     
-    // Update the user's avatar in context
-    if (user && data.avatar) {
-      updateUser({ 
-        avatar: data.avatar,
-        name: name || user.name,
-        bio: bio || user.bio
-      });
-    }
+    try {
+      // First upload the avatar
+      const formData = new FormData();
+      formData.append('avatar', image);
+      formData.append('name', name);
+      formData.append('bio', bio);
 
-    navigate('/');
-  } catch (error) {
-    console.error('Error uploading avatar:', error);
-    setError(error instanceof Error ? error.message : 'Failed to upload avatar');
-  } finally {
-    setIsUploading(false);
-  }
-}; 
+      const response = await fetch(`http://localhost:3000/api/users/${user.id}/avatar`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error uploading avatar:', errorText);
+        setError(errorText);
+        return;
+      }
+
+      const data = await response.json();
+      
+      // Update the user's avatar and bio in context
+      if (user && data.avatar) {
+        updateUser({ 
+          avatar: data.avatar,
+          name: name || user.name,
+          bio: bio || user.bio
+        });
+      }
+      
+      setSuccess("Profile updated successfully");
+      setError("");
+      
+      // Reset form
+      setImage(null);
+      setPreview(null);
+      navigate('/');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      setError("Failed to upload avatar");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen p-6">

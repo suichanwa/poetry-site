@@ -476,4 +476,35 @@ router.delete('/:id/chapters/:chapterId', authMiddleware, async (req: any, res) 
   }
 });
 
+router.get('/recommended', async (req, res) => {
+  try {
+    const recommendedMangas = await prisma.manga.findMany({
+      take: 10, // Limit to 10 recommended mangas
+      orderBy: {
+        createdAt: 'desc', // Example ordering by creation date
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+        tags: true,
+        chapters: {
+          orderBy: {
+            orderIndex: 'asc',
+          },
+        },
+      },
+    });
+
+    res.json(recommendedMangas);
+  } catch (error) {
+    console.error('Error fetching recommended mangas:', error);
+    res.status(500).json({ error: 'Failed to fetch recommended mangas' });
+  }
+});
+
 export default router;

@@ -11,6 +11,7 @@ import { ArrowLeft, Heart, Eye, Clock, User, Share2, Plus } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from "@/context/AuthContext";
 import { AddChapterModal } from "@/components/AddChapterModal";
+import { MangaGrid } from "@/components/MangaGrid";
 
 interface Chapter {
   id: number;
@@ -51,6 +52,8 @@ export default function MangaDetailPage() {
   const [currentChapter, setCurrentChapter] = useState<Chapter | null>(null);
   const [isLiked, setIsLiked] = useState(false);
   const [isAddChapterOpen, setIsAddChapterOpen] = useState(false);
+  const [recommendedMangas, setRecommendedMangas] = useState<MangaDetail[]>([]);
+  const [recommendedError, setRecommendedError] = useState<string>("");
 
   // Function to get proper image URL
   const getImageUrl = (path: string) => {
@@ -82,8 +85,21 @@ export default function MangaDetailPage() {
       }
     };
 
+    const fetchRecommendedMangas = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/manga/recommended`);
+        if (!response.ok) throw new Error('Failed to fetch recommended mangas');
+        const data = await response.json();
+        setRecommendedMangas(data);
+      } catch (error) {
+        setRecommendedError('Failed to load recommended mangas');
+        console.error('Error fetching recommended mangas:', error);
+      }
+    };
+
     if (id) {
       fetchMangaDetail();
+      fetchRecommendedMangas();
     }
   }, [id]);
 
@@ -274,6 +290,16 @@ export default function MangaDetailPage() {
         onChapterAdded={handleChapterAdded}
         currentChaptersCount={manga.chapters.length}
       />
+
+      {/* Recommended Mangas */}
+      <div className="mt-8">
+        <h2 className="text-2xl font-semibold mb-4">Recommended Mangas</h2>
+        {recommendedError ? (
+          <div className="text-red-500">{recommendedError}</div>
+        ) : (
+          <MangaGrid mangas={recommendedMangas} onMangaClick={(mangaId) => navigate(`/manga/${mangaId}`)} />
+        )}
+      </div>
     </div>
   );
 }

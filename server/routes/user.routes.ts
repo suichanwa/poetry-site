@@ -62,7 +62,6 @@ const uploadBanner = multer({
 
 const upload = multer({ storage });
 
-// Avatar upload endpoint
 router.post('/:id/avatar', authMiddleware, upload.single('avatar'), async (req: any, res) => {
   try {
     if (!req.file) {
@@ -74,17 +73,17 @@ router.post('/:id/avatar', authMiddleware, upload.single('avatar'), async (req: 
     // Create relative path for storage - this should match how you're trying to access it
     const relativePath = `/uploads/${path.basename(req.file.path)}`;
 
-    // Update user's avatar in database
+    // Update user's avatar and bio in database
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { avatar: relativePath }  // Save the relative path
+      data: { 
+        avatar: relativePath,
+        name: req.body.name,
+        bio: req.body.bio
+      }
     });
 
-    res.json({
-      avatar: relativePath,
-      message: 'Avatar uploaded successfully'
-    });
-
+    res.json(updatedUser);
   } catch (error) {
     console.error('Avatar upload error:', error);
     res.status(500).json({ error: 'Failed to upload avatar' });
