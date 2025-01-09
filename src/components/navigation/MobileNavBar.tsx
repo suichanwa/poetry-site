@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, User, Users, Bell, Bookmark } from 'lucide-react';
+import { Home, User, Users, MessageSquare, Bell, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -47,9 +47,7 @@ export function MobileNavBar() {
     };
 
     fetchNotifications();
-    // Set up polling for notifications
     const interval = setInterval(fetchNotifications, 30000); // Check every 30 seconds
-
     return () => clearInterval(interval);
   }, [user]);
 
@@ -69,8 +67,12 @@ export function MobileNavBar() {
       path: '/communities' 
     },
     { 
+      icon: MessageSquare,
+      path: '/chats'  // Updated to use chats instead of messages
+    },
+    { 
       icon: Bell,
-      path: '/notifications', 
+      path: '/notifications',
       badge: unreadCount > 0 ? unreadCount : null
     },
     { 

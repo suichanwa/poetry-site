@@ -1,14 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Image, Paperclip, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { formatDistanceToNow } from 'date-fns';
 import { useWebSocket } from '@/hooks/useWebSocket';
-import { MessageStatus } from './MessageStatus';
-import { TypingIndicator } from './TypingIndicator';
+import { ChatHeader } from './ChatHeader';
+import { MessageList } from './MessageList';
+import { MessageInput } from './MessageInput';
 
 interface Message {
   id: number;
@@ -21,42 +17,84 @@ interface Message {
   fileName?: string;
 }
 
-interface ChatWindowProps {
-  chatId: number;
+interface Participant {
+  id: number;
+  name: string;
+  avatar?: string;
 }
 
-export function ChatWindow({ chatId }: ChatWindowProps) {
+interface ChatWindowProps {
+  chatId: number;
+  onBack?: () => void;
+}
+
+export function ChatWindow({ chatId, onBack }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [participant, setParticipant] = useState<Participant | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const messageEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user } = useAuth();
   const { ws, sendMessage, isConnected } = useWebSocket();
+  const messageIds = useRef<Set<number>>(new Set());
 
   useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const response = await fetch(`http://localhost:3000/api/chats/${chatId}/messages`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
-        if (!response.ok) throw new Error('Failed to fetch messages');
-        const data = await response.json();
-        setMessages(data.reverse());
-        scrollToBottom();
-      } catch (error) {
-        console.error('Error fetching messages:', error);
+  const fetchMessagesAndParticipant = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/chats/${chatId}/messages`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch messages');
       }
-    };
 
-    fetchMessages();
-  }, [chatId]);
+      const data = await response.json();
+      
+      // Fetch chat details to get participant information
+      const chatResponse = await fetch(`http://localhost:3000/api/chats/${chatId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!chatResponse.ok) {
+        throw new Error('Failed to fetch chat details');
+      }
+
+      const chatData = await chatResponse.json();
+      const otherParticipant = chatData.participants.find((p: any) => p.id !== user?.id);
+      
+      if (otherParticipant) {
+        setParticipant({
+          id: otherParticipant.id,
+          name: otherParticipant.name,
+          avatar: otherParticipant.avatar
+        });
+      }
+
+      if (Array.isArray(data)) {
+        messageIds.current.clear();
+        // Sort messages by createdAt in ascending order (oldest first)
+        const sortedMessages = data.sort((a, b) => 
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+        const uniqueMessages = sortedMessages.filter(msg => !messageIds.current.has(msg.id));
+        uniqueMessages.forEach(msg => messageIds.current.add(msg.id));
+        setMessages(uniqueMessages);
+      }
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+    }
+  };
+
+  fetchMessagesAndParticipant();
+}, [chatId, user?.id]);
 
   useEffect(() => {
     if (!ws) return;
@@ -66,9 +104,12 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
       
       switch (data.type) {
         case 'NEW_MESSAGE':
-          if (data.chatId === chatId) {
-            setMessages(prev => [...prev, data.message]);
-            scrollToBottom();
+          if (data.chatId === chatId && !messageIds.current.has(data.message.id)) {
+            setMessages(prev => {
+              const newMessages = [...prev, data.message];
+              messageIds.current.add(data.message.id);
+              return newMessages;
+            });
           }
           break;
         case 'TYPING':
@@ -91,7 +132,6 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
     };
 
     ws.addEventListener('message', handleMessage);
-
     return () => {
       ws.removeEventListener('message', handleMessage);
       if (typingTimeoutRef.current) {
@@ -99,31 +139,6 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
       }
     };
   }, [ws, chatId, user?.id]);
-
-  const scrollToBottom = () => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleTyping = () => {
-    if (!ws || !isConnected || !user) return;
-    
-    try {
-      sendMessage({
-        type: 'TYPING',
-        chatId,
-        userId: user.id
-      });
-    } catch (error) {
-      console.error('Error sending typing status:', error);
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-    }
-  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,132 +159,71 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to send message');
+        throw new Error('Failed to send message');
       }
-      
-      const message = await response.json();
-      setMessages(prev => [...prev, message]);
-      setNewMessage('');
 
-      // Notify other participants through WebSocket
+      const message = await response.json();
+      if (!messageIds.current.has(message.id)) {
+        setMessages(prev => {
+          const newMessages = [...prev, message];
+          messageIds.current.add(message.id);
+          return newMessages;
+        });
+      }
+
       sendMessage({
         type: 'NEW_MESSAGE',
         chatId,
         message
       });
-
-      scrollToBottom();
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
+      setNewMessage('');
       setIsSubmitting(false);
+    }
+  };
+
+  const handleTyping = () => {
+    if (!ws || !isConnected || !user) return;
+    sendMessage({ type: 'TYPING', chatId, userId: user.id });
+  };
+
+  const handleFileSelect = (file: File) => {
+    setSelectedFile(file);
+  };
+
+  const handleFileClear = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
   return (
     <Card className="h-[600px] flex flex-col">
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
-          {messages.map(message => (
-            <div
-              key={message.id}
-              className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[70%] rounded-lg p-3 ${
-                  message.senderId === user?.id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted'
-                }`}
-              >
-                {message.type === 'image' && message.fileUrl && (
-                  <img 
-                    src={`http://localhost:3000${message.fileUrl}`}
-                    alt="Message attachment"
-                    className="max-w-full rounded-lg mb-2"
-                  />
-                )}
-                {message.type === 'file' && message.fileUrl && (
-                  <a 
-                    href={`http://localhost:3000${message.fileUrl}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 mb-2 text-sm underline"
-                  >
-                    <Paperclip className="w-4 h-4" />
-                    {message.fileName}
-                  </a>
-                )}
-                <p>{message.content}</p>
-                <div className="flex items-center justify-between text-xs opacity-70 mt-1">
-                  <span>{formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}</span>
-                  {message.senderId === user?.id && (
-                    <MessageStatus status={message.read ? 'read' : 'sent'} />
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-          {isTyping && <TypingIndicator />}
-          <div ref={messageEndRef} />
-        </div>
-      </ScrollArea>
-      <div className="p-4 border-t">
-        <form onSubmit={handleSendMessage} className="space-y-2">
-          {selectedFile && (
-            <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-              <Paperclip className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm truncate">{selectedFile.name}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSelectedFile(null);
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                  }
-                }}
-                className="ml-auto"
-              >
-                <X className="w-3 h-3" />
-              </Button>
-            </div>
-          )}
-          <div className="flex items-center gap-2">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileSelect}
-              className="hidden"
-              accept="image/*,.pdf,.doc,.docx"
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isSubmitting}
-            >
-              <Image className="h-4 w-4" />
-            </Button>
-            <Input
-              value={newMessage}
-              onChange={(e) => {
-                setNewMessage(e.target.value);
-                handleTyping();
-              }}
-              placeholder="Type a message..."
-              className="flex-1"
-              disabled={isSubmitting}
-            />
-            <Button type="submit" size="icon" disabled={isSubmitting}>
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-        </form>
-      </div>
+      {participant && (
+        <ChatHeader
+          participant={participant}
+          isTyping={isTyping}
+          onBack={onBack}
+        />
+      )}
+      <MessageList
+        messages={messages}
+        isTyping={isTyping}
+        userId={user?.id}
+      />
+      <MessageInput
+        value={newMessage}
+        onChange={setNewMessage}
+        onSubmit={handleSendMessage}
+        onTyping={handleTyping}
+        selectedFile={selectedFile}
+        onFileSelect={handleFileSelect}
+        onFileClear={handleFileClear}
+        isSubmitting={isSubmitting}
+      />
     </Card>
   );
 }

@@ -65,24 +65,6 @@ export function SideMenu() {
               <Home className="mr-2 h-5 w-5" />
               {t("home")}
             </Button>
-
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start" 
-              onClick={() => navigate("/library")}
-            >
-              <Library className="mr-2 h-5 w-5" />
-              Library
-            </Button>
-
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start" 
-              onClick={() => navigate("/poems")}
-            >
-              <BookOpen className="mr-2 h-5 w-5" />
-              Poems
-            </Button>
           </div>
 
           {/* Auth Section */}
@@ -121,14 +103,6 @@ export function SideMenu() {
                 >
                   <Bell className="mr-2 h-5 w-5" />
                   Notifications
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start" 
-                  onClick={() => navigate("/messages")}
-                >
-                  <MessageSquare className="mr-2 h-5 w-5" />
-                  Messages
                 </Button>
                 <Button 
                   variant="ghost" 
