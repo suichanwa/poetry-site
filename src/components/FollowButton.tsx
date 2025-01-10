@@ -1,8 +1,10 @@
+// src/components/FollowButton.tsx
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { UserPlus, UserMinus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast'; // Fixed import path
 
 interface FollowButtonProps {
   userId: number;
@@ -15,10 +17,29 @@ export function FollowButton({ userId, initialIsFollowing = false, onFollowChang
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
-    setIsFollowing(initialIsFollowing);
-  }, [initialIsFollowing]);
+    const checkFollowStatus = async () => {
+      if (!user) return;
+      
+      try {
+        const response = await fetch(`http://localhost:3000/api/follow/${userId}/status`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to check follow status');
+        const data = await response.json();
+        setIsFollowing(data.isFollowing);
+      } catch (error) {
+        console.error('Error checking follow status:', error);
+      }
+    };
+
+    checkFollowStatus();
+  }, [userId, user]);
 
   const handleFollow = async () => {
     if (!user) {
@@ -39,15 +60,30 @@ export function FollowButton({ userId, initialIsFollowing = false, onFollowChang
         },
       });
 
+      const data = await response.json();
       if (!response.ok) {
-        throw new Error(await response.text());
+        throw new Error(data.error || 'Failed to update follow status');
       }
 
       const newFollowingState = !isFollowing;
       setIsFollowing(newFollowingState);
       onFollowChange?.(newFollowingState);
+
+      toast({
+        description: newFollowingState 
+          ? "You are now following this user" 
+          : "You have unfollowed this user",
+        duration: 3000
+      });
+
     } catch (error) {
       console.error('Follow action error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to update follow status',
+        duration: 3000
+      });
     } finally {
       setIsLoading(false);
     }

@@ -693,10 +693,11 @@ router.post('/:id/view', async (req, res) => {
 });
 
 // Add this route to get popular poems
-router.get('/popular', async (req, res) => {
+// Add this route to get popular poems
+router.get('/popular', async (_req, res) => {
   try {
     const popularPoems = await prisma.poem.findMany({
-      take: 5,
+      take: 5, // Limit to 5 poems
       orderBy: [
         { viewCount: 'desc' },
         { createdAt: 'desc' }
@@ -725,30 +726,27 @@ router.get('/popular', async (req, res) => {
   }
 });
 
-// Get poems from followed users
+// server/routes/poem.routes.ts
+// Add this route to fetch poems from followed users
+// Add this route to fetch poems from followed users
 router.get('/following', authMiddleware, async (req: any, res) => {
   try {
     const userId = req.user.id;
-
+    
+    // First get all users that the current user follows
     const following = await prisma.follow.findMany({
-      where: {
-        followerId: userId
-      },
-      select: {
-        followingId: true
-      }
+      where: { followerId: userId },
+      select: { followingId: true }
     });
 
     const followingIds = following.map(f => f.followingId);
 
+    // Then get poems from those users
     const poems = await prisma.poem.findMany({
       where: {
         authorId: {
           in: followingIds
         }
-      },
-      orderBy: {
-        createdAt: 'desc'
       },
       include: {
         author: {
@@ -765,13 +763,16 @@ router.get('/following', authMiddleware, async (req: any, res) => {
             comments: true
           }
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
 
     res.json(poems);
   } catch (error) {
     console.error('Error fetching following poems:', error);
-    res.status(500).json({ error: 'Failed to fetch following poems' });
+    res.status(500).json({ error: 'Failed to fetch poems from followed users' });
   }
 });
 

@@ -85,17 +85,20 @@ export default function MangaDetailPage() {
       }
     };
 
-    const fetchRecommendedMangas = async () => {
-      try {
-        const response = await fetch(`http://localhost:3000/api/manga/recommended`);
-        if (!response.ok) throw new Error('Failed to fetch recommended mangas');
-        const data = await response.json();
-        setRecommendedMangas(data);
-      } catch (error) {
-        setRecommendedError('Failed to load recommended mangas');
-        console.error('Error fetching recommended mangas:', error);
-      }
-    };
+const fetchRecommendedMangas = async () => {
+  try {
+    const response = await fetch(`http://localhost:3000/api/manga/recommended?excludeId=${id}`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to fetch recommended mangas');
+    }
+    const data = await response.json();
+    setRecommendedMangas(data);
+  } catch (error) {
+    console.error('Error fetching recommended mangas:', error);
+    setRecommendedError('Failed to load recommended mangas');
+  }
+};
 
     if (id) {
       fetchMangaDetail();

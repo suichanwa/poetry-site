@@ -3,12 +3,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
-import { ArrowLeft, Tag } from "lucide-react";
+import { ArrowLeft, Tag, Eye } from "lucide-react";
 import { PoemActions } from "@/components/subcomponents/PoemActions";
 import { PoemDetailHeader } from "@/components/subcomponents/PoemDetailHeader";
 import { PoemDetailComments } from "@/components/subcomponents/PoemDetailComments";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { format } from "date-fns";
 
 interface Poem {
   id: number;
@@ -38,6 +41,12 @@ interface Poem {
     alignment?: 'left' | 'center' | 'right';
     fontSize?: 'small' | 'medium' | 'large';
   };
+  _count?: {
+    likes: number;
+    comments: number;
+    views?: number;
+  };
+  viewCount?: number;
 }
 
 export default function PoemDetail() {
@@ -180,62 +189,141 @@ export default function PoemDetail() {
   if (isLoading) return <LoadingState />;
   if (error || !poem) return <ErrorState error={error} onBack={() => navigate(-1)} />;
 
-  return (
-    <div className="min-h-screen p-6">
-      <Card className="max-w-2xl mx-auto p-6">
-        <Button
-          variant="ghost"
-          className="mb-4"
-          onClick={() => navigate(-1)}
+    return (
+    <div className="min-h-screen bg-background">
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }}
+        className="max-w-4xl mx-auto p-4 md:p-6"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
+          <Card className="overflow-hidden border-none shadow-xl">
+            {/* Header */}
+            <div className="relative">
+              <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-primary/5 via-primary/10 to-transparent"/>
+              
+              <div className="relative p-6 md:p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate(-1)}
+                    className="group hover:bg-background/80"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
+                    Back
+                  </Button>
+                  
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Eye className="w-4 h-4" />
+                    <span>{poem.viewCount || 0} views</span>
+                  </div>
+                </div>
 
-        <h1 className="text-3xl font-bold mb-4">{poem.title}</h1>
-        
-        <PoemDetailHeader 
-          author={poem.author} 
-          createdAt={poem.createdAt} 
-        />
+                <motion.h1 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-4xl md:text-5xl font-bold mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80"
+                >
+                  {poem.title}
+                </motion.h1>
 
-        {poem.tags && poem.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 my-4">
-            {poem.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-primary/10 text-primary"
+                <PoemDetailHeader 
+                  author={poem.author} 
+                  createdAt={poem.createdAt} 
+                />
+              </div>
+
+              {/* Tags */}
+              <AnimatePresence>
+                {poem.tags && poem.tags.length > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="px-6 md:px-8 pb-6"
+                  >
+                    <div className="flex flex-wrap gap-2">
+                      {poem.tags.map((tag, index) => (
+                        <motion.span
+                          key={tag.name}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full 
+                                   text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 
+                                   transition-all duration-300 cursor-pointer transform hover:scale-105"
+                        >
+                          <Tag className="w-3 h-3" />
+                          {tag.name}
+                        </motion.span>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Content */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="px-6 md:px-8 py-8 border-t border-muted"
               >
-                <Tag className="w-3 h-3" />
-                {tag.name}
-              </span>
-            ))}
-          </div>
-        )}
+                <div className="prose dark:prose-invert max-w-none">
+                  <p className={cn(
+                    "whitespace-pre-wrap leading-relaxed tracking-wide",
+                    poem.formatting?.isBold && "font-bold",
+                    poem.formatting?.isItalic && "italic",
+                    `text-${poem.formatting?.alignment || 'left'}`,
+                    {
+                      'text-base': poem.formatting?.fontSize === 'small',
+                      'text-lg': !poem.formatting?.fontSize || poem.formatting?.fontSize === 'medium',
+                      'text-xl': poem.formatting?.fontSize === 'large'
+                    }
+                  )}>
+                    {poem.content}
+                  </p>
+                </div>
+              </motion.div>
 
-        <div className="prose dark:prose-invert max-w-none my-6">
-          <p className={`whitespace-pre-wrap ${
-            poem.formatting?.isBold ? 'font-bold' : ''
-          } ${
-            poem.formatting?.isItalic ? 'italic' : ''
-          } text-${poem.formatting?.alignment || 'left'}`}>
-            {poem.content}
-          </p>
-        </div>
+              {/* Actions */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="sticky bottom-0 px-6 md:px-8 py-4 bg-background/95 backdrop-blur-md border-t border-muted"
+              >
+                <PoemActions
+                  poemId={poem.id}
+                  onAddComment={addComment}
+                  onShare={handleShare}
+                  onBookmark={handleBookmark}
+                  isBookmarked={isBookmarked}
+                  initialLikes={poem._count?.likes || 0}
+                  commentsCount={poem._count?.comments || 0}
+                />
+              </motion.div>
 
-        <PoemActions
-          poemId={poem.id}
-          onAddComment={addComment}
-          onShare={handleShare}
-          onBookmark={handleBookmark}
-          isBookmarked={isBookmarked}
-        />
-
-        <PoemDetailComments 
-          comments={poem.comments}
-          onUserClick={(userId) => navigate(`/profile/${userId}`)}
-        />
-      </Card>
+              {/* Comments */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="p-6 md:p-8 bg-muted/20 border-t border-muted"
+              >
+                <PoemDetailComments 
+                  comments={poem.comments}
+                  onUserClick={(userId) => navigate(`/profile/${userId}`)}
+                />
+              </motion.div>
+            </div>
+          </Card>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

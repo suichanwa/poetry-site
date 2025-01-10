@@ -8,6 +8,7 @@ import { PoemActions } from "@/components/subcomponents/PoemActions";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 import { Edit2, Trash2, Eye, Tag } from "lucide-react";
+import { motion } from "framer-motion";
 
 export interface PoemCardProps {
   title: string;
@@ -46,6 +47,7 @@ export function PoemCard({
   const [comments, setComments] = useState<string[]>([]);
   const [views, setViews] = useState(viewCount);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const isAuthor = user?.id === author.id;
@@ -166,81 +168,103 @@ export function PoemCard({
   };
 
   return (
-    <Card 
-      className={cn(
-        "transform transition-all duration-300 hover:shadow-lg animate-fadeIn p-6",
-        isPreview && id && "hover:scale-[1.01] cursor-pointer"
-      )}
-      onClick={handleCardClick}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: isPreview ? 1.01 : 1 }}
+      transition={{ duration: 0.2 }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
     >
-      <PoemHeader title={title} author={author} label={label} isPreview={isPreview} />
+      <Card 
+        className={cn(
+          "overflow-hidden border bg-card hover:shadow-lg",
+          "transition-all duration-300",
+          isPreview && id && "cursor-pointer"
+        )}
+        onClick={handleCardClick}
+      >
+        <div className="p-6">
+          <PoemHeader title={title} author={author} label={label} isPreview={isPreview} />
 
-      <div className="mt-4 space-y-4">
-        <PoemContent 
-          content={content} 
-          isPreview={isPreview} 
-          formatting={formatting}
-          isExpanded={isExpanded}
-          onToggleExpand={(e) => {
-            e.stopPropagation();
-            setIsExpanded(!isExpanded);
-          }}
-        />
+          <div className="mt-4 space-y-4">
+            <PoemContent 
+              content={content} 
+              isPreview={isPreview} 
+              formatting={formatting}
+              isExpanded={isExpanded}
+              onToggleExpand={(e) => {
+                e.stopPropagation();
+                setIsExpanded(!isExpanded);
+              }}
+            />
 
-        <div className="flex items-center justify-between pt-2 border-t mt-4">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <Eye className="w-4 h-4" />
-            <span>{views} views</span>
-          </div>
+            <div className="flex items-center justify-between pt-4 border-t">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Eye className="w-4 h-4" />
+                <span>{views} views</span>
+              </div>
 
-          <div className="flex items-center gap-2">
-            {isAuthor && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleEditClick}
-                  className="text-muted-foreground hover:text-foreground"
+              {isAuthor && isHovered && (
+                <motion.div 
+                  className="flex items-center gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  <Edit2 className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleDeleteClick}
-                  className="text-destructive hover:text-destructive/80"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleEditClick}
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDeleteClick}
+                    className="text-destructive hover:text-destructive/80 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </motion.div>
+              )}
+            </div>
+
+            {tags && tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag, index) => (
+                  <motion.span
+                    key={tag.name}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 
+                             text-xs font-medium rounded-full
+                             bg-primary/10 text-primary
+                             transition-all duration-300
+                             hover:bg-primary/20 transform hover:scale-105"
+                  >
+                    <Tag className="w-3 h-3" />
+                    {tag.name}
+                  </motion.span>
+                ))}
+              </div>
+            )}
+
+            {id && (
+              <PoemActions 
+                poemId={id}
+                onAddComment={handleAddComment}
+                onShare={handleShare}
+                onBookmark={handleBookmark}
+                isBookmarked={isBookmarked}
+              />
             )}
           </div>
         </div>
-
-        {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {tags.map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-              >
-                <Tag className="w-3 h-3" />
-                {tag.name}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {id && (
-          <PoemActions 
-            poemId={id}
-            onAddComment={handleAddComment}
-            onShare={handleShare}
-            onBookmark={handleBookmark}
-            isBookmarked={isBookmarked}
-          />
-        )}
-      </div>
-    </Card>
+      </Card>
+    </motion.div>
   );
 }

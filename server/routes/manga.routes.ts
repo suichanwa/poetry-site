@@ -476,28 +476,54 @@ router.delete('/:id/chapters/:chapterId', authMiddleware, async (req: any, res) 
   }
 });
 
+// server/routes/manga.routes.ts
+
+// Add this route after other manga routes
 router.get('/recommended', async (req, res) => {
   try {
+    const excludeId = req.query.excludeId ? parseInt(req.query.excludeId as string) : undefined;
+
     const recommendedMangas = await prisma.manga.findMany({
-      take: 10, // Limit to 10 recommended mangas
-      orderBy: {
-        createdAt: 'desc', // Example ordering by creation date
+      take: 4, // Limit to 4 recommendations
+      where: {
+        ...(excludeId && {
+          NOT: {
+            id: excludeId
+          }
+        })
       },
+      orderBy: [
+        { views: 'desc' }, // Most viewed first
+        { likes: 'desc' }, // Most liked second
+        { createdAt: 'desc' } // Most recent third
+      ],
       include: {
         author: {
           select: {
             id: true,
             name: true,
-            avatar: true,
-          },
+            avatar: true
+          }
         },
         tags: true,
         chapters: {
-          orderBy: {
-            orderIndex: 'asc',
+          select: {
+            id: true,
+            title: true,
+            orderIndex: true,
+            createdAt: true
           },
+          orderBy: {
+            orderIndex: 'asc'
+          }
         },
-      },
+        _count: {
+          select: {
+            likes: true,
+            views: true
+          }
+        }
+      }
     });
 
     res.json(recommendedMangas);

@@ -1,8 +1,7 @@
-// src/components/PoemFilters.tsx
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, X, Tag as TagIcon, Plus } from "lucide-react";
+import { Search, X, Tag as TagIcon, Plus, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -11,7 +10,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { AddMangaModal } from "@/components/AddMangaModal";
-import { AddLightNovelModal } from "@/components/lightnovel/AddLightNovelModal"; // Updated import path
+import { AddLightNovelModal } from "@/components/lightnovel/AddLightNovelModal";
 import type { LightNovel } from "@/types/lightNovel";
 
 interface PoemFiltersProps {
@@ -43,10 +42,18 @@ export function PoemFilters({
   onAddBook,
   onAddLightNovel
 }: PoemFiltersProps) {
-  const [searchFocused, setSearchFocused] = useState(false);
   const [isMangaModalOpen, setIsMangaModalOpen] = useState(false);
   const [isLightNovelModalOpen, setIsLightNovelModalOpen] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    const savedSearches = localStorage.getItem('recentSearches');
+    if (savedSearches) {
+      setRecentSearches(JSON.parse(savedSearches));
+    }
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -73,6 +80,41 @@ export function PoemFilters({
     setIsLightNovelModalOpen(false);
   };
 
+  const updateRecentSearches = (query: string) => {
+    if (query.trim()) {
+      setRecentSearches(prev => {
+        const newSearches = [
+          query,
+          ...prev.filter(item => item !== query)
+        ].slice(0, 5);
+        localStorage.setItem('recentSearches', JSON.stringify(newSearches));
+        return newSearches;
+      });
+    }
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+    
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (value.trim().length >= 3) {
+      searchTimeoutRef.current = setTimeout(() => {
+        updateRecentSearches(value.trim());
+      }, 1000);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="flex items-center gap-4 w-full sm:w-auto">
       <div className="relative flex-1 sm:flex-initial" ref={searchRef}>
@@ -87,12 +129,8 @@ export function PoemFilters({
             type="text"
             placeholder={selectedTags.length > 0 ? "Search with tags..." : "Search poems or add tags..."}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => {
-              setSearchFocused(true);
-              setShowFilters(true);
-            }}
-            onBlur={() => setSearchFocused(false)}
+            onChange={(e) => handleSearch(e.target.value)}
+            onFocus={() => setShowFilters(true)}
             className={cn(
               "pl-10 pr-10 w-full sm:w-[300px]",
               selectedTags.length > 0 && "pl-16"
@@ -128,8 +166,29 @@ export function PoemFilters({
         )}
 
         {showFilters && (
-          <div className="absolute z-10 mt-1 w-full bg-popover rounded-md border shadow-md">
+          <div className="absolute z-[60] mt-1 w-full bg-popover rounded-md border shadow-md">
+            {recentSearches.length > 0 && (
+              <div className="p-2 border-b">
+                <p className="text-sm font-medium text-muted-foreground mb-2">Recent Searches</p>
+                <div className="flex flex-col space-y-1">
+                  {recentSearches.map((query) => (
+                    <Button
+                      key={query}
+                      variant="ghost"
+                      size="sm"
+                      className="justify-start"
+                      onClick={() => handleSearch(query)}
+                    >
+                      <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
+                      {query}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <div className="p-2">
+              <p className="text-sm font-medium text-muted-foreground mb-2">Available Tags</p>
               <div className="flex flex-wrap gap-1.5">
                 {availableTags
                   .filter(tag => !selectedTags.includes(tag))
