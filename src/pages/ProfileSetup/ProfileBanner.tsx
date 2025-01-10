@@ -6,10 +6,20 @@ interface ProfileBannerProps {
   userData: {
     avatar: string | null;
     name: string;
+  } | undefined;
+  followStats: {
+    followersCount: number;
+    followingCount: number;
+    isFollowing: boolean;
   };
+  onFollowChange: (isFollowing: boolean) => void;
 }
 
-export function ProfileBanner({ banner, userData }: ProfileBannerProps) {
+export function ProfileBanner({ banner, userData, followStats, onFollowChange }: ProfileBannerProps) {
+  if (!userData) {
+    return null; // or a loading state
+  }
+
   return (
     <div className="relative h-64">
       {banner ? (

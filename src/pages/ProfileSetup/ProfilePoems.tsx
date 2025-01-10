@@ -1,5 +1,6 @@
+// src/pages/ProfileSetup/ProfilePoems.tsx
 import { PoemCard } from "@/components/PoemCard";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";  // Add this import
 import { useNavigate } from "react-router-dom";
 
 interface ProfilePoemsProps {
@@ -7,21 +8,25 @@ interface ProfilePoemsProps {
     id: number;
     title: string;
     content: string;
-    author: string | { name: string; email: string };
+    author: {
+      id: number;
+      name: string;
+      avatar?: string;
+    };
+    createdAt: string;
+    viewCount?: number;
+    tags?: Array<{ name: string }>;
   }>;
   isOwnProfile: boolean;
   userName: string;
-  error?: string;
+  error: string;
 }
 
 export function ProfilePoems({ poems, isOwnProfile, userName, error }: ProfilePoemsProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="mt-6">
-      <h2 className="text-xl font-semibold mb-4">
-        {isOwnProfile ? "My Poems" : `${userName}'s Poems`}
-      </h2>
+    <div>
       {error ? (
         <div className="text-red-500 text-center text-sm">{error}</div>
       ) : (
@@ -32,20 +37,22 @@ export function ProfilePoems({ poems, isOwnProfile, userName, error }: ProfilePo
                 key={poem.id}
                 title={poem.title}
                 content={poem.content}
-                author={userName || poem.author}
+                author={userName || poem.author.name}
                 id={poem.id}
+                viewCount={poem.viewCount}
+                tags={poem.tags || []}
+                isPreview={true}
               />
             ))
           ) : (
             <div className="col-span-2 text-center py-8 text-gray-500 dark:text-gray-400">
-              <p className="text-base mb-3">No poems yet.</p>
+              <p>No poems yet</p>
               {isOwnProfile && (
                 <Button 
-                  variant="outline"
-                  size="sm"
                   onClick={() => navigate('/write')}
+                  className="mt-4"
                 >
-                  Write Your First Poem
+                  Write your first poem
                 </Button>
               )}
             </div>

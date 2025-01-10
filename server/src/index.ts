@@ -11,11 +11,11 @@ import authRoutes from '../routes/auth.routes';
 import userRoutes from '../routes/user.routes';
 import poemRoutes from '../routes/poem.routes';
 import followRoutes from '../routes/follow.routes';
-import communityRoutes from '../routes/cummunity.routes';
-import notificationRoutes from '../routes/notification.routes';
+import communityRoutes from '../routes/community.routes'; // Corrected from 'cummunity.routes'
+import notificationRoutes from '../routes/notification.preferences.routes'; // Corrected from 'notification.routes'
 import chatRoutes from '../routes/chat.routes';
 import mangaRoutes from '../routes/manga.routes';
-import lightNovelRoutes from '../routes/lightNovel.routes';
+import lightNovelRoutes from '../routes/lightnovel.routes'; // Corrected from 'lightNovel.routes'
 
 dotenv.config();
 

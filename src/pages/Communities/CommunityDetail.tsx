@@ -1,6 +1,6 @@
 // src/pages/Communities/CommunityDetail.tsx
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { LoadingState } from "@/components/LoadingState";
 import { CommunityInfo } from "./CommunityInfo";
@@ -8,50 +8,35 @@ import { MemberList } from "./MemberList";
 import { CommunityRules } from "./CommunityRules";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PoemCard } from "@/components/PoemCard";
-import { BookOpen, Users, Shield } from "lucide-react";
+import { BookOpen, Users, Shield, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { InviteUserModal } from "@/components/Communities/InviteUserModal";
 
 interface Community {
   id: number;
   name: string;
   description: string;
   avatar?: string;
-  banner?: string;
   createdAt: string;
   isPrivate: boolean;
-  rules: {
-    id: number;
-    title: string;
-    description: string;
-  }[];
-  creator: {
-    id: number;
-    name: string;
-    avatar?: string;
+  _count: {
+    members: number;
+    posts: number;
   };
   members: {
     id: number;
     name: string;
     avatar?: string;
   }[];
-  posts: {
+  posts: any[];
+  creator: {
+    id: number;
+  };
+  rules: {
     id: number;
     title: string;
-    content: string;
-    author: {
-      id: number;
-      name: string;
-      avatar?: string;
-    };
-    createdAt: string;
-    _count: {
-      comments: number;
-      likes: number;
-    };
+    description: string;
   }[];
-  _count: {
-    members: number;
-    posts: number;
-  };
 }
 
 export default function CommunityDetail() {
@@ -61,6 +46,8 @@ export default function CommunityDetail() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("posts");
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleCommunityUpdate = (updatedCommunity: Community) => {
     setCommunity(updatedCommunity);
@@ -147,47 +134,67 @@ export default function CommunityDetail() {
           user={user}
         />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="posts">
-              <BookOpen className="w-4 h-4 mr-2" />
-              Posts ({community._count.posts})
-            </TabsTrigger>
-            <TabsTrigger value="members">
-              <Users className="w-4 h-4 mr-2" />
-              Members ({community._count.members})
-            </TabsTrigger>
-            <TabsTrigger value="rules">
-              <Shield className="w-4 h-4 mr-2" />
-              Rules
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex justify-between items-center mb-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="posts">
+                <BookOpen className="w-4 h-4 mr-2" />
+                Posts ({community._count.posts})
+              </TabsTrigger>
+              <TabsTrigger value="members">
+                <Users className="w-4 h-4 mr-2" />
+                Members ({community._count.members})
+              </TabsTrigger>
+              <TabsTrigger value="rules">
+                <Shield className="w-4 h-4 mr-2" />
+                Rules
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="posts" className="mt-6">
-            <div className="space-y-4">
-              {community.posts.length > 0 ? (
-                community.posts.map(post => (
-                  <PoemCard key={post.id} {...post} />
-                ))
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No posts yet. Be the first to share a poem!
-                </div>
-              )}
+            <TabsContent value="posts" className="mt-6">
+              <div className="space-y-4">
+                {community.posts.length > 0 ? (
+                  community.posts.map(post => (
+                    <PoemCard key={post.id} {...post} />
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No posts yet. Be the first to share a poem!
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="members" className="mt-6">
+              <MemberList 
+                members={community.members} 
+                creatorId={community.creator.id} 
+              />
+            </TabsContent>
+
+            <TabsContent value="rules" className="mt-6">
+              <CommunityRules rules={community.rules} />
+            </TabsContent>
+          </Tabs>
+
+          {isModerator && (
+            <div className="flex gap-2">
+              <Button onClick={() => setIsInviteModalOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Invite User
+              </Button>
+              <Button variant="outline" onClick={() => navigate(`/communities/${community.id}/manage`)}>
+                Manage Community
+              </Button>
             </div>
-          </TabsContent>
+          )}
+        </div>
 
-          <TabsContent value="members" className="mt-6">
-            <MemberList 
-              members={community.members} 
-              creatorId={community.creator.id} 
-            />
-          </TabsContent>
-
-          <TabsContent value="rules" className="mt-6">
-            <CommunityRules rules={community.rules} />
-          </TabsContent>
-        </Tabs>
+        <InviteUserModal
+          isOpen={isInviteModalOpen}
+          onClose={() => setIsInviteModalOpen(false)}
+          communityId={community.id}
+        />
       </div>
     </div>
   );

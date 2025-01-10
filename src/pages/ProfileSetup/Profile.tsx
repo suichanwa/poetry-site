@@ -1,11 +1,20 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from "@/context/AuthContext";
 import { LoadingState } from "@/components/LoadingState";
 import { ProfileBanner } from "./ProfileBanner";
-import { ProfileContent } from "./ProfileContent";
+import { ProfileInfo } from "./ProfileInfo";
+import { ProfileActions } from "./ProfileActions";
+import { ProfilePoems } from "./ProfilePoems";
+import { ProfileManga } from "./ProfileManga";
+import { ProfileLightNovels } from "./ProfileLightNovels";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
+// Keep all the interfaces
 interface Poem {
   id: number;
   title: string;
@@ -19,6 +28,40 @@ interface Poem {
   };
 }
 
+interface Manga {
+  id: number;
+  title: string;
+  description: string;
+  coverImage: string;
+  author: {
+    id: number;
+    name: string;
+    avatar: string | null;
+  };
+  chapters: Array<{
+    id: number;
+    title: string;
+    orderIndex: number;
+  }>;
+}
+
+interface LightNovel {
+  id: number;
+  title: string;
+  description: string;
+  coverImage: string;
+  author: {
+    id: number;
+    name: string;
+    avatar: string | null;
+  };
+  chapters: Array<{
+    id: number;
+    title: string;
+    orderIndex: number;
+  }>;
+}
+
 interface FollowStats {
   followersCount: number;
   followingCount: number;
@@ -30,6 +73,8 @@ export default function Profile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [userPoems, setUserPoems] = useState<Poem[]>([]);
+  const [userManga, setUserManga] = useState<Manga[]>([]);
+  const [userLightNovels, setUserLightNovels] = useState<LightNovel[]>([]);
   const [error, setError] = useState<string>("");
   const [userData, setUserData] = useState(user);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +83,7 @@ export default function Profile() {
     followingCount: 0,
     isFollowing: false
   });
+  const [activeTab, setActiveTab] = useState("poems");
 
   const isOwnProfile = !id ? true : parseInt(id) === user?.id;
 
@@ -49,6 +95,7 @@ export default function Profile() {
     }));
   };
 
+  // Keep the existing useEffect and data fetching logic
   useEffect(() => {
     const fetchData = async () => {
       if (!id && !user?.id) return;
@@ -81,8 +128,18 @@ export default function Profile() {
         const userData = await userRes.json();
         setUserData(userData);
 
-        const [poemsRes, followersRes, followingRes] = await Promise.all([
+        const [poemsRes, mangaRes, lightNovelsRes, followersRes, followingRes] = await Promise.all([
           fetch(`http://localhost:3000/api/poems/user/${userId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            }
+          }),
+          fetch(`http://localhost:3000/api/manga/user/${userId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            }
+          }),
+          fetch(`http://localhost:3000/api/lightnovels/user/${userId}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             }
@@ -99,59 +156,104 @@ export default function Profile() {
           })
         ]);
 
-        const [poems, followers, following] = await Promise.all([
+        const [poems, manga, lightNovels, followers, following] = await Promise.all([
           poemsRes.json(),
+          mangaRes.json(),
+          lightNovelsRes.json(),
           followersRes.ok ? followersRes.json() : [],
           followingRes.ok ? followingRes.json() : []
         ]);
 
         setUserPoems(poems);
+        setUserManga(manga);
+        setUserLightNovels(lightNovels);
         setFollowStats(prev => ({
           ...prev,
           followersCount: Array.isArray(followers) ? followers.length : 0,
           followingCount: Array.isArray(following) ? following.length : 0
         }));
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setError('Failed to load profile data');
+        setError(error instanceof Error ? error.message : 'An error occurred');
+        console.error('Error fetching profile data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchData();
-  }, [id, user?.id, navigate]);
+    if (id || user?.id) {
+      fetchData();
+    }
+  }, [id, user]);
 
   if (isLoading) return <LoadingState />;
 
-  if (!userData) {
-    return (
-      <div className="min-h-screen p-4">
-        <Card className="max-w-2xl mx-auto p-6">
-          <div className="text-center">
-            <p className="text-destructive">{error || "User not found"}</p>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen p-4 md:p-6">
-      <div className="max-w-4xl mx-auto">
-        <Card className="overflow-visible bg-card">
-          <ProfileBanner banner={userData.banner} userData={userData} />
-          <ProfileContent 
-            userData={userData}
+      <ProfileBanner banner={userData?.banner} userData={userData} followStats={followStats} onFollowChange={onFollowChange} />
+      
+      <div className="mt-24">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
+          <ProfileInfo
+            name={userData?.name}
+            email={userData?.email}
+            bio={userData?.bio}
             followStats={followStats}
+          />
+          <ProfileActions
             isOwnProfile={isOwnProfile}
             userId={id}
-            userPoems={userPoems}
+            followStats={followStats}
             onFollowChange={onFollowChange}
-            onLogout={logout}
-            error={error}
           />
-        </Card>
+        </div>
+
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-6">
+            {isOwnProfile && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => navigate('/write')}>
+                    Add Poem
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/add-manga')}>
+                    Add Manga
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/add-light-novel')}>
+                    Add Light Novel
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+
+          <Tabs defaultValue="poems" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsTrigger value="poems" className="text-sm md:text-base">
+                Poems
+              </TabsTrigger>
+              <TabsTrigger value="manga" className="text-sm md:text-base">
+                Manga
+              </TabsTrigger>
+              <TabsTrigger value="lightnovels" className="text-sm md:text-base">
+                Light Novels
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="poems">
+              <ProfilePoems poems={userPoems} isOwnProfile={isOwnProfile} userName={userData?.name} error={error} />
+            </TabsContent>
+
+            <TabsContent value="manga">
+              <ProfileManga manga={userManga} isOwnProfile={isOwnProfile} userName={userData?.name} error={error} />
+            </TabsContent>
+
+            <TabsContent value="lightnovels">
+              <ProfileLightNovels lightNovels={userLightNovels} isOwnProfile={isOwnProfile} userName={userData?.name} error={error} />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );
