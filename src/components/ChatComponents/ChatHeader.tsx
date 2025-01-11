@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 
 interface ChatHeaderProps {
   participant: {
+    id: number;
     name: string;
     avatar?: string;
   };

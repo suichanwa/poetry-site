@@ -1,3 +1,4 @@
+// src/components/PoemFilters.tsx
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -107,14 +108,6 @@ export function PoemFilters({
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, []);
-
   return (
     <div className="flex items-center gap-4 w-full sm:w-auto">
       <div className="relative flex-1 sm:flex-initial" ref={searchRef}>
@@ -147,23 +140,6 @@ export function PoemFilters({
             </Button>
           )}
         </div>
-
-        {selectedTags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {selectedTags.map(tag => (
-              <Button
-                key={tag}
-                variant="default"
-                size="sm"
-                onClick={() => toggleTag(tag)}
-                className="h-6 text-xs px-2 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20"
-              >
-                {tag}
-                <X className="h-3 w-3 ml-1" />
-              </Button>
-            ))}
-          </div>
-        )}
 
         {showFilters && (
           <div className="absolute z-[60] mt-1 w-full bg-popover rounded-md border shadow-md">

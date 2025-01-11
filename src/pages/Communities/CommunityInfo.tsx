@@ -1,3 +1,4 @@
+// src/pages/Communities/CommunityInfo.tsx
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,7 +57,7 @@ export function CommunityInfo({
         <div className="flex-1">
           <h1 className="text-3xl font-bold mb-2">{community.name}</h1>
           <p className="text-muted-foreground mb-4">{community.description}</p>
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-4">
             <div className="text-sm text-muted-foreground">
               <span className="flex items-center gap-2">
                 <Users className="w-4 h-4" />

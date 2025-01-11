@@ -1,11 +1,20 @@
 // src/pages/ChatPage.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChatList } from '@/components/ChatComponents/ChatList';
 import { ChatWindow } from '@/components/ChatComponents/ChatWindow';
 
 export default function ChatPage() {
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
-  const [isMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div className="container h-[calc(100vh-4rem)] p-0 sm:py-6">

@@ -12,6 +12,9 @@ import { LightNovelGrid } from "@/components/lightnovel/LightNovelGrid";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { PoemFilters } from "@/components/PoemFilters";
+import { PoemCard } from "@/components/PoemCard";
+import { MangaCard } from "@/components/MangaCard";
+import { LightNovelCard } from "@/components/LightNovelCard";
 
 export default function MainPage() {
   const [poems, setPoems] = useState([]);
@@ -31,6 +34,11 @@ export default function MainPage() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("for-you");
   const [mainContentTab, setMainContentTab] = useState("poems");
+  const [searchResults, setSearchResults] = useState({
+    poems: [],
+    manga: [],
+    lightNovels: []
+  });
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -55,6 +63,20 @@ export default function MainPage() {
   const clearFilters = () => {
     setSelectedTags([]);
     setSearchQuery("");
+  };
+
+  const handleTagSearch = async (tags) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`http://localhost:3000/api/search/tags?tags=${tags.join(',')}`);
+      if (!response.ok) throw new Error('Failed to search by tags');
+      const data = await response.json();
+      setSearchResults(data);
+    } catch (error) {
+      console.error('Error searching by tags:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -136,6 +158,7 @@ export default function MainPage() {
                   onAddPoem={() => setIsPoemModalOpen(true)}
                   onAddManga={() => setIsMangaModalOpen(true)}
                   onAddLightNovel={() => setIsLightNovelModalOpen(true)}
+                  className="pb-16 md:pb-0"
                 />
               </div>
             </div>
@@ -180,6 +203,39 @@ export default function MainPage() {
             </TabsContent>
           </Tabs>
         </div>
+
+        {searchResults.poems.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold">Poems</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {searchResults.poems.map(poem => (
+                <PoemCard key={poem.id} {...poem} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {searchResults.manga.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold">Manga</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {searchResults.manga.map(manga => (
+                <MangaCard key={manga.id} {...manga} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {searchResults.lightNovels.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold">Light Novels</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {searchResults.lightNovels.map(novel => (
+                <LightNovelCard key={novel.id} {...novel} />
+              ))}
+            </div>
+          </div>
+        )}
 
         <AddPoetryModal
           isOpen={isPoemModalOpen}

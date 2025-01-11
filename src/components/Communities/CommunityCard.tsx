@@ -1,8 +1,8 @@
-// src/components/CommunityCard.tsx
+// src/components/Communities/CommunityCard.tsx
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Users, CalendarDays } from "lucide-react";
+import { Users, CalendarDays, FileText } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface CommunityCardProps {
@@ -10,7 +10,6 @@ interface CommunityCardProps {
   name: string;
   description: string;
   avatar?: string;
-  banner?: string;
   createdAt: string;
   _count: {
     members: number;
@@ -75,11 +74,17 @@ export function CommunityCard({
           <CalendarDays className="w-4 h-4" />
           <span>{formatDistanceToNow(new Date(createdAt), { addSuffix: true })}</span>
         </div>
+        <div className="flex items-center gap-1">
+          <FileText className="w-4 h-4" />
+          <span>{_count.posts} posts</span>
+        </div>
       </div>
 
-      {/* Post Count */}
-      <div className="mt-2 text-sm text-muted-foreground">
-        {_count.posts} posts
+      {/* Actions */}
+      <div className="flex justify-end mt-4">
+        <Button variant="outline" size="sm" onClick={handleNavigate}>
+          View Community
+        </Button>
       </div>
     </Card>
   );

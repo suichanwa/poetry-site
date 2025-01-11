@@ -1,3 +1,4 @@
+// src/components/ChatComponents/ChatWindow.tsx
 import { useEffect, useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
@@ -42,59 +43,54 @@ export function ChatWindow({ chatId, onBack }: ChatWindowProps) {
   const messageIds = useRef<Set<number>>(new Set());
 
   useEffect(() => {
-  const fetchMessagesAndParticipant = async () => {
-    try {
-      const response = await fetch(`http://localhost:3000/api/chats/${chatId}/messages`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch messages');
-      }
-
-      const data = await response.json();
-      
-      // Fetch chat details to get participant information
-      const chatResponse = await fetch(`http://localhost:3000/api/chats/${chatId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (!chatResponse.ok) {
-        throw new Error('Failed to fetch chat details');
-      }
-
-      const chatData = await chatResponse.json();
-      const otherParticipant = chatData.participants.find((p: any) => p.id !== user?.id);
-      
-      if (otherParticipant) {
-        setParticipant({
-          id: otherParticipant.id,
-          name: otherParticipant.name,
-          avatar: otherParticipant.avatar
+    const fetchMessagesAndParticipant = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/chats/${chatId}/messages`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         });
-      }
 
-      if (Array.isArray(data)) {
+        if (!response.ok) {
+          throw new Error('Failed to fetch messages');
+        }
+
+        const data = await response.json();
         messageIds.current.clear();
-        // Sort messages by createdAt in ascending order (oldest first)
         const sortedMessages = data.sort((a, b) => 
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         );
         const uniqueMessages = sortedMessages.filter(msg => !messageIds.current.has(msg.id));
         uniqueMessages.forEach(msg => messageIds.current.add(msg.id));
         setMessages(uniqueMessages);
-      }
-    } catch (err) {
-      console.error('Error fetching messages:', err);
-    }
-  };
 
-  fetchMessagesAndParticipant();
-}, [chatId, user?.id]);
+        const chatResponse = await fetch(`http://localhost:3000/api/chats/${chatId}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        if (!chatResponse.ok) {
+          throw new Error('Failed to fetch chat details');
+        }
+
+        const chatData = await chatResponse.json();
+        const otherParticipant = chatData.participants.find((p: any) => p.id !== user?.id);
+        
+        if (otherParticipant) {
+          setParticipant({
+            id: otherParticipant.id,
+            name: otherParticipant.name,
+            avatar: otherParticipant.avatar
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching messages:', err);
+      }
+    };
+
+    fetchMessagesAndParticipant();
+  }, [chatId, user?.id]);
 
   useEffect(() => {
     if (!ws) return;

@@ -1,7 +1,7 @@
 - [kinda] adding tabs into the profile so user could sort it's own works
-- [kinda] improving ui/ux profile settings adding arrows to navigte throw settings
-- [ifdev] functionality of adding multimple accounts/drowndown/extended menu
-- [indev] if the comunity if privata make an invite system 
-- [lastest] improving UI/UX of community cards/interface
-- [indev] improving phone chat UI/UX
-- [indev]  searching by tags in throw the site
+- [done] improving ui/ux profile settings adding arrows to navigte throw settings
+- [??] functionality of adding multimple accounts/drowndown/extended menu
+- [done] if the comunity if privata make an invite system 
+- [indev] improving UI/UX of community cards/interface
+- [done] improving phone chat UI/UX
+- [kinda]  searching by tags in throw the site
