@@ -35,11 +35,6 @@ export function ProfileManga({ manga, isOwnProfile, userName, error }: ProfileMa
             ))
           ) : (
             <div className="col-span-2 text-center py-8 text-gray-500 dark:text-gray-400">
-              {isOwnProfile && (
-                <Button onClick={() => navigate('/add-manga')}>
-                  Add Manga
-                </Button>
-              )}
             </div>
           )}
         </div>

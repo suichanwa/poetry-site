@@ -1,9 +1,10 @@
+// src/components/subcomponents/PoemContent.tsx
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 interface PoemContentProps {
-  content: string;
+  title?: string;
+  content?: string;
   poemId?: number;
   isPreview?: boolean;
   formatting?: {
@@ -17,7 +18,8 @@ interface PoemContentProps {
 }
 
 export function PoemContent({ 
-  content, 
+  title = "",
+  content = "", 
   poemId,
   isPreview = true, 
   formatting = null,
@@ -26,8 +28,8 @@ export function PoemContent({
 }: PoemContentProps) {
   const [height, setHeight] = useState<number | undefined>(undefined);
   const contentRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
   const maxPreviewLength = window.innerWidth < 640 ? 150 : 300; // Increased length
+  const maxTitleLength = 100; // Restrict title length
   const shouldTruncate = isPreview && content.length > maxPreviewLength && !isExpanded;
 
   useEffect(() => {
@@ -37,15 +39,18 @@ export function PoemContent({
     }
   }, [content, isExpanded]);
 
+  const displayTitle = title.length > maxTitleLength ? `${title.slice(0, maxTitleLength)}...` : title;
+
   return (
     <div className="relative py-2 sm:py-4">
+      <h1 className="text-2xl font-bold break-words">{displayTitle}</h1>
       <div 
         ref={contentRef}
         style={{ 
           maxHeight: isExpanded ? `${height}px` : '8rem', // Increased from 4.5rem to 8rem
           transition: 'max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
         }}
-        className="overflow-hidden"
+        className="overflow-hidden break-words"
       >
         <p className={cn(
           "whitespace-pre-wrap",
@@ -60,7 +65,7 @@ export function PoemContent({
           },
           "transition-all duration-300 ease-in-out"
         )}>
-          {content}
+          {shouldTruncate ? `${content.slice(0, maxPreviewLength)}...` : content}
         </p>
       </div>
       

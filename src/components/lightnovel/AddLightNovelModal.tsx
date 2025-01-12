@@ -78,7 +78,7 @@ export function AddLightNovelModal({ isOpen, onClose, onAddLightNovel }: AddLigh
       return;
     }
 
-    if (!title.trim() || !description.trim() || !coverFile || !chapterTitle || !chapterContent) {
+    if (!title.trim() || !description.trim() || !coverFile || !chapterTitle.trim() || !chapterContent.trim()) {
       setError("Please fill in all required fields");
       return;
     }

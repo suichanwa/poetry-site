@@ -1,3 +1,4 @@
+// src/components/subcomponents/PoemDetailComments.tsx
 import { User, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -111,6 +112,7 @@ export function PoemDetailComments({ comments, onUserClick }: PoemDetailComments
       <div className="space-y-4">
         {comments.map((comment) => (
           <div key={comment.id} className="flex space-x-3">
+            {/* User Avatar */}
             <button 
               onClick={() => onUserClick(comment.user.id)}
               className="flex-shrink-0"
@@ -127,16 +129,20 @@ export function PoemDetailComments({ comments, onUserClick }: PoemDetailComments
                 )}
               </div>
             </button>
-            <div className="flex-grow">
+
+            {/* Comment Content */}
+            <div className="flex-1 min-w-0"> {/* Add min-w-0 to enable text wrapping */}
               <p 
-                className="font-medium hover:underline cursor-pointer" 
+                className="font-medium hover:underline cursor-pointer break-words" 
                 onClick={() => onUserClick(comment.user.id)}
               >
                 {comment.user.name}
               </p>
-              <p className="text-gray-600 dark:text-gray-300">
-                {comment.content}
-              </p>
+              <div className="mt-1">
+                <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap break-words">
+                  {comment.content}
+                </p>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"

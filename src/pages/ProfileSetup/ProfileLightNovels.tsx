@@ -32,11 +32,6 @@ export function ProfileLightNovels({ lightNovels, isOwnProfile, userName, error 
             ))
           ) : (
             <div className="col-span-2 text-center py-8 text-gray-500 dark:text-gray-400">
-              {isOwnProfile && (
-                <Button onClick={() => navigate('/add-light-novel')}>
-                  Add Light Novel
-                </Button>
-              )}
             </div>
           )}
         </div>

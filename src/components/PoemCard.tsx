@@ -1,3 +1,4 @@
+// src/components/PoemCard.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -52,58 +53,11 @@ export function PoemCard({
   const navigate = useNavigate();
   const isAuthor = user?.id === author.id;
 
-  useEffect(() => {
-    const fetchBookmarkStatus = async () => {
-      if (!user || !id) return;
-
-      try {
-        const response = await fetch(`http://localhost:3000/api/poems/${id}/bookmark/status`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        if (!response.ok) throw new Error('Failed to fetch bookmark status');
-        const data = await response.json();
-        setIsBookmarked(data.bookmarked);
-      } catch (error) {
-        console.error('Error fetching bookmark status:', error);
-      }
-    };
-
-    fetchBookmarkStatus();
-  }, [id, user]);
-
-  const handleCardClick = () => {
-    if (id) {
-      navigate(`/poem/${id}`);
-    }
-  };
-
-  const handleDeleteClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!id || !confirm('Are you sure you want to delete this poem?')) return;
-
-    try {
-      const response = await fetch(`http://localhost:3000/api/poems/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to delete poem');
-      window.location.reload();
-    } catch (error) {
-      console.error('Error deleting poem:', error);
-    }
-  };
-
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (id) {
-      navigate(`/edit-poem/${id}`);
-    }
-  };
+  // Format title with restrictions
+  const maxTitleLength = 100;
+  const displayTitle = title?.length > maxTitleLength 
+    ? `${title.slice(0, maxTitleLength)}...` 
+    : title;
 
   const handleAddComment = async (comment: string) => {
     if (!user || !id) return;
@@ -132,7 +86,7 @@ export function PoemCard({
     if (navigator.share) {
       try {
         await navigator.share({
-          title,
+          title: displayTitle,
           text: content,
           url: `${window.location.origin}/poem/${id}`,
         });
@@ -167,6 +121,32 @@ export function PoemCard({
     }
   };
 
+  const handleDeleteClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!id || !confirm('Are you sure you want to delete this poem?')) return;
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/poems/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to delete poem');
+      window.location.reload();
+    } catch (error) {
+      console.error('Error deleting poem:', error);
+    }
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (id) {
+      navigate(`/edit-poem/${id}`);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -175,6 +155,7 @@ export function PoemCard({
       transition={{ duration: 0.2 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
+      className="w-full"
     >
       <Card 
         className={cn(
@@ -182,57 +163,76 @@ export function PoemCard({
           "transition-all duration-300",
           isPreview && id && "cursor-pointer"
         )}
-        onClick={handleCardClick}
+        onClick={() => id && navigate(`/poem/${id}`)}
       >
-        <div className="p-6">
-          <PoemHeader title={title} author={author} label={label} isPreview={isPreview} />
-
-          <div className="mt-4 space-y-4">
-            <PoemContent 
-              content={content} 
+        <div className="p-6 flex flex-col space-y-4">
+          {/* Title and Author Section */}
+          <div className="w-full">
+            <h3 className="text-lg sm:text-xl font-bold mb-2 break-words line-clamp-2 hover:text-primary transition-colors">
+              {displayTitle}
+            </h3>
+            <PoemHeader 
+              title={displayTitle} 
+              author={author} 
+              label={label} 
               isPreview={isPreview} 
-              formatting={formatting}
-              isExpanded={isExpanded}
-              onToggleExpand={(e) => {
-                e.stopPropagation();
-                setIsExpanded(!isExpanded);
-              }}
             />
+          </div>
 
-            <div className="flex items-center justify-between pt-4 border-t">
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <Eye className="w-4 h-4" />
-                <span>{views} views</span>
-              </div>
+          {/* Content Section */}
+          <div className="w-full">
+            <div className="prose max-w-none break-words">
+              <PoemContent 
+                content={content} 
+                isPreview={isPreview} 
+                formatting={formatting}
+                isExpanded={isExpanded}
+                onToggleExpand={(e) => {
+                  e.stopPropagation();
+                  setIsExpanded(!isExpanded);
+                }}
+              />
+            </div>
+          </div>
 
-              {isAuthor && isHovered && (
-                <motion.div 
-                  className="flex items-center gap-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleEditClick}
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDeleteClick}
-                    className="text-destructive hover:text-destructive/80 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </motion.div>
-              )}
+          {/* Stats Section */}
+          <div className="w-full flex items-center justify-between pt-4 border-t">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <Eye className="w-4 h-4" />
+              <span>{views} views</span>
             </div>
 
-            {tags && tags.length > 0 && (
+            {/* Author Actions */}
+            {isAuthor && isHovered && (
+              <motion.div 
+                className="flex items-center gap-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleEditClick}
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDeleteClick}
+                  className="text-destructive hover:text-destructive/80 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Tags Section */}
+          {tags && tags.length > 0 && (
+            <div className="w-full">
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag, index) => (
                   <motion.span
@@ -244,16 +244,20 @@ export function PoemCard({
                              text-xs font-medium rounded-full
                              bg-primary/10 text-primary
                              transition-all duration-300
-                             hover:bg-primary/20 transform hover:scale-105"
+                             hover:bg-primary/20 transform hover:scale-105
+                             max-w-[150px] truncate"
                   >
-                    <Tag className="w-3 h-3" />
-                    {tag.name}
+                    <Tag className="w-3 h-3 flex-shrink-0" />
+                    <span className="truncate">{tag.name}</span>
                   </motion.span>
                 ))}
               </div>
-            )}
+            </div>
+          )}
 
-            {id && (
+          {/* Actions Section */}
+          {id && (
+            <div className="w-full">
               <PoemActions 
                 poemId={id}
                 onAddComment={handleAddComment}
@@ -261,8 +265,8 @@ export function PoemCard({
                 onBookmark={handleBookmark}
                 isBookmarked={isBookmarked}
               />
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </Card>
     </motion.div>

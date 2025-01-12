@@ -1,9 +1,10 @@
+// src/pages/LightNovelDetailPage.tsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Heart, Eye, Clock, User, Share2, Plus } from "lucide-react";
+import { ArrowLeft, Heart, Eye, Clock, User, Share2, Plus, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from "@/context/AuthContext";
 import { LoadingState } from "@/components/LoadingState";
@@ -92,101 +93,131 @@ export default function LightNovelDetailPage() {
     }
   };
 
-  const handleShare = async () => {
+  const handleLike = async () => {
+    if (!user || !novel) return;
+
     try {
-      await navigator.share({
-        title: novel?.title,
-        text: novel?.description,
-        url: window.location.href
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/lightnovels/${novel.id}/like`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
+
+      if (!response.ok) throw new Error('Failed to like light novel');
+
+      setIsLiked(!isLiked);
+      setNovel(prev => prev ? { ...prev, likes: isLiked ? prev.likes - 1 : prev.likes + 1 } : prev);
     } catch (error) {
-      await navigator.clipboard.writeText(window.location.href);
+      console.error('Error liking light novel:', error);
     }
   };
 
-  const handleChapterAdded = (newChapter: Chapter) => {
-    setNovel(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        chapters: [...prev.chapters, newChapter].sort((a, b) => a.orderIndex - b.orderIndex)
-      };
-    });
+  const handleDeleteNovel = async () => {
+    if (!user || !novel) return;
+
+    const confirmDelete = window.confirm("Are you sure you want to delete this light novel?");
+    if (!confirmDelete) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/lightnovels/${novel.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to delete light novel');
+
+      navigate('/lightnovels');
+    } catch (error) {
+      console.error('Error deleting light novel:', error);
+      setError('Failed to delete light novel');
+    }
   };
 
   if (isLoading) return <LoadingState />;
   if (error || !novel) return <div className="text-center text-red-500">{error}</div>;
 
   return (
-    <div className="min-h-screen p-6 bg-background">
-      <Card className="max-w-4xl mx-auto p-6 shadow-lg">
+    <div className="min-h-screen p-6">
+      <Card className="max-w-4xl mx-auto p-6">
         <Button
           variant="ghost"
           onClick={() => navigate(-1)}
-          className="mb-6 hover:bg-secondary"
+          className="mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Cover Image */}
-          <div className="aspect-[3/4] relative group">
+          <div className="aspect-[3/4] relative">
             <img
               src={getImageUrl(novel.coverImage)}
               alt={novel.title}
-              className="w-full h-full object-cover rounded-lg shadow-md transition-transform group-hover:scale-[1.02]"
+              className="w-full h-full object-cover rounded-lg"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
           {/* Novel Info */}
-          <div className="md:col-span-2 space-y-6">
-            <div>
-              <h1 className="text-4xl font-bold mb-4 leading-tight">{novel.title}</h1>
-              
-              {/* Author Info */}
-              <div className="flex items-center gap-3 mb-4">
-                <Avatar className="w-10 h-10 border-2 border-primary">
-                  {novel.author.avatar ? (
-                    <AvatarImage src={getImageUrl(novel.author.avatar)} />
-                  ) : (
-                    <AvatarFallback>
-                      <User className="w-5 h-5" />
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <div>
-                  <span className="font-medium">{novel.author.name}</span>
-                  <p className="text-sm text-muted-foreground">Author</p>
-                </div>
-              </div>
-
-              <p className="text-lg text-muted-foreground leading-relaxed">{novel.description}</p>
+          <div className="md:col-span-2 space-y-4">
+            <h1 className="text-3xl font-bold">{novel.title}</h1>
+            
+            {/* Author Info */}
+            <div className="flex items-center gap-2">
+              <Avatar className="w-8 h-8">
+                {novel.author.avatar ? (
+                  <AvatarImage src={getImageUrl(novel.author.avatar)} />
+                ) : (
+                  <AvatarFallback>
+                    <User className="w-4 h-4" />
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <span className="text-muted-foreground">{novel.author.name}</span>
             </div>
+
+            <p className="text-muted-foreground">{novel.description}</p>
 
             {/* Stats */}
-            <div className="flex items-center gap-6 py-4 border-y">
-              <Button variant="ghost" size="sm" onClick={handleShare} className="hover:bg-secondary">
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
+            <div className="flex items-center gap-6">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleLike}
+                className={isLiked ? "text-red-500" : ""}
+              >
+                <Heart className={`w-4 h-4 mr-2 ${isLiked ? "fill-current" : ""}`} />
+                {novel.likes}
               </Button>
               <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4 text-muted-foreground" />
-                <span>{novel.views.toLocaleString()} views</span>
+                <Eye className="w-4 h-4" />
+                {novel.views}
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-muted-foreground" />
-                <span>{formatDistanceToNow(new Date(novel.createdAt), { addSuffix: true })}</span>
+                <Clock className="w-4 h-4" />
+                {formatDistanceToNow(new Date(novel.createdAt), { addSuffix: true })}
               </div>
+              <Button variant="ghost" size="sm" onClick={() => navigator.share({ title: novel.title, text: novel.description, url: window.location.href })}>
+                <Share2 className="w-4 h-4" />
+              </Button>
+              {user?.id === novel.author.id && (
+                <Button variant="destructive" size="sm" onClick={handleDeleteNovel}>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Novel
+                </Button>
+              )}
             </div>
 
-            {/* Tags */}
             <div className="flex flex-wrap gap-2">
               {novel.tags.map(tag => (
                 <span
                   key={tag.name}
-                  className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm hover:bg-secondary/80 transition-colors cursor-default"
+                  className="px-2 py-1 bg-secondary text-secondary-foreground rounded-full text-sm"
                 >
                   {tag.name}
                 </span>
@@ -194,30 +225,27 @@ export default function LightNovelDetailPage() {
             </div>
 
             {/* Chapters */}
-            <div className="pt-4">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold">Chapters</h2>
+            <div className="border-t pt-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Chapters</h2>
                 {user?.id === novel.author.id && (
-                  <Button onClick={() => setIsAddChapterOpen(true)} size="sm" className="bg-primary hover:bg-primary/90">
+                  <Button onClick={() => setIsAddChapterOpen(true)} size="sm">
                     <Plus className="w-4 h-4 mr-2" />
                     Add Chapter
                   </Button>
                 )}
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {novel.chapters.map(chapter => (
                   <Button
                     key={chapter.id}
                     variant="outline"
-                    className="justify-start h-auto py-3 hover:bg-secondary/50"
+                    className="justify-start"
                     onClick={() => handleReadChapter(chapter)}
                   >
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium">Chapter {chapter.orderIndex}</span>
-                      <span className="text-sm text-muted-foreground truncate">
-                        {chapter.title}
-                      </span>
-                    </div>
+                    <span className="truncate">
+                      Chapter {chapter.orderIndex}: {chapter.title}
+                    </span>
                   </Button>
                 ))}
               </div>
@@ -239,7 +267,7 @@ export default function LightNovelDetailPage() {
         isOpen={isAddChapterOpen}
         onClose={() => setIsAddChapterOpen(false)}
         novelId={novel.id}
-        onChapterAdded={handleChapterAdded}
+        onChapterAdded={(newChapter) => setNovel(prev => prev ? { ...prev, chapters: [...prev.chapters, newChapter] } : prev)}
         currentChaptersCount={novel.chapters.length}
       />
     </div>

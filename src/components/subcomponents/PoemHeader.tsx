@@ -1,3 +1,4 @@
+// src/components/subcomponents/PoemHeader.tsx
 import { User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -49,10 +50,10 @@ export function PoemHeader({ title, author, label, isPreview = true }: PoemHeade
             )}
           </div>
           <div>
-            <h3 className="text-lg sm:text-xl font-bold hover:text-primary transition-colors line-clamp-2 text-left">
+            <h3 className="text-lg sm:text-xl font-bold hover:text-primary transition-colors line-clamp-2 text-left break-words">
               {displayTitle}
             </h3>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-left">
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-left break-words">
               By {author.name}
             </p>
           </div>

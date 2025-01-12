@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SideMenu } from "@/components/SideMenu";
 import { MobileNavBar } from "@/components/navigation/MobileNavBar";
-import { Snowfall } from "@/components/Snowfall";
 import { User } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
@@ -23,7 +22,6 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="theme-winter">
-      <Snowfall />
       <div className="min-h-screen bg-background">
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex h-14 items-center justify-between">

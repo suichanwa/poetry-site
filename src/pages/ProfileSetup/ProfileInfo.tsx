@@ -1,3 +1,5 @@
+// src/pages/ProfileSetup/ProfileInfo.tsx
+
 interface ProfileInfoProps {
   name?: string;
   email?: string;
@@ -14,7 +16,9 @@ export function ProfileInfo({ name, email, bio, followStats }: ProfileInfoProps)
       <h1 className="text-2xl lg:text-3xl font-bold mb-1">{name}</h1>
       <p className="text-gray-500 dark:text-gray-400 text-sm lg:text-base">{email}</p>
       {bio && (
-        <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm lg:text-base">{bio}</p>
+        <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm lg:text-base break-words">
+          {bio}
+        </p>
       )}
       <div className="flex items-center space-x-4 mt-2">
         <span className="text-sm lg:text-base">

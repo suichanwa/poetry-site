@@ -1,5 +1,4 @@
 // src/pages/MangaDetailPage.tsx
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MangaReader } from "@/components/MangaReader";
@@ -7,7 +6,7 @@ import { LoadingState } from "@/components/LoadingState";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Heart, Eye, Clock, User, Share2, Plus } from "lucide-react";
+import { ArrowLeft, Heart, Eye, Clock, User, Share2, Plus, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from "@/context/AuthContext";
 import { AddChapterModal } from "@/components/AddChapterModal";
@@ -55,7 +54,6 @@ export default function MangaDetailPage() {
   const [recommendedMangas, setRecommendedMangas] = useState<MangaDetail[]>([]);
   const [recommendedError, setRecommendedError] = useState<string>("");
 
-  // Function to get proper image URL
   const getImageUrl = (path: string) => {
     if (!path) return '/placeholder.png';
     if (path.startsWith('http')) return path;
@@ -85,20 +83,20 @@ export default function MangaDetailPage() {
       }
     };
 
-const fetchRecommendedMangas = async () => {
-  try {
-    const response = await fetch(`http://localhost:3000/api/manga/recommended?excludeId=${id}`);
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch recommended mangas');
-    }
-    const data = await response.json();
-    setRecommendedMangas(data);
-  } catch (error) {
-    console.error('Error fetching recommended mangas:', error);
-    setRecommendedError('Failed to load recommended mangas');
-  }
-};
+    const fetchRecommendedMangas = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/manga/recommended?excludeId=${id}`);
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to fetch recommended mangas');
+        }
+        const data = await response.json();
+        setRecommendedMangas(data);
+      } catch (error) {
+        console.error('Error fetching recommended mangas:', error);
+        setRecommendedError('Failed to load recommended mangas');
+      }
+    };
 
     if (id) {
       fetchMangaDetail();
@@ -119,14 +117,11 @@ const fetchRecommendedMangas = async () => {
   };
 
   const handleLike = async () => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+    if (!user || !manga) return;
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/manga/${id}/like`, {
+      const response = await fetch(`http://localhost:3000/api/manga/${manga.id}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -135,36 +130,35 @@ const fetchRecommendedMangas = async () => {
 
       if (!response.ok) throw new Error('Failed to like manga');
 
-      setManga(prev => prev ? {
-        ...prev,
-        likes: isLiked ? prev.likes - 1 : prev.likes + 1
-      } : null);
       setIsLiked(!isLiked);
+      setManga(prev => prev ? { ...prev, likes: isLiked ? prev.likes - 1 : prev.likes + 1 } : prev);
     } catch (error) {
       console.error('Error liking manga:', error);
     }
   };
 
-  const handleShare = async () => {
-    try {
-      await navigator.share({
-        title: manga?.title,
-        text: manga?.description,
-        url: window.location.href
-      });
-    } catch (error) {
-      await navigator.clipboard.writeText(window.location.href);
-    }
-  };
+  const handleDeleteManga = async () => {
+    if (!user || !manga) return;
 
-  const handleChapterAdded = (newChapter: Chapter) => {
-    setManga(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        chapters: [...prev.chapters, newChapter].sort((a, b) => a.orderIndex - b.orderIndex)
-      };
-    });
+    const confirmDelete = window.confirm("Are you sure you want to delete this manga?");
+    if (!confirmDelete) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/manga/${manga.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to delete manga');
+
+      navigate('/manga');
+    } catch (error) {
+      console.error('Error deleting manga:', error);
+      setError('Failed to delete manga');
+    }
   };
 
   if (isLoading) return <LoadingState />;
@@ -231,9 +225,15 @@ const fetchRecommendedMangas = async () => {
                 <Clock className="w-4 h-4" />
                 {formatDistanceToNow(new Date(manga.createdAt), { addSuffix: true })}
               </div>
-              <Button variant="ghost" size="sm" onClick={handleShare}>
+              <Button variant="ghost" size="sm" onClick={() => navigator.share({ title: manga.title, text: manga.description, url: window.location.href })}>
                 <Share2 className="w-4 h-4" />
               </Button>
+              {user?.id === manga.author.id && (
+                <Button variant="destructive" size="sm" onClick={handleDeleteManga}>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Manga
+                </Button>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -290,7 +290,7 @@ const fetchRecommendedMangas = async () => {
         isOpen={isAddChapterOpen}
         onClose={() => setIsAddChapterOpen(false)}
         mangaId={manga.id}
-        onChapterAdded={handleChapterAdded}
+        onChapterAdded={(newChapter) => setManga(prev => prev ? { ...prev, chapters: [...prev.chapters, newChapter] } : prev)}
         currentChaptersCount={manga.chapters.length}
       />
 
