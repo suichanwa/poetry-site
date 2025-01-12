@@ -42,26 +42,26 @@
   }
 
   .dark {
-    /* Keep dark theme as is */
-    --background: #020817;
-    --foreground: #f8fafc;
-    --card: #0f172a;
-    --card-foreground: #f8fafc;
-    --popover: #0f172a;
-    --popover-foreground: #f8fafc;
-    --primary: #f8fafc;
+    /* Enhanced dark theme colors */
+    --background: #0f172a;    /* Deeper blue-black */
+    --foreground: #e2e8f0;    /* Softer white */
+    --card: #1e293b;          /* Richer card background */
+    --card-foreground: #f1f5f9;
+    --popover: #1e293b;
+    --popover-foreground: #f1f5f9;
+    --primary: #60a5fa;       /* Brighter blue */
     --primary-foreground: #0f172a;
-    --secondary: #1e293b;
-    --secondary-foreground: #f8fafc;
-    --muted: #1e293b;
+    --secondary: #334155;     /* Warmer secondary */
+    --secondary-foreground: #e2e8f0;
+    --muted: #334155;
     --muted-foreground: #94a3b8;
-    --accent: #1e293b;
-    --accent-foreground: #f8fafc;
-    --destructive: #7f1d1d;
-    --destructive-foreground: #f8fafc;
-    --border: #1e293b;
-    --input: #1e293b;
-    --ring: #cbd5e1;
+    --accent: #3b82f6;        /* Vibrant accent */
+    --accent-foreground: #ffffff;
+    --destructive: #dc2626;   /* Richer red */
+    --destructive-foreground: #fecaca;
+    --border: #334155;        /* Softer borders */
+    --input: #334155;
+    --ring: #60a5fa;
   }
 }
 

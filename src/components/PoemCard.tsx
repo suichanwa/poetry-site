@@ -168,9 +168,6 @@ export function PoemCard({
         <div className="p-6 flex flex-col space-y-4">
           {/* Title and Author Section */}
           <div className="w-full">
-            <h3 className="text-lg sm:text-xl font-bold mb-2 break-words line-clamp-2 hover:text-primary transition-colors">
-              {displayTitle}
-            </h3>
             <PoemHeader 
               title={displayTitle} 
               author={author} 
