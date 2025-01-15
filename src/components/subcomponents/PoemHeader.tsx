@@ -41,7 +41,7 @@ export function PoemHeader({ title, author, label, isPreview = true }: PoemHeade
           <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden flex items-center justify-center">
             {author.avatar ? (
               <img
-                src={`http://localhost:3000${author.avatar}`}
+                src={`http://localhost:3001${author.avatar}`}
                 alt={author.name}
                 className="w-full h-full object-cover"
               />

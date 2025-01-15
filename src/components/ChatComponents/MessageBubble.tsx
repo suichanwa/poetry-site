@@ -31,14 +31,14 @@ export function MessageBubble({ message, isOwnMessage }: MessageBubbleProps) {
       >
         {message.type === 'image' && message.fileUrl && (
           <img 
-            src={`http://localhost:3000${message.fileUrl}`}
+            src={`http://localhost:3001${message.fileUrl}`}
             alt="Message attachment"
             className="max-w-full rounded-lg mb-2"
           />
         )}
         {message.type === 'file' && message.fileUrl && (
           <a 
-            href={`http://localhost:3000${message.fileUrl}`}
+            href={`http://localhost:3001${message.fileUrl}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 mb-2 text-sm underline"

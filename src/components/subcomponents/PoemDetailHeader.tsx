@@ -21,7 +21,7 @@ export function PoemDetailHeader({ author, createdAt }: PoemDetailHeaderProps) {
       <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
         {author.avatar ? (
           <img
-            src={`http://localhost:3000${author.avatar}`}
+            src={`http://localhost:3001${author.avatar}`}
             alt={author.name}
             className="w-full h-full object-cover"
           />

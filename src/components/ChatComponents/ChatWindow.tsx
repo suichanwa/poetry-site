@@ -45,7 +45,7 @@ export function ChatWindow({ chatId, onBack }: ChatWindowProps) {
   useEffect(() => {
     const fetchMessagesAndParticipant = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/chats/${chatId}/messages`, {
+        const response = await fetch(`http://localhost:3001/api/chats/${chatId}/messages`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -64,7 +64,7 @@ export function ChatWindow({ chatId, onBack }: ChatWindowProps) {
         uniqueMessages.forEach(msg => messageIds.current.add(msg.id));
         setMessages(uniqueMessages);
 
-        const chatResponse = await fetch(`http://localhost:3000/api/chats/${chatId}`, {
+        const chatResponse = await fetch(`http://localhost:3001/api/chats/${chatId}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -142,7 +142,7 @@ export function ChatWindow({ chatId, onBack }: ChatWindowProps) {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('http://localhost:3000/api/chats/messages', {
+      const response = await fetch('http://localhost:3001/api/chats/messages', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

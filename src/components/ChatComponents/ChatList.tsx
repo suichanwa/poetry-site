@@ -27,7 +27,7 @@ export function ChatList({ onChatSelect }: { onChatSelect: (chatId: number) => v
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/chats', {
+        const response = await fetch('http://localhost:3001/api/chats', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -47,7 +47,7 @@ export function ChatList({ onChatSelect }: { onChatSelect: (chatId: number) => v
   }, []);
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://localhost:3000?token=${localStorage.getItem('token')}`);
+    const ws = new WebSocket(`ws://localhost:3001?token=${localStorage.getItem('token')}`);
     
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -107,7 +107,7 @@ export function ChatList({ onChatSelect }: { onChatSelect: (chatId: number) => v
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                       {otherParticipant.avatar ? (
                         <img
-                          src={`http://localhost:3000${otherParticipant.avatar}`}
+                          src={`http://localhost:3001${otherParticipant.avatar}`}
                           alt={otherParticipant.name}
                           className="w-full h-full object-cover"
                         />

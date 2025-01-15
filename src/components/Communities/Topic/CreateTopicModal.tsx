@@ -29,7 +29,7 @@ export function CreateTopicModal({
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/topics', {
+      const response = await fetch('http://localhost:3001/api/topics', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

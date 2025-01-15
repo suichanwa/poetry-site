@@ -111,7 +111,7 @@ export function AddMangaModal({ isOpen, onClose, onAddManga }: AddMangaModalProp
       chapterPages.forEach(page => formData.append('chapterPages', page));
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/manga', {
+      const response = await fetch('http://localhost:3001/api/manga', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

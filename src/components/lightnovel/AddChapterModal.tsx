@@ -42,7 +42,7 @@ export function AddChapterModal({
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/lightnovels/${novelId}/chapters`, {
+      const response = await fetch(`http://localhost:3001/api/lightnovels/${novelId}/chapters`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

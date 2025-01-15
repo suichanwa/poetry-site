@@ -21,7 +21,7 @@ export function LikeButton({ poemId, initialLikes = 0 }: LikeButtonProps) {
 
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3000/api/poems/${poemId}/like/status`, {
+        const response = await fetch(`http://localhost:3001/api/poems/${poemId}/like/status`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -48,7 +48,7 @@ export function LikeButton({ poemId, initialLikes = 0 }: LikeButtonProps) {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/poems/${poemId}/like`, {
+      const response = await fetch(`http://localhost:3001/api/poems/${poemId}/like`, {
         method: liked ? 'DELETE' : 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

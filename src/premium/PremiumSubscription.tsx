@@ -26,7 +26,7 @@ export function PremiumSubscription() {
   const handleSubscribe = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:3000/api/subscribe", {
+      const response = await fetch("http://localhost:3001/api/subscribe", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

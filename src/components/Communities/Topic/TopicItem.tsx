@@ -33,7 +33,7 @@ export function TopicItem({ topic, isModOrCreator }: TopicItemProps) {
     setIsUpdating(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/topics/${topic.id}`, {
+      const response = await fetch(`http://localhost:3001/api/topics/${topic.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

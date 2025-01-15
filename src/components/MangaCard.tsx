@@ -41,7 +41,7 @@ export function MangaCard({ manga, onMangaClick }: MangaCardProps) {
     if (path.startsWith('http')) return path;
     // Remove the server path prefix and fix slashes
     const cleanPath = path.replace(/^.*[\/\\]uploads[\/\\]/, 'uploads/').replace(/\\/g, '/');
-    return `http://localhost:3000/${cleanPath}`;
+    return `http://localhost:3001/${cleanPath}`;
   };
 
   return (

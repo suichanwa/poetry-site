@@ -46,7 +46,7 @@ export function CommunityCard({
         <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden">
           {avatar ? (
             <img 
-              src={`http://localhost:3000${avatar}`}
+              src={`http://localhost:3001${avatar}`}
               alt={name}
               className="w-full h-full object-cover"
             />

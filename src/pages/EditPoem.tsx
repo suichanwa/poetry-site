@@ -28,7 +28,7 @@ export default function EditPoem() {
   useEffect(() => {
     const fetchPoem = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/poems/${id}`);
+        const response = await fetch(`http://localhost:3001/api/poems/${id}`);
         if (!response.ok) throw new Error('Failed to fetch poem');
         
         const poem = await response.json();
@@ -56,7 +56,7 @@ export default function EditPoem() {
   const handleSubmit = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/poems/${id}`, {
+      const response = await fetch(`http://localhost:3001/api/poems/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

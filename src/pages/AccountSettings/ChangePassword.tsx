@@ -22,7 +22,7 @@ export function ChangePassword({ setError, setSuccess }: ChangePasswordProps) {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/api/users/${user?.id}/password`, {
+      const response = await fetch(`http://localhost:3001/api/users/${user?.id}/password`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

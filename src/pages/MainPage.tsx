@@ -68,7 +68,7 @@ export default function MainPage() {
   const handleTagSearch = async (tags) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/api/search/tags?tags=${tags.join(',')}`);
+      const response = await fetch(`http://localhost:3001/api/search/tags?tags=${tags.join(',')}`);
       if (!response.ok) throw new Error('Failed to search by tags');
       const data = await response.json();
       setSearchResults(data);
@@ -91,7 +91,7 @@ export default function MainPage() {
           ...(authRequired && token && { Authorization: `Bearer ${token}` }),
         };
 
-        const response = await fetch(`http://localhost:3000/api/${endpoint}`, { headers });
+        const response = await fetch(`http://localhost:3001/api/${endpoint}`, { headers });
         if (!response.ok) throw new Error("Failed to fetch data");
 
         const data = await response.json();

@@ -24,7 +24,7 @@ export function FollowButton({ userId, initialIsFollowing = false, onFollowChang
       if (!user) return;
       
       try {
-        const response = await fetch(`http://localhost:3000/api/follow/${userId}/status`, {
+        const response = await fetch(`http://localhost:3001/api/follow/${userId}/status`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
           }
@@ -52,7 +52,7 @@ export function FollowButton({ userId, initialIsFollowing = false, onFollowChang
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/follow/${userId}`, {
+      const response = await fetch(`http://localhost:3001/api/follow/${userId}`, {
         method: isFollowing ? 'DELETE' : 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

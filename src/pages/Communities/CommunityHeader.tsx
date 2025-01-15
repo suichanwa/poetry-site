@@ -35,7 +35,7 @@ export function CommunityHeader({
         <div className="w-24 h-24 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden">
           {community.avatar ? (
             <img 
-              src={`http://localhost:3000${community.avatar}`}
+              src={`http://localhost:3001${community.avatar}`}
               alt={community.name}
               className="w-full h-full object-cover"
             />

@@ -43,7 +43,7 @@ export function AnimatedAvatar({ avatar, animation, cardStyle, size = 'md' }: An
       animate={animations[animation as keyof typeof animations]}
     >
       <img 
-        src={`http://localhost:3000${avatar}`}
+        src={`http://localhost:3001${avatar}`}
         alt="Avatar"
         className="w-full h-full object-cover"
       />

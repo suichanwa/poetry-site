@@ -95,7 +95,7 @@ export function AddLightNovelModal({ isOpen, onClose, onAddLightNovel }: AddLigh
       formData.append('chapterTitle', chapterTitle.trim());
       formData.append('chapterContent', chapterContent.trim());
 
-      const response = await fetch('http://localhost:3000/api/lightnovels', {
+      const response = await fetch('http://localhost:3001/api/lightnovels', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

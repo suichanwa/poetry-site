@@ -28,7 +28,7 @@ export function ThemeCustomizer() {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/users/${user?.id}/theme`, {
+      const response = await fetch(`http://localhost:3001/api/users/${user?.id}/theme`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

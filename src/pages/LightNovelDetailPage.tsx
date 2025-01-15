@@ -52,7 +52,7 @@ export default function LightNovelDetailPage() {
     if (!path) return '/placeholder.png';
     if (path.startsWith('http')) return path;
     const cleanPath = path.replace(/^.*[\/\\]uploads[\/\\]/, 'uploads/').replace(/\\/g, '/');
-    return `http://localhost:3000/${cleanPath}`;
+    return `http://localhost:3001/${cleanPath}`;
   };
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function LightNovelDetailPage() {
       try {
         setIsLoading(true);
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3000/api/lightnovels/${id}`, {
+        const response = await fetch(`http://localhost:3001/api/lightnovels/${id}`, {
           headers: {
             ...(token && { 'Authorization': `Bearer ${token}` })
           }
@@ -98,7 +98,7 @@ export default function LightNovelDetailPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/lightnovels/${novel.id}/like`, {
+      const response = await fetch(`http://localhost:3001/api/lightnovels/${novel.id}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -122,7 +122,7 @@ export default function LightNovelDetailPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/lightnovels/${novel.id}`, {
+      const response = await fetch(`http://localhost:3001/api/lightnovels/${novel.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

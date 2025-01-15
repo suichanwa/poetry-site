@@ -100,7 +100,7 @@ export function AddPoetryModal({ isOpen, onClose, onAddPoetry }: AddPoetryModalP
       }
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/poems', {
+      const response = await fetch('http://localhost:3001/api/poems', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

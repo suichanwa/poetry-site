@@ -40,7 +40,7 @@ export function BannerUpload() {
       const formData = new FormData();
       formData.append('banner', image);
 
-      const response = await fetch(`http://localhost:3000/api/users/${user.id}/banner`, {
+      const response = await fetch(`http://localhost:3001/api/users/${user.id}/banner`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -71,7 +71,7 @@ export function BannerUpload() {
         <div className="relative h-32 bg-muted rounded-lg overflow-hidden">
           {(preview || user?.banner) && (
             <img 
-              src={preview || `http://localhost:3000${user?.banner}`}
+              src={preview || `http://localhost:3001${user?.banner}`}
               alt="Banner preview"
               className="w-full h-full object-cover"
             />

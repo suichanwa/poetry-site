@@ -24,7 +24,7 @@ export function ProfileBanner({ banner, userData, followStats, onFollowChange }:
     <div className="relative h-64">
       {banner ? (
         <img 
-          src={`http://localhost:3000${banner}`}
+          src={`http://localhost:3001${banner}`}
           alt="Profile banner"
           className="w-full h-full object-cover"
         />

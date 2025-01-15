@@ -58,7 +58,7 @@ export default function PaymentPage() {
 
     setIsProcessing(true);
     try {
-      const response = await fetch("http://localhost:3000/api/subscribe/process-payment", {
+      const response = await fetch("http://localhost:3001/api/subscribe/process-payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

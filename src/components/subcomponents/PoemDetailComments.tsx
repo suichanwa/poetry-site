@@ -45,7 +45,7 @@ export function PoemDetailComments({ comments, onUserClick }: PoemDetailComments
         const token = localStorage.getItem('token');
         const statuses = await Promise.all(
           comments.map(comment => 
-            fetch(`http://localhost:3000/api/poems/comments/${comment.id}/like/status`, {
+            fetch(`http://localhost:3001/api/poems/comments/${comment.id}/like/status`, {
               headers: {
                 'Authorization': `Bearer ${token}`
               }
@@ -77,7 +77,7 @@ export function PoemDetailComments({ comments, onUserClick }: PoemDetailComments
     try {
       const token = localStorage.getItem('token');
       const method = likedComments[commentId] ? 'DELETE' : 'POST';
-      const response = await fetch(`http://localhost:3000/api/poems/comments/${commentId}/like`, {
+      const response = await fetch(`http://localhost:3001/api/poems/comments/${commentId}/like`, {
         method,
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -120,7 +120,7 @@ export function PoemDetailComments({ comments, onUserClick }: PoemDetailComments
               <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
                 {comment.user.avatar ? (
                   <img
-                    src={`http://localhost:3000${comment.user.avatar}`}
+                    src={`http://localhost:3001${comment.user.avatar}`}
                     alt={comment.user.name}
                     className="w-full h-full object-cover"
                   />

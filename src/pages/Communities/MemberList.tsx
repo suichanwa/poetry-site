@@ -19,7 +19,7 @@ export function MemberList({ members, creatorId }: MemberListProps) {
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
               {member.avatar ? (
                 <img 
-                  src={`http://localhost:3000${member.avatar}`}
+                  src={`http://localhost:3001${member.avatar}`}
                   alt={member.name}
                   className="w-full h-full object-cover"
                 />

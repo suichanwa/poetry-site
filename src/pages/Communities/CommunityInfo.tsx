@@ -41,7 +41,7 @@ export function CommunityInfo({
             <img 
               src={community.avatar.startsWith('http') 
                 ? community.avatar 
-                : `http://localhost:3000${community.avatar}`}
+                : `http://localhost:3001${community.avatar}`}
               alt={community.name}
               className="w-full h-full object-cover"
               onError={(e) => {

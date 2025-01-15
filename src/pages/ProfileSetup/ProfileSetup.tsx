@@ -53,7 +53,7 @@ export default function ProfileSetupPage() {
       formData.append('name', name);
       formData.append('bio', bio);
 
-      const response = await fetch(`http://localhost:3000/api/users/${user.id}/avatar`, {
+      const response = await fetch(`http://localhost:3001/api/users/${user.id}/avatar`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -104,7 +104,7 @@ export default function ProfileSetupPage() {
           </div>
         )}
         <ProfileImageUpload 
-          preview={preview || (user?.avatar ? `http://localhost:3000${user.avatar}` : null)}
+          preview={preview || (user?.avatar ? `http://localhost:3001${user.avatar}` : null)}
           handleImageChange={handleImageChange} 
           isUploading={isUploading} 
         />

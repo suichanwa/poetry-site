@@ -34,7 +34,7 @@ export function MobileNavBar() {
     const fetchNotifications = async () => {
       if (!user) return;
       try {
-        const response = await fetch('http://localhost:3000/api/notifications', {
+        const response = await fetch('http://localhost:3001/api/notifications', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }

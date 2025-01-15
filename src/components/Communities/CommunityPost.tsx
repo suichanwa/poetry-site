@@ -34,7 +34,7 @@ export function CommunityPost({ post }: CommunityPostProps) {
         <div className="w-10 h-10 rounded-full overflow-hidden bg-muted">
           {post.author.avatar ? (
             <img 
-              src={`http://localhost:3000${post.author.avatar}`}
+              src={`http://localhost:3001${post.author.avatar}`}
               alt={post.author.name}
               className="w-full h-full object-cover"
             />
@@ -62,7 +62,7 @@ export function CommunityPost({ post }: CommunityPostProps) {
       {post.images.length > 0 && (
         <div className="relative">
           <img
-            src={`http://localhost:3000${post.images[currentImageIndex]}`}
+            src={`http://localhost:3001${post.images[currentImageIndex]}`}
             alt={`Post image ${currentImageIndex + 1}`}
             className="w-full max-h-96 object-cover rounded-md"
           />

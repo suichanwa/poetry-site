@@ -19,7 +19,7 @@ export function TopicDetail() {
   useEffect(() => {
     const fetchTopic = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/topics/${id}`);
+        const response = await fetch(`http://localhost:3001/api/topics/${id}`);
         if (!response.ok) throw new Error('Failed to fetch topic');
         const data = await response.json();
         setTopic(data);

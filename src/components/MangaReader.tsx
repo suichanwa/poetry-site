@@ -44,7 +44,7 @@ export function MangaReader({ pages, currentChapter, onChapterChange, onClose }:
     if (!path) return '/placeholder.png';
     if (path.startsWith('http')) return path;
     const cleanPath = path.replace(/^.*[\/\\]uploads[\/\\]/, 'uploads/').replace(/\\/g, '/');
-    return `http://localhost:3000/${cleanPath}`;
+    return `http://localhost:3001/${cleanPath}`;
   };
 
   useEffect(() => {

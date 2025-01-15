@@ -27,7 +27,7 @@ export function InviteUserModal({ isOpen, onClose, communityId }: InviteUserModa
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/communities/${communityId}/invite`, {
+      const response = await fetch(`http://localhost:3001/api/communities/${communityId}/invite`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

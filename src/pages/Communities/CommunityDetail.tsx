@@ -56,7 +56,7 @@ export default function CommunityDetail() {
   useEffect(() => {
     const fetchCommunity = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/communities/${id}`);
+        const response = await fetch(`http://localhost:3001/api/communities/${id}`);
         if (!response.ok) throw new Error('Failed to fetch community');
         const data = await response.json();
         setCommunity(data);
@@ -74,7 +74,7 @@ export default function CommunityDetail() {
   const handleJoinCommunity = async () => {
     if (!user || !community) return;
     try {
-      const response = await fetch(`http://localhost:3000/api/communities/${id}/join`, {
+      const response = await fetch(`http://localhost:3001/api/communities/${id}/join`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -96,7 +96,7 @@ export default function CommunityDetail() {
   const handleLeaveCommunity = async () => {
     if (!user || !community) return;
     try {
-      const response = await fetch(`http://localhost:3000/api/communities/${id}/leave`, {
+      const response = await fetch(`http://localhost:3001/api/communities/${id}/leave`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

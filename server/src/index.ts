@@ -61,5 +61,5 @@ app.use('/api/manga', mangaRoutes);
 app.use('/api/lightnovels', lightNovelRoutes);
 
 server.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server running at http://localhost:3001:${port}`);
 });

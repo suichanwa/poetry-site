@@ -28,7 +28,7 @@ export function ProfileAvatar({ avatar, name, size = "lg" }: ProfileAvatarProps)
     <div className={`${sizeClasses} rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden`}>
       {avatar ? (
         <img 
-          src={`http://localhost:3000${avatar}`}
+          src={`http://localhost:3001${avatar}`}
           alt={name || 'Profile'} 
           className="w-full h-full object-cover"
           onError={(e) => {

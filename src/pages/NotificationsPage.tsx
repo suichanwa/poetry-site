@@ -39,7 +39,7 @@ export default function NotificationsPage() {
       setIsLoading(true);
       setError("");
       
-      const response = await fetch('http://localhost:3000/api/notifications', {
+      const response = await fetch('http://localhost:3001/api/notifications', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -70,7 +70,7 @@ export default function NotificationsPage() {
 
   const handleMarkAsRead = async (notificationId: number) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/notifications/${notificationId}/mark-read`, {
+      const response = await fetch(`http://localhost:3001/api/notifications/${notificationId}/mark-read`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -94,7 +94,7 @@ export default function NotificationsPage() {
 
   const handleMarkAllAsRead = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/notifications/mark-all-read', {
+      const response = await fetch('http://localhost:3001/api/notifications/mark-all-read', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -180,7 +180,7 @@ export default function NotificationsPage() {
                     <div className="flex gap-4">
                       {notification.sender?.avatar && (
                         <img
-                          src={`http://localhost:3000${notification.sender.avatar}`}
+                          src={`http://localhost:3001${notification.sender.avatar}`}
                           alt={notification.sender.name}
                           className="w-10 h-10 rounded-full object-cover"
                         />

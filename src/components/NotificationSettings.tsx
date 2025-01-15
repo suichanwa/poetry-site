@@ -34,7 +34,7 @@ export function NotificationSettings() {
       
       try {
         setIsLoading(true);
-        const response = await fetch('http://localhost:3000/api/notifications/preferences', {
+        const response = await fetch('http://localhost:3001/api/notifications/preferences', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -62,7 +62,7 @@ export function NotificationSettings() {
   const handlePreferenceChange = async (key: keyof NotificationPreferences, value: boolean) => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:3000/api/notifications/preferences', {
+      const response = await fetch('http://localhost:3001/api/notifications/preferences', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

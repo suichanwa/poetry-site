@@ -18,7 +18,7 @@ export default function MangaPage() {
     const fetchMangas = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('http://localhost:3000/api/manga');
+        const response = await fetch('http://localhost:3001/api/manga');
         const data = await response.json();
         setMangas(data);
       } catch (error) {

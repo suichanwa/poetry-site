@@ -33,7 +33,7 @@ export default function CommunityManagePage() {
   useEffect(() => {
     const fetchCommunity = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/communities/${id}`, {
+        const response = await fetch(`http://localhost:3001/api/communities/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -53,7 +53,7 @@ export default function CommunityManagePage() {
         setIsPrivate(community.isPrivate);
         setRules(community.rules);
         if (community.avatar) {
-          setAvatarPreview(`http://localhost:3000${community.avatar}`);
+          setAvatarPreview(`http://localhost:3001${community.avatar}`);
         }
       } catch (error) {
         setError('Failed to load community');
@@ -92,7 +92,7 @@ const handleAvatarUpload = async () => {
     formData.append('avatar', avatar);
 
     const token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:3000/api/communities/${id}/avatar`, {
+    const response = await fetch(`http://localhost:3001/api/communities/${id}/avatar`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -107,7 +107,7 @@ const handleAvatarUpload = async () => {
 
     const data = await response.json();
     // Update the preview with the full URL
-    setAvatarPreview(`http://localhost:3000${data.avatar}`);
+    setAvatarPreview(`http://localhost:3001${data.avatar}`);
     setAvatar(null);
     setError("");
   } catch (error) {
@@ -140,7 +140,7 @@ const handleAvatarUpload = async () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/communities/${id}`, {
+      const response = await fetch(`http://localhost:3001/api/communities/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

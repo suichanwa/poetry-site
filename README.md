@@ -105,16 +105,16 @@ Collecting workspace information
 - [ ] Improve authentication system
 
 ### Data Management
-- [ ] Add poem backup system
-- [ ] Implement draft autosave
-- [ ] Add export/import functionality
-- [ ] Improve search with elasticsearch
+- [??] Add poem backup system
+- [??] Implement draft autosave
+- [??] Add export/import functionality
+- [that'dbegood] Improve search with elasticsearch
 
 ## 🎨 Design Enhancements
 
 ### Typography
-- [ ] Add custom font selection for poems
-- [ ] Implement dynamic text sizing
+- [ifdev] Add custom font selection for poems
+- [ifdev] Implement dynamic text sizing
 - [ ] Add calligraphy options
 - [ ] Support different writing directions
 

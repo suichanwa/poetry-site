@@ -17,7 +17,7 @@ export default function Layout({ children }: LayoutProps) {
   const getImageUrl = (path: string) => {
     if (!path) return null;
     if (path.startsWith('http')) return path;
-    return `http://localhost:3000${path}`;
+    return `http://localhost:3001${path}`;
   };
 
   return (

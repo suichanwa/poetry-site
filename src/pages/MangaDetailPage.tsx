@@ -58,7 +58,7 @@ export default function MangaDetailPage() {
     if (!path) return '/placeholder.png';
     if (path.startsWith('http')) return path;
     const cleanPath = path.replace(/^.*[\/\\]uploads[\/\\]/, 'uploads/').replace(/\\/g, '/');
-    return `http://localhost:3000/${cleanPath}`;
+    return `http://localhost:3001/${cleanPath}`;
   };
 
   useEffect(() => {
@@ -66,7 +66,7 @@ export default function MangaDetailPage() {
       try {
         setIsLoading(true);
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3000/api/manga/${id}`, {
+        const response = await fetch(`http://localhost:3001/api/manga/${id}`, {
           headers: {
             ...(token && { 'Authorization': `Bearer ${token}` })
           }
@@ -85,7 +85,7 @@ export default function MangaDetailPage() {
 
     const fetchRecommendedMangas = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/manga/recommended?excludeId=${id}`);
+        const response = await fetch(`http://localhost:3001/api/manga/recommended?excludeId=${id}`);
         if (!response.ok) {
           const error = await response.json();
           throw new Error(error.error || 'Failed to fetch recommended mangas');
@@ -121,7 +121,7 @@ export default function MangaDetailPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/manga/${manga.id}/like`, {
+      const response = await fetch(`http://localhost:3001/api/manga/${manga.id}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -145,7 +145,7 @@ export default function MangaDetailPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/manga/${manga.id}`, {
+      const response = await fetch(`http://localhost:3001/api/manga/${manga.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

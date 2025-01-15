@@ -37,7 +37,7 @@ export function PoemActions({
 
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3000/api/poems/${poemId}/like/status`, {
+        const response = await fetch(`http://localhost:3001/api/poems/${poemId}/like/status`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -66,7 +66,7 @@ export function PoemActions({
   try {
     const token = localStorage.getItem('token');
     const method = isLiked ? 'DELETE' : 'POST';
-    const response = await fetch(`http://localhost:3000/api/poems/${poemId}/like`, {
+    const response = await fetch(`http://localhost:3001/api/poems/${poemId}/like`, {
       method,
       headers: {
         'Authorization': `Bearer ${token}`,

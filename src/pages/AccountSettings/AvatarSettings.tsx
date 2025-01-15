@@ -13,7 +13,7 @@ export function AvatarSettings() {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/users/${user.id}/avatar-settings`, {
+      const response = await fetch(`http://localhost:3001/api/users/${user.id}/avatar-settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

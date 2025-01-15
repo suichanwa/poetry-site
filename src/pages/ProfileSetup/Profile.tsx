@@ -91,10 +91,10 @@ export default function Profile() {
           "Authorization": `Bearer ${token}`,
         };
 
-        const userResponse = await fetch(`http://localhost:3000/api/users/${id}`, { headers });
-        const poemsResponse = await fetch(`http://localhost:3000/api/poems/user/${id}`, { headers });
-        const mangaResponse = await fetch(`http://localhost:3000/api/manga/user/${id}`, { headers });
-        const lightNovelsResponse = await fetch(`http://localhost:3000/api/lightnovels/user/${id}`, { headers });
+        const userResponse = await fetch(`http://localhost:3001/api/users/${id}`, { headers });
+        const poemsResponse = await fetch(`http://localhost:3001/api/poems/user/${id}`, { headers });
+        const mangaResponse = await fetch(`http://localhost:3001/api/manga/user/${id}`, { headers });
+        const lightNovelsResponse = await fetch(`http://localhost:3001/api/lightnovels/user/${id}`, { headers });
 
         if (!userResponse.ok || !poemsResponse.ok || !mangaResponse.ok || !lightNovelsResponse.ok) {
           throw new Error("Failed to fetch data");

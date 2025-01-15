@@ -26,7 +26,7 @@ const handleMessageClick = async () => {
       throw new Error('You must be logged in to start a chat');
     }
 
-    const response = await fetch('http://localhost:3000/api/chats', {
+    const response = await fetch('http://localhost:3001/api/chats', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

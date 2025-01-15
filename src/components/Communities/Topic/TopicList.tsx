@@ -20,7 +20,7 @@ export function TopicList({ communityId, isModOrCreator }: TopicListProps) {
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/topics/community/${communityId}`);
+        const response = await fetch(`http://localhost:3001/api/topics/community/${communityId}`);
         if (!response.ok) throw new Error('Failed to fetch topics');
         const data = await response.json();
         setTopics(data);

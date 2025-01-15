@@ -17,7 +17,7 @@ export function ProductStore() {
 
   const fetchProducts = async (type: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/products${type !== 'all' ? `?type=${type}` : ''}`);
+      const response = await fetch(`http://localhost:3001/api/products${type !== 'all' ? `?type=${type}` : ''}`);
       const data = await response.json();
       setProducts(data);
     } catch (error) {

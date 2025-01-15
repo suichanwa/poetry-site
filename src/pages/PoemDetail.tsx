@@ -63,7 +63,7 @@ export default function PoemDetail() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/poems/${id}/comments`, {
+      const response = await fetch(`http://localhost:3001/api/poems/${id}/comments`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -95,8 +95,8 @@ export default function PoemDetail() {
         }
 
         const [poemResponse, bookmarkResponse] = await Promise.all([
-          fetch(`http://localhost:3000/api/poems/${id}`),
-          user ? fetch(`http://localhost:3000/api/poems/${id}/bookmark/status`, {
+          fetch(`http://localhost:3001/api/poems/${id}`),
+          user ? fetch(`http://localhost:3001/api/poems/${id}/bookmark/status`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
             },
@@ -151,7 +151,7 @@ export default function PoemDetail() {
       if (!id) return;
       
       try {
-        await fetch(`http://localhost:3000/api/poems/${id}/view`, {
+        await fetch(`http://localhost:3001/api/poems/${id}/view`, {
           method: 'POST'
         });
       } catch (error) {
@@ -169,7 +169,7 @@ export default function PoemDetail() {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/api/poems/${id}/bookmark`, {
+      const response = await fetch(`http://localhost:3001/api/poems/${id}/bookmark`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

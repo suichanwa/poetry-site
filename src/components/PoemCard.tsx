@@ -63,7 +63,7 @@ export function PoemCard({
     if (!user || !id) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/poems/${id}/comments`, {
+      const response = await fetch(`http://localhost:3001/api/poems/${id}/comments`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -105,7 +105,7 @@ export function PoemCard({
     }
     
     try {
-      const response = await fetch(`http://localhost:3000/api/poems/${id}/bookmark`, {
+      const response = await fetch(`http://localhost:3001/api/poems/${id}/bookmark`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -126,7 +126,7 @@ export function PoemCard({
     if (!id || !confirm('Are you sure you want to delete this poem?')) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/poems/${id}`, {
+      const response = await fetch(`http://localhost:3001/api/poems/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

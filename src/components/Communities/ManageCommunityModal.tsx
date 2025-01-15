@@ -72,7 +72,7 @@ export function ManageCommunityModal({
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/communities/${community.id}`, {
+      const response = await fetch(`http://localhost:3001/api/communities/${community.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

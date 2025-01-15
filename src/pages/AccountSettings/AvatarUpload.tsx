@@ -40,7 +40,7 @@ export function AvatarUpload() {
       const formData = new FormData();
       formData.append('avatar', image);
 
-      const response = await fetch(`http://localhost:3000/api/users/${user.id}/avatar`, {
+      const response = await fetch(`http://localhost:3001/api/users/${user.id}/avatar`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,

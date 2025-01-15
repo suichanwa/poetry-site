@@ -73,7 +73,7 @@ export function CreatePostModal({
       images.forEach(image => formData.append('images', image));
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/communities/posts', {
+      const response = await fetch('http://localhost:3001/api/communities/posts', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

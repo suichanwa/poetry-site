@@ -58,7 +58,7 @@ export function AddChapterModal({
       });
 
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/manga/${mangaId}/chapters`, {
+      const response = await fetch(`http://localhost:3001/api/manga/${mangaId}/chapters`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

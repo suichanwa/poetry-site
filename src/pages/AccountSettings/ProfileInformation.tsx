@@ -23,7 +23,7 @@ export function ProfileInformation({ setError, setSuccess }: ProfileInformationP
     
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/api/users/${user.id}`, {
+      const response = await fetch(`http://localhost:3001/api/users/${user.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

@@ -40,7 +40,7 @@ export function LightNovelComments({ novelId, onUserClick }: LightNovelCommentsP
 
   const fetchComments = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/lightnovels/${novelId}/comments`);
+      const response = await fetch(`http://localhost:3001/api/lightnovels/${novelId}/comments`);
       const data = await response.json();
       setComments(data);
 
@@ -56,7 +56,7 @@ export function LightNovelComments({ novelId, onUserClick }: LightNovelCommentsP
         const token = localStorage.getItem('token');
         const likeStatuses = await Promise.all(
           data.map((comment: Comment) =>
-            fetch(`http://localhost:3000/api/lightnovels/comments/${comment.id}/like/status`, {
+            fetch(`http://localhost:3001/api/lightnovels/comments/${comment.id}/like/status`, {
               headers: {
                 'Authorization': `Bearer ${token}`
               }
@@ -81,7 +81,7 @@ export function LightNovelComments({ novelId, onUserClick }: LightNovelCommentsP
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/lightnovels/${novelId}/comments`, {
+      const response = await fetch(`http://localhost:3001/api/lightnovels/${novelId}/comments`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -107,7 +107,7 @@ export function LightNovelComments({ novelId, onUserClick }: LightNovelCommentsP
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/lightnovels/comments/${commentId}/like`, {
+      const response = await fetch(`http://localhost:3001/api/lightnovels/comments/${commentId}/like`, {
         method: likedComments[commentId] ? 'DELETE' : 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -133,7 +133,7 @@ export function LightNovelComments({ novelId, onUserClick }: LightNovelCommentsP
         <div className="flex gap-4">
           <Avatar className="w-10 h-10">
             {user.avatar ? (
-              <AvatarImage src={`http://localhost:3000${user.avatar}`} />
+              <AvatarImage src={`http://localhost:3001${user.avatar}`} />
             ) : (
               <AvatarFallback>
                 <User className="w-5 h-5" />
@@ -164,7 +164,7 @@ export function LightNovelComments({ novelId, onUserClick }: LightNovelCommentsP
           <div key={comment.id} className="flex gap-4">
             <Avatar className="w-10 h-10 cursor-pointer" onClick={() => onUserClick(comment.user.id)}>
               {comment.user.avatar ? (
-                <AvatarImage src={`http://localhost:3000${comment.user.avatar}`} />
+                <AvatarImage src={`http://localhost:3001${comment.user.avatar}`} />
               ) : (
                 <AvatarFallback>
                   <User className="w-5 h-5" />
