@@ -1,20 +1,17 @@
 // src/pages/MainPage.tsx
 import { useState, useEffect } from "react";
-import { AddPoetryModal } from "@/components/AddPoetryModal";
-import { AddMangaModal } from "@/components/AddMangaModal";
-import { AddLightNovelModal } from "@/components/lightnovel/AddLightNovelModal";
 import { useAuth } from "@/context/AuthContext";
-import { FeedTabs } from "../components/FeedTabs";
-import { LoadingState } from "@/components/LoadingState";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { MangaGrid } from "@/components/MangaGrid";
-import { LightNovelGrid } from "@/components/lightnovel/LightNovelGrid";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { FeedTabs } from "@/components/FeedTabs";
+import { MangaGrid } from "@/components/MangaGrid";
+import { LightNovelGrid } from "@/components/lightnovel/LightNovelGrid";
 import { PoemFilters } from "@/components/PoemFilters";
-import { PoemCard } from "@/components/PoemCard";
-import { MangaCard } from "@/components/MangaCard";
-import { LightNovelCard } from "@/components/LightNovelCard";
+import { LoadingState } from "@/components/LoadingState";
+import { SearchResults } from "@/components/SearchResults";
+import { Modals } from "@/components/Modals";
+import { AddBookModal } from "@/components/AddBookModal";
 
 export default function MainPage() {
   const [poems, setPoems] = useState([]);
@@ -26,6 +23,7 @@ export default function MainPage() {
   const [isPoemModalOpen, setIsPoemModalOpen] = useState(false);
   const [isMangaModalOpen, setIsMangaModalOpen] = useState(false);
   const [isLightNovelModalOpen, setIsLightNovelModalOpen] = useState(false);
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
@@ -65,20 +63,6 @@ export default function MainPage() {
     setSearchQuery("");
   };
 
-  const handleTagSearch = async (tags) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`http://localhost:3001/api/search/tags?tags=${tags.join(',')}`);
-      if (!response.ok) throw new Error('Failed to search by tags');
-      const data = await response.json();
-      setSearchResults(data);
-    } catch (error) {
-      console.error('Error searching by tags:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
     setIsLoading(true);
     setError("");
@@ -93,7 +77,6 @@ export default function MainPage() {
 
         const response = await fetch(`http://localhost:3001/api/${endpoint}`, { headers });
         if (!response.ok) throw new Error("Failed to fetch data");
-
         const data = await response.json();
         setter(data);
       } catch (err) {
@@ -122,8 +105,7 @@ export default function MainPage() {
           poem.content.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
 
-      const matchesTags = selectedTags.length === 0 ||
-        selectedTags.every((tag) => poem.tags.some((t) => t.name === tag));
+      const matchesTags = selectedTags.every((tag) => poem.tags.some((t) => t.name === tag));
 
       return matchesSearch && matchesTags;
     });
@@ -158,6 +140,7 @@ export default function MainPage() {
                   onAddPoem={() => setIsPoemModalOpen(true)}
                   onAddManga={() => setIsMangaModalOpen(true)}
                   onAddLightNovel={() => setIsLightNovelModalOpen(true)}
+                  onAddBook={() => setIsBookModalOpen(true)}
                   className="pb-16 md:pb-0"
                 />
               </div>
@@ -204,58 +187,34 @@ export default function MainPage() {
           </Tabs>
         </div>
 
-        {searchResults.poems.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-bold">Poems</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {searchResults.poems.map(poem => (
-                <PoemCard key={poem.id} {...poem} />
-              ))}
-            </div>
-          </div>
-        )}
+        <SearchResults 
+          poems={searchResults.poems} 
+          manga={searchResults.manga} 
+          lightNovels={searchResults.lightNovels} 
+        />
 
-        {searchResults.manga.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-bold">Manga</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {searchResults.manga.map(manga => (
-                <MangaCard key={manga.id} {...manga} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {searchResults.lightNovels.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-bold">Light Novels</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {searchResults.lightNovels.map(novel => (
-                <LightNovelCard key={novel.id} {...novel} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        <AddPoetryModal
-          isOpen={isPoemModalOpen}
-          onClose={() => setIsPoemModalOpen(false)}
+        <Modals
+          isPoemModalOpen={isPoemModalOpen}
+          setIsPoemModalOpen={setIsPoemModalOpen}
+          isMangaModalOpen={isMangaModalOpen}
+          setIsMangaModalOpen={setIsMangaModalOpen}
+          isLightNovelModalOpen={isLightNovelModalOpen}
+          setIsLightNovelModalOpen={setIsLightNovelModalOpen}
           onAddPoetry={(newPoem) => {
             setPoems(prev => [newPoem, ...prev]);
             setFilteredPoems(prev => [newPoem, ...prev]);
           }}
-        />
-
-        <AddMangaModal
-          isOpen={isMangaModalOpen}
-          onClose={() => setIsMangaModalOpen(false)}
           onAddManga={(newManga) => setMangas(prev => [newManga, ...prev])}
+          onAddLightNovel={(newNovel) => setLightNovels(prev => [newNovel, ...prev])}
         />
 
-        <AddLightNovelModal
-          isOpen={isLightNovelModalOpen}
-          onClose={() => setIsLightNovelModalOpen(false)}
-          onAddLightNovel={(newNovel) => setLightNovels(prev => [newNovel, ...prev])}
+        <AddBookModal
+          isOpen={isBookModalOpen}
+          onClose={() => setIsBookModalOpen(false)}
+          onAddBook={(newBook) => {
+            // Handle the new book addition logic here
+            console.log("New book added:", newBook);
+          }}
         />
       </div>
     </div>
