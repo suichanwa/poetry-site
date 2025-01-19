@@ -37,7 +37,7 @@ export function AddBookModal({ isOpen, onClose, onAddBook }: AddBookModalProps) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !description.trim() || !coverImage) {
-      setError("Please fill in all required fields");
+      setError("All fields are required");
       return;
     }
 

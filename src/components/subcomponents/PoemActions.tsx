@@ -44,7 +44,6 @@ export function PoemActions({
         });
         
         if (!response.ok) throw new Error('Failed to fetch like status');
-        
         const data = await response.json();
         setIsLiked(data.liked);
         setLikeCount(data.likeCount);
@@ -56,33 +55,33 @@ export function PoemActions({
     checkLikeStatus();
   }, [poemId, user]);
 
- const handleLike = async (e: React.MouseEvent) => {
-  e.stopPropagation();
-  if (!user) {
-    navigate('/login');
-    return;
-  }
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) {
+      navigate('/login');
+      return;
+    }
 
-  try {
-    const token = localStorage.getItem('token');
-    const method = isLiked ? 'DELETE' : 'POST';
-    const response = await fetch(`http://localhost:3001/api/poems/${poemId}/like`, {
-      method,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    try {
+      const token = localStorage.getItem('token');
+      const method = isLiked ? 'DELETE' : 'POST';
+      const response = await fetch(`http://localhost:3001/api/poems/${poemId}/like`, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (!response.ok) throw new Error('Failed to toggle like');
+      if (!response.ok) throw new Error('Failed to toggle like');
 
-    const data = await response.json();
-    setIsLiked(data.liked);
-    setLikeCount(data.likeCount);
-  } catch (error) {
-    console.error('Error toggling like:', error);
-  }
-};
+      const data = await response.json();
+      setIsLiked(data.liked);
+      setLikeCount(data.likeCount);
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
+  };
 
   return (
     <div className="border-t pt-2 flex justify-between items-center">
@@ -98,12 +97,12 @@ export function PoemActions({
           )}
           disabled={!poemId} // Disable if no poemId
         >
-       <Heart 
-           className="w-4 h-4 sm:w-5 sm:h-5" 
-           fill={isLiked ? "currentColor" : "none"} 
-         />
-         <span className="text-sm">{likeCount}</span>
-       </Button>
+          <Heart 
+            className="w-4 h-4 sm:w-5 sm:h-5" 
+            fill={isLiked ? "currentColor" : "none"} 
+          />
+          <span className="text-sm">{likeCount}</span>
+        </Button>
 
         {/* Comment Button */}
         <Button
@@ -118,9 +117,7 @@ export function PoemActions({
           <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
           <span className="text-sm">{commentsCount}</span>
         </Button>
-      </div>
 
-      <div className="flex space-x-1 sm:space-x-2">
         {/* Share Button */}
         <Button
           variant="ghost"

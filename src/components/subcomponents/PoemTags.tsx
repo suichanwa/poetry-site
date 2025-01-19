@@ -1,92 +1,32 @@
-import { useState } from "react";
-import { X, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// src/components/subcomponents/PoemTags.tsx
+import React from "react";
+import { motion } from "framer-motion";
+import { Tag } from "lucide-react";
 
 interface PoemTagsProps {
-  tags: string[];
-  setTags: (tags: string[]) => void;
+  tags: { name: string }[];
 }
 
-const AVAILABLE_TAGS = [
-  "Love",
-  "Nature",
-  "Life",
-  "Death",
-  "Friendship",
-  "Family",
-  "Hope",
-  "Dreams",
-  "Sadness",
-  "Joy",
-  "Time",
-  "Memory",
-  "Philosophy",
-  "Society",
-  "Spirituality"
-];
-
-export function PoemTags({ tags, setTags }: PoemTagsProps) {
-  const availableTags = AVAILABLE_TAGS.filter(tag => !tags.includes(tag));
-
-  const addTag = (tag: string) => {
-    if (!tags.includes(tag)) {
-      setTags([...tags, tag]);
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
-  };
-
+export function PoemTags({ tags }: PoemTagsProps) {
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between mb-1">
-        <label className="block text-sm font-medium">Tags</label>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm"
-              disabled={availableTags.length === 0}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Tag
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {availableTags.map(tag => (
-              <DropdownMenuItem
-                key={tag}
-                onClick={() => addTag(tag)}
-              >
-                {tag}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
+    <div className="w-full">
       <div className="flex flex-wrap gap-2">
-        {tags.map(tag => (
-          <span
-            key={tag}
-            className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+        {tags.map((tag, index) => (
+          <motion.span
+            key={tag.name}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: index * 0.1 }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 
+                     text-xs font-medium rounded-full
+                     bg-primary/10 text-primary
+                     transition-all duration-300
+                     hover:bg-primary/20 transform hover:scale-105
+                     max-w-[150px] truncate"
           >
-            {tag}
-            <button
-              type="button"
-              onClick={() => removeTag(tag)}
-              className="rounded-full p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </span>
+            <Tag className="w-3 h-3 flex-shrink-0" />
+            <span className="truncate">{tag.name}</span>
+          </motion.span>
         ))}
       </div>
     </div>

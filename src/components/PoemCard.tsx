@@ -1,14 +1,15 @@
 // src/components/PoemCard.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PoemHeader } from "@/components/subcomponents/PoemHeader";
 import { PoemContent } from "@/components/subcomponents/PoemContent";
 import { PoemActions } from "@/components/subcomponents/PoemActions";
+import { PoemTags } from "@/components/subcomponents/PoemTags";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
-import { Edit2, Trash2, Eye, Tag } from "lucide-react";
+import { Edit2, Trash2, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 
 export interface PoemCardProps {
@@ -82,7 +83,7 @@ export function PoemCard({
 
   const handleShare = async () => {
     if (!id) return;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -230,25 +231,7 @@ export function PoemCard({
           {/* Tags Section */}
           {tags && tags.length > 0 && (
             <div className="w-full">
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag, index) => (
-                  <motion.span
-                    key={tag.name}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 
-                             text-xs font-medium rounded-full
-                             bg-primary/10 text-primary
-                             transition-all duration-300
-                             hover:bg-primary/20 transform hover:scale-105
-                             max-w-[150px] truncate"
-                  >
-                    <Tag className="w-3 h-3 flex-shrink-0" />
-                    <span className="truncate">{tag.name}</span>
-                  </motion.span>
-                ))}
-              </div>
+              <PoemTags tags={tags} />
             </div>
           )}
 
