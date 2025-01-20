@@ -17,6 +17,7 @@ export function AddBookModal({ isOpen, onClose, onAddBook }: AddBookModalProps) 
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [content, setContent] = useState(""); // Add content state
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,7 +36,7 @@ export function AddBookModal({ isOpen, onClose, onAddBook }: AddBookModalProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !description.trim() || !coverImage) {
+    if (!title.trim() || !description.trim() || !content.trim() || !coverImage) {
       setError("All fields are required");
       return;
     }
@@ -47,6 +48,7 @@ export function AddBookModal({ isOpen, onClose, onAddBook }: AddBookModalProps) 
       const formData = new FormData();
       formData.append('title', title.trim());
       formData.append('description', description.trim());
+      formData.append('content', content.trim()); // Add content to form data
       formData.append('coverImage', coverImage);
 
       const token = localStorage.getItem('token');
@@ -78,15 +80,17 @@ export function AddBookModal({ isOpen, onClose, onAddBook }: AddBookModalProps) 
   const resetForm = () => {
     setTitle("");
     setDescription("");
+    setContent(""); // Reset content
     setCoverImage(null);
     setError("");
   };
 
   const getProgress = () => {
     let progress = 0;
-    if (title.trim()) progress += 33;
-    if (description.trim()) progress += 33;
-    if (coverImage) progress += 34;
+    if (title.trim()) progress += 25;
+    if (description.trim()) progress += 25;
+    if (content.trim()) progress += 25; // Add content progress
+    if (coverImage) progress += 25;
     return progress;
   };
 
@@ -138,6 +142,17 @@ export function AddBookModal({ isOpen, onClose, onAddBook }: AddBookModalProps) 
                 onChange={(e) => setDescription(e.target.value)}
                 className="min-h-[100px]"
                 placeholder="Enter book description"
+                required
+                disabled={isSubmitting}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Content</label>
+              <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="min-h-[200px]"
+                placeholder="Enter book content"
                 required
                 disabled={isSubmitting}
               />

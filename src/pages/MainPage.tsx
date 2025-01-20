@@ -1,4 +1,3 @@
-// src/pages/MainPage.tsx
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +23,7 @@ export default function MainPage() {
   const [isPoemModalOpen, setIsPoemModalOpen] = useState(false);
   const [isMangaModalOpen, setIsMangaModalOpen] = useState(false);
   const [isLightNovelModalOpen, setIsLightNovelModalOpen] = useState(false);
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
@@ -182,6 +182,7 @@ export default function MainPage() {
               <BookGrid 
                 books={books} 
                 onBookClick={handleBookClick}
+                onAddBook={() => setIsBookModalOpen(true)}
               />
             </TabsContent>
           </Tabs>
@@ -201,12 +202,15 @@ export default function MainPage() {
           setIsMangaModalOpen={setIsMangaModalOpen}
           isLightNovelModalOpen={isLightNovelModalOpen}
           setIsLightNovelModalOpen={setIsLightNovelModalOpen}
+          isBookModalOpen={isBookModalOpen}
+          setIsBookModalOpen={setIsBookModalOpen}
           onAddPoetry={(newPoem) => {
             setPoems(prev => [newPoem, ...prev]);
             setFilteredPoems(prev => [newPoem, ...prev]);
           }}
           onAddManga={(newManga) => setMangas(prev => [newManga, ...prev])}
           onAddLightNovel={(newNovel) => setLightNovels(prev => [newNovel, ...prev])}
+          onAddBook={(newBook) => setBooks(prev => [newBook, ...prev])}
         />
       </div>
     </div>

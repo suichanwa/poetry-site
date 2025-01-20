@@ -135,6 +135,7 @@ export default function Profile() {
   }, [id]);
 
   if (isLoading) return <LoadingState />;
+  if (error) return <div className="text-red-500">{error}</div>;
 
   const handleAddPoem = (newPoem: Poem) => {
     setUserPoems(prev => [newPoem, ...prev]);

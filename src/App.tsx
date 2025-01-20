@@ -19,6 +19,8 @@ import ChatPage from './pages/ChatPage';
 import MangaDetailPage from "./pages/MangaDetailPage";
 import LightNovelDetailPage from "./pages/LightNovelDetailPage";
 import EditPoem from './pages/EditPoem';
+import BookDetailPage from "./pages/BookDetailPage"; 
+import BookReadPage from "@/pages/BookReadPage";
 
 function App() {
   return (
@@ -44,7 +46,9 @@ function App() {
               <Route path="/chats" element={<ChatPage />} />
               <Route path="/manga/:id" element={<MangaDetailPage />} />
               <Route path="/lightnovel/:id" element={<LightNovelDetailPage />} />
+              <Route path="/book/:id" element={<BookDetailPage />} /> 
               <Route path="/edit-poem/:id" element={<EditPoem />} />
+              <Route path="/book/:id/read" element={<BookReadPage />} />
             </Routes>
           </Layout>
         </Router>
