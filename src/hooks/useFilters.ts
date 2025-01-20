@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 export function useFilters(poems) {
   const [filteredPoems, setFilteredPoems] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [availableTags, setAvailableTags] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
 

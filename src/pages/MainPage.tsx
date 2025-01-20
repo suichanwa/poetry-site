@@ -78,6 +78,7 @@ export default function MainPage() {
                 setSearchQuery={setSearchQuery}
                 showFilters={showFilters}
                 setShowFilters={setShowFilters}
+                selectedTags={selectedTags}
               />
             </TabsContent>
 
