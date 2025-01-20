@@ -1,4 +1,3 @@
-// src/pages/ProfileSetup/Profile.tsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -10,12 +9,14 @@ import { ProfileActions } from "./ProfileActions";
 import { ProfilePoems } from "./ProfilePoems";
 import { ProfileManga } from "./ProfileManga";
 import { ProfileLightNovels } from "./ProfileLightNovels";
+import { ProfileBooks } from "./ProfileBooks";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddPoetryModal } from "@/components/AddPoetryModal";
 import { AddMangaModal } from "@/components/AddMangaModal";
 import { AddLightNovelModal } from "@/components/lightnovel/AddLightNovelModal";
+import { AddBookModal } from "@/components/AddBookModal";
 
 interface Poem {
   id: number;
@@ -45,6 +46,14 @@ interface LightNovel {
   author: string;
 }
 
+interface Book {
+  id: number;
+  title: string;
+  description: string;
+  coverImage: string;
+  author: string;
+}
+
 interface FollowStats {
   followersCount: number;
   followingCount: number;
@@ -58,6 +67,7 @@ export default function Profile() {
   const [userPoems, setUserPoems] = useState<Poem[]>([]);
   const [userManga, setUserManga] = useState<Manga[]>([]);
   const [userLightNovels, setUserLightNovels] = useState<LightNovel[]>([]);
+  const [userBooks, setUserBooks] = useState<Book[]>([]);
   const [error, setError] = useState<string>("");
   const [userData, setUserData] = useState(user);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,6 +80,7 @@ export default function Profile() {
   const [isPoemModalOpen, setIsPoemModalOpen] = useState(false);
   const [isMangaModalOpen, setIsMangaModalOpen] = useState(false);
   const [isLightNovelModalOpen, setIsLightNovelModalOpen] = useState(false);
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
 
   const isOwnProfile = !id ? true : parseInt(id) === user?.id;
 
@@ -95,8 +106,9 @@ export default function Profile() {
         const poemsResponse = await fetch(`http://localhost:3001/api/poems/user/${id}`, { headers });
         const mangaResponse = await fetch(`http://localhost:3001/api/manga/user/${id}`, { headers });
         const lightNovelsResponse = await fetch(`http://localhost:3001/api/lightnovels/user/${id}`, { headers });
+        const booksResponse = await fetch(`http://localhost:3001/api/books/user/${id}`, { headers });
 
-        if (!userResponse.ok || !poemsResponse.ok || !mangaResponse.ok || !lightNovelsResponse.ok) {
+        if (!userResponse.ok || !poemsResponse.ok || !mangaResponse.ok || !lightNovelsResponse.ok || !booksResponse.ok) {
           throw new Error("Failed to fetch data");
         }
 
@@ -104,11 +116,13 @@ export default function Profile() {
         const userPoems = await poemsResponse.json();
         const userManga = await mangaResponse.json();
         const userLightNovels = await lightNovelsResponse.json();
+        const userBooks = await booksResponse.json();
 
         setUserData(userData);
         setUserPoems(userPoems);
         setUserManga(userManga);
         setUserLightNovels(userLightNovels);
+        setUserBooks(userBooks);
       } catch (error) {
         console.error("Error fetching profile data:", error);
         setError("Failed to load profile data");
@@ -132,6 +146,10 @@ export default function Profile() {
 
   const handleAddLightNovel = (newNovel: LightNovel) => {
     setUserLightNovels(prev => [newNovel, ...prev]);
+  };
+
+  const handleAddBook = (newBook: Book) => {
+    setUserBooks(prev => [newBook, ...prev]);
   };
 
   return (
@@ -179,13 +197,16 @@ export default function Profile() {
                   <DropdownMenuItem onSelect={() => setIsLightNovelModalOpen(true)}>
                     Add Light Novel
                   </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => setIsBookModalOpen(true)}>
+                    Add Book
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
           </div>
 
           <Tabs defaultValue="poems" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3 mb-8">
+            <TabsList className="grid w-full grid-cols-4 mb-8">
               <TabsTrigger value="poems" className="text-sm md:text-base">
                 Poems
               </TabsTrigger>
@@ -194,6 +215,9 @@ export default function Profile() {
               </TabsTrigger>
               <TabsTrigger value="lightnovels" className="text-sm md:text-base">
                 Light Novels
+              </TabsTrigger>
+              <TabsTrigger value="books" className="text-sm md:text-base">
+                Books
               </TabsTrigger>
             </TabsList>
 
@@ -223,6 +247,15 @@ export default function Profile() {
                 error={error} 
               />
             </TabsContent>
+
+            <TabsContent value="books">
+              <ProfileBooks 
+                books={userBooks} 
+                isOwnProfile={isOwnProfile} 
+                userName={userData?.name} 
+                error={error} 
+              />
+            </TabsContent>
           </Tabs>
         </div>
 
@@ -242,6 +275,12 @@ export default function Profile() {
           isOpen={isLightNovelModalOpen}
           onClose={() => setIsLightNovelModalOpen(false)}
           onAddLightNovel={handleAddLightNovel}
+        />
+
+        <AddBookModal
+          isOpen={isBookModalOpen}
+          onClose={() => setIsBookModalOpen(false)}
+          onAddBook={handleAddBook}
         />
       </div>
     </div>

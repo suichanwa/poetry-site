@@ -1,10 +1,9 @@
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { ProfileAvatar } from "@/pages/ProfileSetup/ProfileAvatar";
 import { Button } from "@/components/ui/button";
 import { SideMenu } from "@/components/SideMenu";
 import { MobileNavBar } from "@/components/navigation/MobileNavBar";
-import { User } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,12 +12,6 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  const getImageUrl = (path: string) => {
-    if (!path) return null;
-    if (path.startsWith('http')) return path;
-    return `http://localhost:3001${path}`;
-  };
 
   return (
     <div className="theme-winter">
@@ -36,18 +29,12 @@ export default function Layout({ children }: LayoutProps) {
                   className="flex items-center gap-2 hover:bg-accent"
                   onClick={() => navigate(`/profile/${user.id}`)}
                 >
-                  <Avatar className="h-8 w-8">
-                    {user.avatar ? (
-                      <AvatarImage
-                        src={getImageUrl(user.avatar)}
-                        alt={user.name}
-                      />
-                    ) : (
-                      <AvatarFallback>
-                        <User className="h-4 w-4" />
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
+                  <ProfileAvatar
+                    avatar={user.avatar}
+                    name={user.name}
+                    size="sm"
+                    className="outline outline-2 outline-white"
+                  />
                   <span className="hidden sm:inline font-medium">
                     {user.name}
                   </span>

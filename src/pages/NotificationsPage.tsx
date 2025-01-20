@@ -28,37 +28,37 @@ export default function NotificationsPage() {
   const [error, setError] = useState<string>("");
   const { user } = useAuth();
 
-  const fetchNotifications = async () => {
-    if (!user) {
-      setNotifications([]);
-      setIsLoading(false);
-      return;
-    }
+const fetchNotifications = async () => {
+  if (!user) {
+    setNotifications([]);
+    setIsLoading(false);
+    return;
+  }
+  
+  try {
+    setIsLoading(true);
+    setError("");
     
-    try {
-      setIsLoading(true);
-      setError("");
-      
-      const response = await fetch('http://localhost:3001/api/notifications', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch notifications');
+    const response = await fetch('http://localhost:3001/api/notifications', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
       }
+    });
 
-      const data = await response.json();
-      setNotifications(data.notifications || []);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load notifications');
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error('Failed to fetch notifications');
     }
-  };
+
+    const data = await response.json();
+    setNotifications(data.notifications || []);
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    setError(error instanceof Error ? error.message : 'Failed to load notifications');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchNotifications();

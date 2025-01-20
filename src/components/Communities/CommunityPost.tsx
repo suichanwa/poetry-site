@@ -3,7 +3,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CommunityPostProps {
   post: {
@@ -36,6 +35,7 @@ export function CommunityPost({ post }: CommunityPostProps) {
             <img 
               src={`http://localhost:3001${post.author.avatar}`}
               alt={post.author.name}
+              crossorigin="anonymous"
               className="w-full h-full object-cover"
             />
           ) : (
@@ -64,6 +64,7 @@ export function CommunityPost({ post }: CommunityPostProps) {
           <img
             src={`http://localhost:3001${post.images[currentImageIndex]}`}
             alt={`Post image ${currentImageIndex + 1}`}
+            crossorigin="anonymous"
             className="w-full max-h-96 object-cover rounded-md"
           />
           {post.images.length > 1 && (

@@ -74,6 +74,7 @@ export function BannerUpload() {
               src={preview || `http://localhost:3001${user?.banner}`}
               alt="Banner preview"
               className="w-full h-full object-cover"
+              crossOrigin="anonymous"
             />
           )}
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">

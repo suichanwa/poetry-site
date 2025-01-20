@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FeedTabs } from "@/components/FeedTabs";
 import { MangaGrid } from "@/components/MangaGrid";
 import { LightNovelGrid } from "@/components/lightnovel/LightNovelGrid";
+import { BookGrid } from "@/components/BookGrid";
 import { PoemFilters } from "@/components/PoemFilters";
 import { LoadingState } from "@/components/LoadingState";
 import { SearchResults } from "@/components/SearchResults";
@@ -17,6 +18,7 @@ export default function MainPage() {
   const [poems, setPoems] = useState([]);
   const [mangas, setMangas] = useState([]);
   const [lightNovels, setLightNovels] = useState([]);
+  const [books, setBooks] = useState([]);
   const [filteredPoems, setFilteredPoems] = useState([]);
   const [popularPoems, setPopularPoems] = useState([]);
   const [followingPoems, setFollowingPoems] = useState([]);
@@ -35,7 +37,8 @@ export default function MainPage() {
   const [searchResults, setSearchResults] = useState({
     poems: [],
     manga: [],
-    lightNovels: []
+    lightNovels: [],
+    books: []
   });
 
   const { user } = useAuth();
@@ -48,6 +51,10 @@ export default function MainPage() {
 
   const handleLightNovelClick = (novelId) => {
     navigate(`/lightnovel/${novelId}`);
+  };
+
+  const handleBookClick = (bookId) => {
+    navigate(`/book/${bookId}`);
   };
 
   const toggleTag = (tag) => {
@@ -64,36 +71,26 @@ export default function MainPage() {
   };
 
   useEffect(() => {
-    setIsLoading(true);
-    setError("");
-
-    const fetchContent = async (endpoint, setter, authRequired = false) => {
+    const fetchContent = async (endpoint, setter, isFollowing = false) => {
       try {
-        const token = localStorage.getItem("token");
-        const headers = {
-          "Content-Type": "application/json",
-          ...(authRequired && token && { Authorization: `Bearer ${token}` }),
-        };
-
-        const response = await fetch(`http://localhost:3001/api/${endpoint}`, { headers });
-        if (!response.ok) throw new Error("Failed to fetch data");
+        const response = await fetch(`http://localhost:3001/api/${endpoint}`);
         const data = await response.json();
         setter(data);
-      } catch (err) {
-        console.error(`Error fetching ${endpoint}:`, err);
-        setError(err instanceof Error ? err.message : "Failed to load content");
+      } catch (error) {
+        console.error(`Failed to fetch ${endpoint}:`, error);
         toast({
-          variant: "destructive",
           title: "Error",
-          description: "Failed to load content. Please try again later.",
+          description: `Failed to fetch ${endpoint}`,
+          status: "error",
         });
       }
     };
 
-    fetchContent("poems", setPoems);
     if (user) fetchContent("poems/following", setFollowingPoems, true);
+    fetchContent("poems", setPoems);
     fetchContent("manga", setMangas);
     fetchContent("lightnovels", setLightNovels);
+    fetchContent("books", setBooks);
     
     setIsLoading(false);
   }, [user, toast]);
@@ -125,6 +122,7 @@ export default function MainPage() {
                 <TabsTrigger value="poems">Poems</TabsTrigger>
                 <TabsTrigger value="manga">Manga</TabsTrigger>
                 <TabsTrigger value="lightnovels">Light Novels</TabsTrigger>
+                <TabsTrigger value="books">Books</TabsTrigger>
               </TabsList>
 
               <div className="w-full sm:w-auto">
@@ -137,11 +135,6 @@ export default function MainPage() {
                   availableTags={availableTags}
                   toggleTag={toggleTag}
                   clearFilters={clearFilters}
-                  onAddPoem={() => setIsPoemModalOpen(true)}
-                  onAddManga={() => setIsMangaModalOpen(true)}
-                  onAddLightNovel={() => setIsLightNovelModalOpen(true)}
-                  onAddBook={() => setIsBookModalOpen(true)}
-                  className="pb-16 md:pb-0"
                 />
               </div>
             </div>
@@ -165,6 +158,9 @@ export default function MainPage() {
                 toggleTag={toggleTag}
                 clearFilters={clearFilters}
                 onAddPoem={() => setIsPoemModalOpen(true)}
+                onAddManga={() => setIsMangaModalOpen(true)}
+                onAddLightNovel={() => setIsLightNovelModalOpen(true)}
+                onAddBook={() => setIsBookModalOpen(true)}
                 className="pb-16 md:pb-0"
               />
             </TabsContent>
@@ -184,6 +180,14 @@ export default function MainPage() {
                 onAddNovel={() => setIsLightNovelModalOpen(true)}
               />
             </TabsContent>
+
+            <TabsContent value="books">
+              <BookGrid 
+                books={books} 
+                onBookClick={handleBookClick}
+                onAddBook={() => setIsBookModalOpen(true)}
+              />
+            </TabsContent>
           </Tabs>
         </div>
 
@@ -191,6 +195,7 @@ export default function MainPage() {
           poems={searchResults.poems} 
           manga={searchResults.manga} 
           lightNovels={searchResults.lightNovels} 
+          books={searchResults.books}
         />
 
         <Modals
@@ -212,8 +217,7 @@ export default function MainPage() {
           isOpen={isBookModalOpen}
           onClose={() => setIsBookModalOpen(false)}
           onAddBook={(newBook) => {
-            // Handle the new book addition logic here
-            console.log("New book added:", newBook);
+            setBooks(prev => [newBook, ...prev]);
           }}
         />
       </div>

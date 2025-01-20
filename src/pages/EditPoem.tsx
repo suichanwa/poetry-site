@@ -10,7 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { ArrowLeft } from "lucide-react";
 
 export default function EditPoem() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [title, setTitle] = useState("");
@@ -56,22 +56,23 @@ export default function EditPoem() {
   const handleSubmit = async () => {
     try {
       const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('data', JSON.stringify({
+        title,
+        content,
+        tags,
+        formatting
+      }));
+
       const response = await fetch(`http://localhost:3001/api/poems/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title,
-          content,
-          tags,
-          formatting
-        }),
+        body: formData
       });
 
       if (!response.ok) throw new Error('Failed to update poem');
-
       navigate(`/poem/${id}`);
     } catch (error) {
       setError('Failed to update poem');

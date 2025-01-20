@@ -1,22 +1,24 @@
-import * as React from "react"
-import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { X } from "lucide-react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const Dialog = DialogPrimitive.Root
-const DialogTrigger = DialogPrimitive.Trigger
-const DialogClose = DialogPrimitive.Close
-const DialogPortal = DialogPrimitive.Portal
-const DialogTitle = DialogPrimitive.Title
-const DialogDescription = DialogPrimitive.Description
+const Dialog = DialogPrimitive.Root;
+const DialogTrigger = DialogPrimitive.Trigger;
+const DialogClose = DialogPrimitive.Close;
+const DialogPortal = DialogPrimitive.Portal;
+const DialogTitle = DialogPrimitive.Title;
+const DialogDescription = DialogPrimitive.Description;
 
 const Modal = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
     isOpen: boolean;
     onClose: () => void;
+    title: string;
+    description?: string;
   }
->(({ className, children, isOpen, onClose, ...props }, ref) => (
+>(({ className, children, isOpen, onClose, title, description, ...props }, ref) => (
   <Dialog open={isOpen} onOpenChange={onClose}>
     <DialogPortal>
       <DialogPrimitive.Overlay 
@@ -30,18 +32,29 @@ const Modal = React.forwardRef<
         )}
         {...props}
       >
+        <DialogTitle>{title}</DialogTitle>
+        {description && <DialogDescription>{description}</DialogDescription>}
+        <DialogClose asChild>
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </DialogClose>
         {children}
       </DialogPrimitive.Content>
     </DialogPortal>
   </Dialog>
-))
-Modal.displayName = "Modal"
+));
+Modal.displayName = "Modal";
 
 export { 
   Modal, 
   Dialog, 
   DialogTrigger, 
-  DialogClose,
-  DialogTitle,
-  DialogDescription
-}
+  DialogClose, 
+  DialogPortal, 
+  DialogTitle, 
+  DialogDescription 
+};

@@ -36,6 +36,7 @@ export function ProfileBanner({ banner, userData, followStats, onFollowChange }:
           avatar={userData.avatar}
           name={userData.name}
           size="lg"
+          className="outline outline-4 outline-white"
         />
       </div>
     </div>

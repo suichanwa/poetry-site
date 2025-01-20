@@ -44,6 +44,7 @@ export function PoemHeader({ title, author, label, isPreview = true }: PoemHeade
                 src={`http://localhost:3001${author.avatar}`}
                 alt={author.name}
                 className="w-full h-full object-cover"
+                crossOrigin="anonymous"
               />
             ) : (
               <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
