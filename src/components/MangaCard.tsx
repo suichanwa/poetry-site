@@ -1,5 +1,4 @@
 // src/components/MangaCard.tsx
-
 import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,11 +34,9 @@ export function MangaCard({ manga, onMangaClick }: MangaCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const latestChapter = manga.chapters[manga.chapters.length - 1];
 
-  // Function to get proper image URL
   const getImageUrl = (path: string) => {
     if (!path) return '/placeholder.png';
     if (path.startsWith('http')) return path;
-    // Remove the server path prefix and fix slashes
     const cleanPath = path.replace(/^.*[\/\\]uploads[\/\\]/, 'uploads/').replace(/\\/g, '/');
     return `http://localhost:3001/${cleanPath}`;
   };
@@ -51,7 +48,6 @@ export function MangaCard({ manga, onMangaClick }: MangaCardProps) {
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onMangaClick(manga.id)}
     >
-      {/* Cover Image */}
       <div className="relative aspect-[3/4] overflow-hidden">
         <img
           src={getImageUrl(manga.coverImage)}
@@ -67,12 +63,8 @@ export function MangaCard({ manga, onMangaClick }: MangaCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
       </div>
 
-      {/* Content */}
       <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-        {/* Title */}
         <h3 className="text-lg font-bold mb-2 line-clamp-2">{manga.title}</h3>
-
-        {/* Author Info */}
         <div className="flex items-center gap-2 mb-2">
           <Avatar className="w-6 h-6">
             {manga.author.avatar ? (
@@ -88,8 +80,6 @@ export function MangaCard({ manga, onMangaClick }: MangaCardProps) {
           </Avatar>
           <span className="text-sm opacity-90">{manga.author.name}</span>
         </div>
-
-        {/* Tags */}
         <div className="flex flex-wrap gap-1 mb-2">
           {manga.tags.slice(0, 3).map(tag => (
             <span
@@ -105,8 +95,6 @@ export function MangaCard({ manga, onMangaClick }: MangaCardProps) {
             </span>
           )}
         </div>
-
-        {/* Stats */}
         <div className="flex items-center gap-4 text-sm opacity-90">
           <div className="flex items-center gap-1">
             <Eye className="w-4 h-4" />
@@ -121,8 +109,6 @@ export function MangaCard({ manga, onMangaClick }: MangaCardProps) {
             {formatDistanceToNow(new Date(manga.createdAt), { addSuffix: true })}
           </div>
         </div>
-
-        {/* Latest Chapter */}
         {latestChapter && (
           <Button
             variant="secondary"
@@ -136,4 +122,4 @@ export function MangaCard({ manga, onMangaClick }: MangaCardProps) {
       </div>
     </Card>
   );
-}   
+}

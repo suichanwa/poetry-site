@@ -23,18 +23,16 @@ export function ProfileManga({ manga, isOwnProfile, userName, error }: ProfileMa
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {manga.length > 0 ? (
-            manga.map((manga) => (
+            manga.map((mangaItem) => (
               <MangaCard
-                key={manga.id}
-                title={manga.title}
-                description={manga.description}
-                coverImage={manga.coverImage}
-                author={userName || manga.author}
-                id={manga.id}
+                key={mangaItem.id}
+                manga={mangaItem}
+                onMangaClick={() => navigate(`/manga/${mangaItem.id}`)}
               />
             ))
           ) : (
             <div className="col-span-2 text-center py-8 text-gray-500 dark:text-gray-400">
+              No manga found.
             </div>
           )}
         </div>
