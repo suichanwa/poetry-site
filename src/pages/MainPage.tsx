@@ -12,7 +12,6 @@ import { PoemFilters } from "@/components/PoemFilters";
 import { LoadingState } from "@/components/LoadingState";
 import { SearchResults } from "@/components/SearchResults";
 import { Modals } from "@/components/Modals";
-import { AddBookModal } from "@/components/AddBookModal";
 
 export default function MainPage() {
   const [poems, setPoems] = useState([]);
@@ -25,7 +24,6 @@ export default function MainPage() {
   const [isPoemModalOpen, setIsPoemModalOpen] = useState(false);
   const [isMangaModalOpen, setIsMangaModalOpen] = useState(false);
   const [isLightNovelModalOpen, setIsLightNovelModalOpen] = useState(false);
-  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
@@ -160,7 +158,6 @@ export default function MainPage() {
                 onAddPoem={() => setIsPoemModalOpen(true)}
                 onAddManga={() => setIsMangaModalOpen(true)}
                 onAddLightNovel={() => setIsLightNovelModalOpen(true)}
-                onAddBook={() => setIsBookModalOpen(true)}
                 className="pb-16 md:pb-0"
               />
             </TabsContent>
@@ -185,7 +182,6 @@ export default function MainPage() {
               <BookGrid 
                 books={books} 
                 onBookClick={handleBookClick}
-                onAddBook={() => setIsBookModalOpen(true)}
               />
             </TabsContent>
           </Tabs>
@@ -211,14 +207,6 @@ export default function MainPage() {
           }}
           onAddManga={(newManga) => setMangas(prev => [newManga, ...prev])}
           onAddLightNovel={(newNovel) => setLightNovels(prev => [newNovel, ...prev])}
-        />
-
-        <AddBookModal
-          isOpen={isBookModalOpen}
-          onClose={() => setIsBookModalOpen(false)}
-          onAddBook={(newBook) => {
-            setBooks(prev => [newBook, ...prev]);
-          }}
         />
       </div>
     </div>
