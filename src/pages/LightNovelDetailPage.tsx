@@ -1,15 +1,14 @@
-// src/pages/LightNovelDetailPage.tsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Heart, Eye, Clock, User, Share2, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Heart, Eye, Clock, User, Share2, Plus, Trash2, Bookmark } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from "@/context/AuthContext";
 import { LoadingState } from "@/components/LoadingState";
-import { LightNovelReader } from "@/components/lightnovel/LightNovelReader";
-import { AddChapterModal } from "@/components/lightnovel/AddChapterModal";
+import { LightNovelReaderWrapper } from "@/components/lightnovel/LightNovelReaderWrapper";
+import { AddChapterModalWrapper } from "@/components/lightnovel/AddChapterModalWrapper";
 
 interface Chapter {
   id: number;
@@ -255,19 +254,19 @@ export default function LightNovelDetailPage() {
       </Card>
 
       {isReaderOpen && currentChapter && (
-        <LightNovelReader
-          chapter={currentChapter}
-          onChapterChange={handleChapterChange}
-          onClose={() => setIsReaderOpen(false)}
+        <LightNovelReaderWrapper
+          currentChapter={currentChapter}
+          handleChapterChange={handleChapterChange}
+          setIsReaderOpen={setIsReaderOpen}
           totalChapters={novel.chapters.length}
         />
       )}
 
-      <AddChapterModal
-        isOpen={isAddChapterOpen}
-        onClose={() => setIsAddChapterOpen(false)}
+      <AddChapterModalWrapper
+        isAddChapterOpen={isAddChapterOpen}
+        setIsAddChapterOpen={setIsAddChapterOpen}
         novelId={novel.id}
-        onChapterAdded={(newChapter) => setNovel(prev => prev ? { ...prev, chapters: [...prev.chapters, newChapter] } : prev)}
+        setNovel={setNovel}
         currentChaptersCount={novel.chapters.length}
       />
     </div>

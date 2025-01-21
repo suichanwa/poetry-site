@@ -1,73 +1,106 @@
-## Core Planning Documents
-- [Release Plan](log/release.md) - A detailed roadmap for the project's release, including key features, bug fixes, and deployment steps.
+# Core Planning Documents
+
+## Overview
+This project aims to provide a seamless platform for creating, sharing, and interacting with poems, manga, light novels, and books. Below are the key documents and their roles in managing the project's progress.
+
+### 1. **Core Planning Documents**
+- **[Release Plan](log/release.md)**:  
+  A step-by-step roadmap for releasing the app, covering key features, bug fixes, and deployment tasks.  
   - **Stage**: 🏗️ In Development
-  - **Summary**: This document focuses on finalizing core features, fixing critical bugs, optimizing performance, enhancing the user interface, implementing analytics, preparing for deployment, creating documentation, and planning the launch.
 
-- [Improvement Plan](log/improvment.md) - A plan for ongoing improvements and enhancements to the project.
+- **[Improvement Plan](log/improvment.md)**:  
+  A strategy for post-launch improvements to user experience, performance, and marketing.  
   - **Stage**: 🌱 Planning
-  - **Summary**: This document covers user interface and user experience improvements, performance optimization, analytics, documentation, and marketing strategy.
 
-- [Changes Tracker](log/changes.md) - A log of completed and in-progress changes.
+- **[Changes Tracker](log/changes.md)**:  
+  A record of completed and ongoing updates to the project, such as community features and UI enhancements.  
   - **Stage**: ✨ Nearly Complete
-  - **Summary**: This document tracks changes such as profile tabs, community invites, phone chat UI improvements, and more.
 
-## Feature Implementation Plans
-- [Manga System](log/addingmanga.md) - A plan for implementing the manga upload and reading system.
+
+### 2. **Feature Implementation Plans**
+- **[Manga System](log/addingmanga.md)**:  
+  A detailed plan for users to upload and read manga, including database, backend, and frontend tasks.  
   - **Stage**: 🏗️ In Development
-  - **Summary**: This document details the database schema, API endpoints, frontend components, file handling, and feature implementation order for the manga system.
 
-- [Light Novels](log/addinglightNovels.md) - A plan for creating and reading light novels.
+- **[Light Novels](log/addinglightNovels.md)**:  
+  A blueprint for creating and managing light novels, featuring chapter navigation and reading tools.  
   - **Stage**: 🌱 Planning
-  - **Summary**: This document focuses on novel creation, chapter management, reader implementation, and additional features for light novels.
 
-- [Chat System](log/chatsImplement.md) - A plan for implementing real-time chat functionality.
+- **[Chat System](log/chatsImplement.md)**:  
+  Outlines the real-time messaging system with notifications and conversation management.  
   - **Stage**: ✨ Nearly Complete
-  - **Summary**: This document covers the database schema, user interface components, API endpoints, and next immediate tasks for the chat system.
 
-- [Communities](log/CommunitiesPlan.md) - A plan for implementing forum and community features.
+- **[Communities](log/CommunitiesPlan.md)**:  
+  A guide for developing forums and community spaces for discussions and interactions.  
   - **Stage**: 🏗️ In Development
-  - **Summary**: This document details the forum structure, discussion features, user interface components, and next immediate tasks for community features.
 
-- [Notifications](log/notification%20System.md) - A plan for implementing the user notification system.
+- **[Notifications](log/notification%20System.md)**:  
+  A plan for implementing notifications about likes, comments, and other activity.  
   - **Stage**: 🌱 Planning
-  - **Summary**: This document focuses on real-time notifications, notification types, and mobile navigation enhancement.
 
-## Design & Customization
-- [Profile Customization](log/customizationProfile.md) - Ideas for customizing profile pages.
+---
+
+### 3. **Design & Customization**
+- **[Profile Customization](log/customizationProfile.md)**:  
+  Ideas for personalizing user profiles with themes, stats, and custom elements.  
   - **Stage**: ✨ Nearly Complete
-  - **Summary**: This document covers visual elements, interactive features, poetry presentation, and profile stats for customization.
 
-## Deployment & Technical
-- [Deployment Guide](log/deployment.md) - Instructions and steps for deploying the application.
+---
+
+### 4. **Deployment & Technical**
+- **[Deployment Guide](log/deployment.md)**:  
+  A guide for setting up the backend, configuring servers, and deploying the app.  
   - **Stage**: 🌱 Planning
-  - **Summary**: This document provides detailed steps for backend deployment, server and database configuration, environment variables, and deployment testing.
 
-## Progress Overview
-- ✅ Completed Features
-  - User authentication and profiles
-  - Poem creation and management
-  - Follow system
-  - Basic community features
-  - Dark mode
-  - Mobile navigation
+---
 
-- 🚧 In Development
-  - Manga upload system
-  - Light novel implementation
-  - Chat system improvements
-  - Advanced search features
-  - Community enhancements
+## **Progress Overview**
+### ✅ Completed Features
+- User profiles and authentication.
+- Poem creation, sharing, and management.
+- Follow system for social engagement.
+- Basic community forums.
+- Dark mode and mobile navigation.
 
-- 📋 Planned Features
-  - Analytics implementation
-  - Performance optimizations
-  - Content moderation tools
-  - Advanced customization options
-  - Multiple language support
+### 🚧 In Development
+- Manga upload and reading.
+- Light novel reading experience.
+- Chat system updates and improvements.
+- Advanced search filters.
+- Enhancements for community interactions.
 
-## Next Steps
-1. Complete core manga/light novel features
-2. Enhance mobile experience
-3. Implement remaining social features
-4. Deploy initial version
-5. Gather user feedback
+### 📋 Planned Features
+- Analytics to track user engagement.
+- Performance optimizations.
+- Tools for content moderation.
+- Advanced customization options.
+- Support for multiple languages.
+
+---
+
+## **Immediate Priorities**
+
+### High-Priority Tasks
+1. **Complete Manga and Light Novel Features**:  
+   Finalize upload systems, readers, and basic management tools for these content types.  
+   - See: [Manga System](log/addingmanga.md), [Light Novels](log/addinglightNovels.md).
+
+2. **Enhance Mobile User Experience**:  
+   Refine navigation, adjust layouts, and ensure seamless mobile performance.  
+   - See: [Notification System](log/notification%20System.md), [Communities](log/CommunitiesPlan.md).
+
+3. **Finalize Real-Time Features in Chat**:  
+   Ensure conversations, read receipts, and typing indicators are functional.  
+   - See: [Chat System](log/chatsImplement.md).
+
+4. **Prepare for Deployment**:  
+   Test the app thoroughly, configure the backend, and deploy the initial version.  
+   - See: [Deployment Guide](log/deployment.md).
+
+---
+
+## **Next Steps**
+1. Finalize and polish all in-development features.
+2. Conduct user testing to gather feedback.
+3. Launch the app and track initial performance.
+4. Begin planning for post-launch updates based on feedback.

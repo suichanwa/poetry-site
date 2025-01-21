@@ -1,74 +1,29 @@
 # Chat System Implementation Plan
 
-## 1. Database Schema
-- [x] db schema
+## Progress Summary
+- **Completed**: Core schema, API endpoints, chat UI, real-time functionality.
+- **In Progress**: File attachments, message search.
+- **Planned**: Group chats, message reactions, themes.
 
-## 2. API Endpoints
-- [x] Create Conversation
-- [x] Get Conversations for User
-- [x] Send Message
-- [x] Get Messages for Conversation
-- [x] Mark Message as Read
+## Core Tasks
+### 1. MVP Features
+- [x] Database schema for messages and conversations.
+- [x] Core API endpoints (send, receive, mark as read).
+- [x] Real-time functionality (WebSocket integration).
+- [x] Responsive UI (ChatList, ChatWindow, NewMessageForm).
 
-## 3. Frontend Components
-- [x] ChatList
-  - [x] Display list of conversations
-  - [x] Show last message preview
-  - [x] Indicate unread messages
-  - [x] Handle conversation selection
+### 2. Enhancements
+- [x] Typing indicators.
+- [x] Read receipts.
+- [ ] File attachments (images, docs).
+- [ ] Message search.
 
-- [x] ChatWindow
-  - [x] Display messages in conversation
-  - [x] Send new message
-  - [x] Scroll to latest message
-  - [x] Show message timestamps
+### 3. Future Features
+- [ ] Group conversations (model, functionality, management).
+- [ ] Message reactions.
+- [ ] Chat themes (customization).
 
-- [x] NewMessageForm
-  - [x] Input for message content
-  - [x] Send button
-  - [x] Handle message sending
-
-## 4. Real-Time Functionality
-- [x] WebSocket Integration
-  - [x] Establish WebSocket connection
-  - [x] Handle incoming messages
-  - [x] Update chat list with new messages
-  - [x] Notify users of new messages
-
-## 5. User Interface Enhancements
-- [x] Responsive Design
-  - [x] Ensure chat UI works on both desktop and mobile
-  - [x] Adjust layout for different screen sizes
-
-- [x] Styling and Animations
-  - [x] Consistent styling for chat components
-  - [x] Smooth transitions and animations
-
-## 6. Next Immediate Tasks
-1. [ ] Implement message search functionality
-2. [ ] Add file attachment support (images, documents)
-3. [x] Implement typing indicators
-4. [x] Add read receipts
-
-## 7. Future Enhancements
-1. [ ] Group Conversations
-   - [ ] Create group conversation model
-   - [ ] Add group chat functionality
-   - [ ] Implement group management (add/remove participants)
-
-3. [ ] Message Reactions
-   - [ ] Allow users to react to messages
-   - [ ] Display reactions in chat UI
-
-4. [ ] Chat Themes
-   - [ ] Allow users to customize chat appearance
-   - [ ] Implement theme selection and application
-
-## Technical Requirements
-1. [x] WebSocket server setup
-2. [x] API endpoints for chat functionality
-3. [x] Database schema for messages and conversations
-4. [x] Frontend components for chat UI
-5. [ ] File upload handling for attachments
-6. [ ] Real-time updates and notifications
-7. [ ] Error handling and user feedback
+### Immediate Next Steps
+1. Implement file attachment support.
+2. Add message search functionality.
+3. Conduct final tests for responsive design and animations.

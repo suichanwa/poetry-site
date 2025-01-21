@@ -1,40 +1,49 @@
 # Communities Feature Implementation Plan
 
-## 1. Forum Structure [Phase 1]
-- [x] Create Community model in schema
-- [x] Basic community creation and joining
-- [ ] Topic System
-  - [ ] Add Topic model to schema
-  - [ ] Create topic creation/management UI
-  - [ ] Add topic listing and navigation
-  - [ ] Add topic pinning/locking functionality
+## Progress Summary
+- **Completed**: Basic community creation and joining, Community model in schema.
+- **In Progress**: Topic creation and management, basic UI components.
+- **Planned**: Thread and comment systems, advanced moderation tools.
 
-## 2. Discussion Features [Phase 1]
-- [ ] Thread System
-  - [ ] Update Thread model to belong to Topics
-  - [ ] Create thread creation modal
-  - [ ] Add thread listing under topics
-  - [ ] Add thread sorting and filtering
-- [ ] Comment System
-  - [ ] Implement nested comments
-  - [ ] Add comment editing/deletion
-  - [ ] Add reply functionality
-  - [ ] Add comment notifications
+## Tasks
+### 1. Core Features
+- [x] Community model and creation
+- [ ] Topic System:
+  - [ ] Add Topic model (DB migration, API endpoints)
+  - [ ] Basic topic creation and management UI
+- [ ] Thread System:
+  - [ ] Link threads to topics
+  - [ ] Basic thread creation and listing
 
-## 3. UI Components [Phase 1]
-- [ ] Topic Components
-  - [ ] Create TopicList component
-  - [ ] Create TopicDetail component
-  - [ ] Add topic creation modal
-  - [ ] Add topic moderation tools
-- [ ] Thread Components
-  - [ ] Create ThreadList component
-  - [ ] Create ThreadDetail component
-  - [ ] Add thread creation form
-  - [ ] Add thread participation stats
+### 2. Comments and Interactions
+- [ ] Nested comments
+- [ ] Reply functionality
+- [ ] Basic notifications for interactions
 
-## Next Immediate Tasks:
-1. [ ] Create migration for Topic model
-2. [ ] Implement topic creation API endpoints
-3. [ ] Create basic topic UI components
-4. [ ] Add topic management features
+### 3. Immediate Tasks
+1. Migrate database for topics.
+2. Implement topic API endpoints.
+3. Build basic topic management UI.
+
+---
+
+### **addingbuttontotheirhomescreen.md**
+
+```md
+# Adding App to Home Screen
+
+## Progress Summary
+- **Planning**: In-app prompts, benefits explanation, and persistent reminders.
+
+## Immediate Plan
+1. **In-App Prompt**:
+   - Use `beforeinstallprompt` event.
+   - Display modal with benefits and clear steps.
+2. **Onboarding Step**:
+   - Include "Add to Home Screen" during initial app setup.
+3. **Persistent Reminder**:
+   - Use non-intrusive banner encouraging users to add the app.
+4. **Highlight Benefits**:
+   - Brief section on benefits (e.g., faster access, offline use).
+
+---

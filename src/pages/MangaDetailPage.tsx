@@ -1,7 +1,7 @@
 // src/pages/MangaDetailPage.tsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MangaReader } from "@/components/MangaReader";
+import { MangaReaderWrapper } from "@/components/manga/MangaReaderWrapper";
 import { LoadingState } from "@/components/LoadingState";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Heart, Eye, Clock, User, Share2, Plus, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from "@/context/AuthContext";
-import { AddChapterModal } from "@/components/AddChapterModal";
+import { AddChapterModalWrapper } from "@/components/manga/AddChapterModalWrapper";
 import { MangaGrid } from "@/components/MangaGrid";
 
 interface Chapter {
@@ -278,31 +278,21 @@ export default function MangaDetailPage() {
       </Card>
 
       {isReaderOpen && currentChapter && (
-        <MangaReader
-          pages={currentChapter.pages}
+        <MangaReaderWrapper
           currentChapter={currentChapter}
-          onChapterChange={handleChapterChange}
-          onClose={() => setIsReaderOpen(false)}
+          handleChapterChange={handleChapterChange}
+          setIsReaderOpen={setIsReaderOpen}
+          totalChapters={manga.chapters.length}
         />
       )}
 
-      <AddChapterModal
-        isOpen={isAddChapterOpen}
-        onClose={() => setIsAddChapterOpen(false)}
+      <AddChapterModalWrapper
+        isAddChapterOpen={isAddChapterOpen}
+        setIsAddChapterOpen={setIsAddChapterOpen}
         mangaId={manga.id}
-        onChapterAdded={(newChapter) => setManga(prev => prev ? { ...prev, chapters: [...prev.chapters, newChapter] } : prev)}
+        setManga={setManga}
         currentChaptersCount={manga.chapters.length}
       />
-
-      {/* Recommended Mangas */}
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4">Recommended Mangas</h2>
-        {recommendedError ? (
-          <div className="text-red-500">{recommendedError}</div>
-        ) : (
-          <MangaGrid mangas={recommendedMangas} onMangaClick={(mangaId) => navigate(`/manga/${mangaId}`)} />
-        )}
-      </div>
     </div>
   );
 }
