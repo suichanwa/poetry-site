@@ -73,4 +73,4 @@ da fucking pfp is workin
 - [ ] Support offline reading
 
 ## 📄 Documentation
-For detailed documentation, please refer to the [Project Documentation](log/main.md).
+For detailed documentation, please refer to the [Project Documentation](main.md).
