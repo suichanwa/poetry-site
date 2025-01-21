@@ -12,22 +12,24 @@ import { AddBookModal } from "@/components/AddBookModal";
 import { useContentFetch } from "@/hooks/useContentFetch";
 import { useFilters } from "@/hooks/useFilters";
 import { useModals } from "@/hooks/useModals";
+import { useAuth } from "@/context/AuthContext";
 
 export default function MainPage() {
+  const { user } = useAuth();
   const { poems, mangas, lightNovels, books, followingPoems, isLoading } = useContentFetch();
   const { filteredPoems, searchQuery, setSearchQuery, selectedTags, availableTags, toggleTag, clearFilters, showFilters, setShowFilters } = useFilters(poems);
   const { isPoemModalOpen, setIsPoemModalOpen, isMangaModalOpen, setIsMangaModalOpen, isLightNovelModalOpen, setIsLightNovelModalOpen, isBookModalOpen, setIsBookModalOpen } = useModals();
   const navigate = useNavigate();
 
-  const handleMangaClick = (mangaId) => {
+  const handleMangaClick = (mangaId: number) => {
     navigate(`/manga/${mangaId}`);
   };
 
-  const handleLightNovelClick = (novelId) => {
+  const handleLightNovelClick = (novelId: number) => {
     navigate(`/lightnovel/${novelId}`);
   };
 
-  const handleBookClick = (bookId) => {
+  const handleBookClick = (bookId: number) => {
     navigate(`/book/${bookId}`);
   };
 
@@ -72,7 +74,7 @@ export default function MainPage() {
                 filteredPoems={filteredPoems}
                 popularPoems={[]}
                 followingPoems={followingPoems}
-                user={null}
+                user={user}
                 hideFilters={true}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}

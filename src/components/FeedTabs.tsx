@@ -2,6 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ForYouTab } from "./ForYouTab";
 import { FollowingTab } from "./FollowingTab";
+import { useState } from "react";
 
 interface FeedTabsProps {
   activeTab: string;
@@ -28,12 +29,19 @@ export function FeedTabs({
   searchQuery,
   selectedTags
 }: FeedTabsProps) {
+  const [currentTab, setCurrentTab] = useState(activeTab);
+
+  const handleTabChange = (value: string) => {
+    setCurrentTab(value);
+    setActiveTab(value);
+  };
+
   return (
     <div className="w-full">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={currentTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="for-you">For You</TabsTrigger>
-          <TabsTrigger value="following" disabled={!user}>
+          <TabsTrigger value="following">
             Following
           </TabsTrigger>
         </TabsList>

@@ -13,9 +13,17 @@ export function useContentFetch() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchContent = async (endpoint, setter, isFollowing = false) => {
+    const fetchContent = async (endpoint: string, setter: (data: any) => void) => {
       try {
-        const response = await fetch(`http://localhost:3001/api/${endpoint}`);
+        const response = await fetch(`http://localhost:3001/api/${endpoint}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch data');
+        }
         const data = await response.json();
         setter(data);
       } catch (error) {
@@ -23,18 +31,30 @@ export function useContentFetch() {
         toast({
           title: "Error",
           description: `Failed to fetch ${endpoint}`,
-          status: "error",
+          variant: "destructive",
         });
       }
     };
 
-    if (user) fetchContent("poems/following", setFollowingPoems, true);
-    fetchContent("poems", setPoems);
-    fetchContent("manga", setMangas);
-    fetchContent("lightnovels", setLightNovels);
-    fetchContent("books", setBooks);
-    
-    setIsLoading(false);
+    const fetchAllContent = async () => {
+      try {
+        setIsLoading(true);
+        await fetchContent("poems", setPoems);
+        await fetchContent("manga", setMangas);
+        await fetchContent("lightnovels", setLightNovels);
+        await fetchContent("books", setBooks);
+        
+        if (user) {
+          await fetchContent(`users/${user.id}/poems`, setFollowingPoems);
+        }
+      } catch (error) {
+        console.error('Error fetching content:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAllContent();
   }, [user, toast]);
 
   return { poems, mangas, lightNovels, books, followingPoems, isLoading };
