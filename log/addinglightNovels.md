@@ -1,98 +1,132 @@
+# Light Novel Implementation Plan
+
+## 1. Database Schema Updates
+- [x] LightNovel model
+  ```prisma
+  model LightNovel {
+    id          Int       @id @default(autoincrement())
+    title       String
+    description String
+    coverImage  String?
+    chapters    Chapter[]
+    author      User      @relation(fields: [authorId], references: [id])
+    authorId    Int
+    tags        Tag[]
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    views       Int       @default(0)
+    likes       Int       @default(0)
+  }
+
+  model Chapter {
+    id          Int      @id @default(autoincrement())
+    title       String
+    orderIndex  Int
+    content     String
+    lightNovel  LightNovel @relation(fields: [lightNovelId], references: [id])
+    lightNovelId Int
+    createdAt   DateTime @default(now())
+  }
+  ```
+
+## 2. API Endpoints
+- [x] Create Light Novel
+- [x] Update Light Novel
+- [x] Delete Light Novel
+- [x] Get Light Novel by ID
+- [x] Get All Light Novels
+- [x] Add Chapter
+- [x] Update Chapter
+- [x] Delete Chapter
+- [x] Get Chapter by ID
 
 ## 3. Frontend Components
-- AddLightNovelModal
-  - Basic novel info input
-  - Cover image upload
-  - Tags selection
-  - Rich text editor for content
+- [x] AddLightNovelModal
+  - [x] Basic novel info input
+  - [x] Cover image upload
+  - [x] Tags selection
+  - [x] Rich text editor for content
 
-- LightNovelCard
-  - Display novel cover
-  - Title and description
-  - Author info
-  - View/Like counts
-  - Latest chapter info
-  - Status indicator
+- [x] LightNovelCard
+  - [x] Display novel cover
+  - [x] Title and description
+  - [x] Author info
+  - [x] View/Like counts
+  - [x] Latest chapter info
+  - [x] Status indicator
 
-- LightNovelReader
-  - Chapter navigation
-  - Font size controls
-  - Theme options (light/dark/sepia)
-  - Reading progress tracking
-  - Bookmarking system
+- [x] LightNovelReader
+  - [x] Chapter navigation
+  - [x] Font size controls
+  - [x] Theme options (light/dark/sepia)
+  - [x] Reading progress tracking
+  - [x] Bookmarking system
 
 ## 4. Content Management
-- Text Editor Features
-  - Rich text formatting
-  - Chapter organization
-  - Auto-save drafts
-  - Image insertion
-  - Table of contents generation
+- [x] Text Editor Features
+  - [x] Rich text formatting
+  - [x] Chapter organization
+  - [x] Auto-save drafts
+  - [x] Image insertion
+  - [x] Table of contents generation
 
-- Reading Experience
-  - Progress tracking
-  - Reading time estimates
-  - Font customization
-  - Line spacing options
-  - Margin controls
+- [x] Reading Experience
+  - [x] Progress tracking
+  - [x] Reading time estimates
+  - [x] Font customization
+  - [x] Line spacing options
+  - [x] Margin controls
 
 ## 5. Features Implementation Order
 1. Basic Novel Creation
-   - Implement AddLightNovelModal
-   - Rich text editor integration
-   - Cover image upload
-   - Basic info management
+   - [x] Implement AddLightNovelModal
+   - [x] Rich text editor integration
+   - [x] Cover image upload
+   - [x] Basic info management
 
 2. Novel Listing
-   - Create LightNovelCard component
-   - Implement grid/list view
-   - Add pagination/infinite scroll
-   - Search and filtering
+   - [x] Create LightNovelCard component
+   - [x] Implement grid/list view
+   - [x] Add pagination/infinite scroll
+   - [x] Search and filtering
 
 3. Chapter Management
-   - Chapter creation system
-   - Content editor integration
-   - Chapter organization
-   - Draft system
+   - [x] Chapter creation system
+   - [x] Content editor integration
+   - [x] Chapter organization
+   - [x] Draft system
 
 4. Reader Implementation
-   - Create novel reader component
-   - Reading preferences
-   - Navigation controls
-   - Progress saving
+   - [x] Create novel reader component
+   - [x] Reading preferences
+   - [x] Navigation controls
+   - [x] Progress saving
 
 5. Social Features
-   - Comments system
-   - Rating system
-   - Share functionality
-   - Follow authors
-   - Reading history
+   - [x] Comments system
+   - [x] Rating system
+   - [x] Share functionality
+   - [x] Follow authors
+   - [x] Reading history
 
 ## 6. Technical Considerations
-- Rich text storage and rendering
-- Reading progress synchronization
-- Content backup system
-- Mobile-responsive design
-- SEO optimization
-- Content moderation tools
-- Report system
+- [x] Rich text storage and rendering
+- [x] Reading progress synchronization
+- [x] Content backup system
+- [x] Mobile-responsive design
+- [x] SEO optimization
+- [x] Content moderation tools
+- [x] Report system
 
-## 7. Next Immediate Tasks
-1. Set up light novel database models
-2. Create basic API endpoints
-3. Implement AddLightNovelModal
-4. Set up rich text editor
-5. Create basic novel listing page
-
-## 8. Additional Features
-- Series management
-- Volume organization
-- Character profiles
-- Glossary system
-- Translation support
-- Review system
-- Reading lists
+```
+всё хуйня из пункта 8 ещё под вопросами
 ```
 
-This plan provides a structured approach focusing on the unique requirements of light novels, particularly around text content management and reading experience.
-This plan provides a structured approach focusing on the unique requirements of light novels, particularly around text content management and reading experience.
+## 8. Additional Features
+- [ ] Series management
+- [ ] Volume organization
+- [ ] Character profiles
+- [ ] Glossary system
+- [ ] Translation support
+- [ ] Review system
+- [ ] Reading lists

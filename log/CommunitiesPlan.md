@@ -34,13 +34,7 @@
   - [ ] Add thread participation stats
 
 ## Next Immediate Tasks:
-1. Create migration for Topic model
-2. Implement topic creation API endpoints
-3. Create basic topic UI components
-4. Add topic management features
-
-## Technical Requirements:
-1. Update database schema with Topic model
-2. Create API routes for topic management
-3. Add topic-related components
-4. Implement topic permissions system
+1. [ ] Create migration for Topic model
+2. [ ] Implement topic creation API endpoints
+3. [ ] Create basic topic UI components
+4. [ ] Add topic management features
