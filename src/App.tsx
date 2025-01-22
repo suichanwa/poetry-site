@@ -9,17 +9,17 @@ import ProfileSetupPage from "./pages/ProfileSetup/ProfileSetup";
 import PoemDetail from "./pages/PoemDetail";
 import CommunitiesPage from "./pages/Communities/CommunitiesPage";
 import CommunityDetail from "./pages/Communities/CommunityDetail";
-import CommunityManagePage from "./pages/Communities/CommunityManagePage"; 
+import CommunityManagePage from "./pages/Communities/CommunityManagePage";
 import Layout from "@/components/Layout";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import NotificationsPage from './pages/NotificationsPage';
-import PaymentPage from "./pages/PaymentPage"; 
+import PaymentPage from "./pages/PaymentPage";
 import ChatPage from './pages/ChatPage';
 import MangaDetailPage from "./pages/MangaDetailPage";
 import LightNovelDetailPage from "./pages/LightNovelDetailPage";
 import EditPoem from './pages/EditPoem';
-import BookDetailPage from "./pages/BookDetailPage"; 
+import BookDetailPage from "./pages/BookDetailPage";
 import BookReadPage from "@/pages/BookReadPage";
 
 function App() {
@@ -43,10 +43,10 @@ function App() {
               <Route path="/communities/:id/manage" element={<CommunityManagePage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/payment" element={<PaymentPage />} />
-              <Route path="/chats" element={<ChatPage />} />
+              <Route path="/chat/:chatId" element={<ChatPage />} /> {/* Updated route */}
               <Route path="/manga/:id" element={<MangaDetailPage />} />
               <Route path="/lightnovel/:id" element={<LightNovelDetailPage />} />
-              <Route path="/book/:id" element={<BookDetailPage />} /> 
+              <Route path="/book/:id" element={<BookDetailPage />} />
               <Route path="/edit-poem/:id" element={<EditPoem />} />
               <Route path="/book/:id/read" element={<BookReadPage />} />
             </Routes>

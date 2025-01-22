@@ -1,85 +1,79 @@
 import { useState } from "react";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User } from "lucide-react";
 import { Comment } from "./Comment";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/context/AuthContext";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-interface CommentsSectionProps {
-  comments: Array<{
-    id: number;
-    content: string;
-    user: {
-      id: number;
-      name: string;
-      avatar?: string;
-    };
-    createdAt: string;
-    likes: number;
-  }>;
-  user: {
-    id: number;
-    avatar?: string;
-  };
+interface CommentSectionProps {
+  comments: Comment[];
+  onSubmit: (comment: string) => void;
   likedComments: Record<number, boolean>;
   likeCounts: Record<number, number>;
-  handleAddComment: (content: string) => void;
   handleLikeComment: (commentId: number) => void;
 }
 
-export function CommentsSection({ comments, user, likedComments, likeCounts, handleAddComment, handleLikeComment }: CommentsSectionProps) {
+export default function CommentSection({
+  comments,
+  onSubmit,
+  likedComments,
+  likeCounts,
+  handleLikeComment
+}: CommentSectionProps) {
   const [newComment, setNewComment] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const { user } = useAuth();
 
-  const onAddComment = async () => {
-    if (!newComment.trim() || isSubmitting) return;
+  const handleSubmit = () => {
+    if (!user) {
+      setError("You must be logged in to comment.");
+      return;
+    }
 
-    setIsSubmitting(true);
-    await handleAddComment(newComment.trim());
+    if (!newComment.trim()) {
+      setError("Comment cannot be empty.");
+      return;
+    }
+
+    onSubmit(newComment);
     setNewComment("");
-    setIsSubmitting(false);
+    setError("");
   };
 
   return (
-    <div className="mt-8">
-      <h2 className="text-2xl font-semibold mb-4">Comments</h2>
-      {user && (
-        <div className="flex gap-4 mb-4">
-          <Avatar className="w-10 h-10">
-            {user.avatar ? (
-              <AvatarImage src={`http://localhost:3001${user.avatar}`} />
-            ) : (
-              <AvatarFallback>
-                <User className="w-5 h-5" />
-              </AvatarFallback>
-            )}
-          </Avatar>
-          <div className="flex-1 space-y-2">
-            <Textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add a comment..."
-              onKeyDown={(e) => e.key === 'Enter' && onAddComment()}
-            />
-            <Button 
-              onClick={onAddComment}
-              disabled={!newComment.trim() || isSubmitting}
-              size="sm"
-            >
-              Post Comment
-            </Button>
-          </div>
-        </div>
-      )}
+    <div className="mt-6">
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Leave a Comment</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            placeholder="Add a comment..."
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            className="resize-none mb-2"
+          />
+          {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+          <Button onClick={handleSubmit}>Post Comment</Button>
+        </CardContent>
+      </Card>
 
-      <div className="space-y-4">
-        {comments.map(comment => (
-          <Comment 
-            key={comment.id} 
-            comment={comment} 
-            likedComments={likedComments} 
-            likeCounts={likeCounts} 
-            handleLikeComment={handleLikeComment} 
+      <h2 className="text-xl font-semibold mb-4">Comments</h2>
+      <div className="space-y-6">
+        {comments.map((comment) => (
+          <Comment
+            key={comment.id}
+            comment={comment}
+            likedComments={likedComments}
+            likeCounts={likeCounts}
+            handleLikeComment={handleLikeComment}
           />
         ))}
       </div>

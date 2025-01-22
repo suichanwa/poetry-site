@@ -4,7 +4,7 @@ import { useBookDetails } from "@/hooks/useBookDetails";
 import { useBookActions } from "@/hooks/useBookActions";
 import { LoadingState } from "@/components/LoadingState";
 import { BookDetails } from "./BookDetails/BookDetails";
-import { CommentsSection } from "./BookDetails/CommentsSection";
+import CommentsSection from "./BookDetails/CommentsSection"; // Corrected import
 
 export default function BookDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,13 +21,9 @@ export default function BookDetailPage() {
     <div className="max-w-4xl mx-auto p-4">
       <button onClick={() => navigate(-1)} className="mb-4 text-blue-500">Back</button>
       <BookDetails book={book} isLiked={isLiked} handleLike={handleLike} />
-      <CommentsSection 
-        comments={book.comments} 
-        user={user} 
-        likedComments={likedComments} 
-        likeCounts={likeCounts} 
-        handleAddComment={handleAddComment} 
-        handleLikeComment={handleLikeComment} 
+      <CommentsSection
+        comments={book.comments}
+        onSubmit={handleAddComment}
       />
     </div>
   );
