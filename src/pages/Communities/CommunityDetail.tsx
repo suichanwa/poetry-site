@@ -7,10 +7,10 @@ import { CommunityInfo } from "./CommunityInfo";
 import { MemberList } from "./MemberList";
 import { CommunityRules } from "./CommunityRules";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PoemCard } from "@/components/PoemCard";
-import { BookOpen, Users, Shield, Plus } from "lucide-react";
+import { BookOpen, Users, Shield, Plus, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InviteUserModal } from "@/components/Communities/InviteUserModal";
+import { CreatePostModal } from "@/components/Communities/CreatePostModal";
 
 interface Community {
   id: number;
@@ -40,13 +40,14 @@ interface Community {
 }
 
 export default function CommunityDetail() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const [community, setCommunity] = useState<Community | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("posts");
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleCommunityUpdate = (updatedCommunity: Community) => {
@@ -114,6 +115,14 @@ export default function CommunityDetail() {
     }
   };
 
+  const handlePostCreated = (newPost: any) => {
+    setCommunity(prev => ({
+      ...prev!,
+      posts: [newPost, ...prev!.posts],
+      _count: { ...prev!._count, posts: prev!._count.posts + 1 }
+    }));
+  };
+
   if (isLoading) return <LoadingState />;
   if (error) return <div className="text-center py-8 text-red-500">{error}</div>;
   if (!community) return <div className="text-center py-8">Community not found</div>;
@@ -166,9 +175,9 @@ export default function CommunityDetail() {
             </TabsContent>
 
             <TabsContent value="members" className="mt-6">
-              <MemberList 
-                members={community.members} 
-                creatorId={community.creator.id} 
+              <MemberList
+                members={community.members}
+                creatorId={community.creator.id}
               />
             </TabsContent>
 
@@ -178,17 +187,27 @@ export default function CommunityDetail() {
           </Tabs>
 
           {isModerator && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-4">
               <Button onClick={() => setIsInviteModalOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Invite User
               </Button>
-              <Button variant="outline" onClick={() => navigate(`/communities/${community.id}/manage`)}>
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/communities/${community.id}/manage`)}
+              >
                 Manage Community
               </Button>
             </div>
           )}
         </div>
+
+        <CreatePostModal
+          isOpen={isCreatePostModalOpen}
+          onClose={() => setIsCreatePostModalOpen(false)}
+          communityId={community.id}
+          onPostCreated={handlePostCreated}
+        />
 
         <InviteUserModal
           isOpen={isInviteModalOpen}

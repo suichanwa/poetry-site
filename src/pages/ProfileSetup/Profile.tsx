@@ -113,87 +113,88 @@ export default function Profile() {
     return `http://localhost:3001/${cleanPath}`;
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        const headers = {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        };
+  // src/pages/ProfileSetup/Profile.tsx
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const headers = {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      };
 
-        const userIdToFetch = isOwnProfile ? user?.id : id;
+      const userIdToFetch = isOwnProfile ? user?.id : id;
 
-        // Fetch user data
-        const userResponse = await fetch(`http://localhost:3001/api/users/${userIdToFetch}`, { headers });
-        if (!userResponse.ok) {
-          throw new Error("Failed to fetch user data");
-        }
-        const userData = await userResponse.json();
-        setUserData(userData);
-
-        // Fetch follow stats only if it's not the user's own profile
-        if (!isOwnProfile) {
-          const followStatsResponse = await fetch(`http://localhost:3001/api/users/${userIdToFetch}/follow-stats`, { headers });
-          if (!followStatsResponse.ok) {
-            throw new Error("Failed to fetch follow stats");
-          }
-          const followStatsData = await followStatsResponse.json();
-          setFollowStats(followStatsData);
-        } else {
-          // If it's the own profile, only fetch counts
-          const followCountsResponse = await fetch(`http://localhost:3001/api/users/${userIdToFetch}/follow-counts`, { headers });
-          if (!followCountsResponse.ok) {
-            throw new Error("Failed to fetch follow counts");
-          }
-          const followCountsData = await followCountsResponse.json();
-          setFollowStats({
-            followersCount: followCountsData.followersCount,
-            followingCount: followCountsData.followingCount,
-            isFollowing: false // This is not applicable for own profile
-          });
-        }
-
-        // Fetch other data (poems, manga, light novels, books)
-        const poemsResponse = await fetch(`http://localhost:3001/api/poems/user/${userIdToFetch}`, { headers });
-        const mangaResponse = await fetch(`http://localhost:3001/api/manga/user/${userIdToFetch}`, { headers });
-        const lightNovelsResponse = await fetch(`http://localhost:3001/api/lightnovels/user/${userIdToFetch}`, { headers });
-        const booksResponse = await fetch(`http://localhost:3001/api/books/user/${userIdToFetch}`, { headers });
-
-        if (!poemsResponse.ok) {
-          throw new Error("Failed to fetch poems");
-        }
-        if (!mangaResponse.ok) {
-          throw new Error("Failed to fetch manga");
-        }
-        if (!lightNovelsResponse.ok) {
-          throw new Error("Failed to fetch light novels");
-        }
-        if (!booksResponse.ok) {
-          throw new Error("Failed to fetch books");
-        }
-
-        const userPoems = await poemsResponse.json();
-        const userManga = await mangaResponse.json();
-        const userLightNovels = await lightNovelsResponse.json();
-        const userBooks = await booksResponse.json();
-
-        setUserPoems(userPoems);
-        setUserManga(userManga);
-        setUserLightNovels(userLightNovels);
-        setUserBooks(userBooks);
-
-      } catch (error) {
-        console.error("Error fetching profile data:", error);
-        setError("Failed to load profile data");
-      } finally {
-        setIsLoading(false);
+      // Fetch user data
+      const userResponse = await fetch(`http://localhost:3001/api/users/${userIdToFetch}`, { headers });
+      if (!userResponse.ok) {
+        throw new Error("Failed to fetch user data");
       }
-    };
+      const userData = await userResponse.json();
+      setUserData(userData);
 
-    fetchData();
-  }, [id, isOwnProfile, user?.id]);
+      // Fetch follow stats only if it's not the user's own profile
+      if (!isOwnProfile) {
+        const followStatsResponse = await fetch(`http://localhost:3001/api/users/${userIdToFetch}/follow-stats`, { headers });
+        if (!followStatsResponse.ok) {
+          throw new Error("Failed to fetch follow stats");
+        }
+        const followStatsData = await followStatsResponse.json();
+        setFollowStats(followStatsData);
+      } else {
+        // If it's the own profile, only fetch counts
+        const followCountsResponse = await fetch(`http://localhost:3001/api/users/${userIdToFetch}/follow-counts`, { headers });
+        if (!followCountsResponse.ok) {
+          throw new Error("Failed to fetch follow counts");
+        }
+        const followCountsData = await followCountsResponse.json();
+        setFollowStats({
+          followersCount: followCountsData.followersCount,
+          followingCount: followCountsData.followingCount,
+          isFollowing: false // This is not applicable for own profile
+        });
+      }
+
+      // Fetch other data (poems, manga, light novels, books)
+      const [poemsResponse, mangaResponse, lightNovelsResponse, booksResponse] = await Promise.all([
+        fetch(`http://localhost:3001/api/poems/user/${userIdToFetch}`, { headers }),
+        fetch(`http://localhost:3001/api/manga/user/${userIdToFetch}`, { headers }),
+        fetch(`http://localhost:3001/api/lightnovels/user/${userIdToFetch}`, { headers }),
+        fetch(`http://localhost:3001/api/books/user/${userIdToFetch}`, { headers })
+      ]);
+
+      if (!poemsResponse.ok) {
+        throw new Error("Failed to fetch poems");
+      }
+      if (!mangaResponse.ok) {
+        throw new Error("Failed to fetch manga");
+      }
+      if (!lightNovelsResponse.ok) {
+        throw new Error("Failed to fetch light novels");
+      }
+      if (!booksResponse.ok) {
+        throw new Error("Failed to fetch books");
+      }
+
+      const userPoems = await poemsResponse.json();
+      const userManga = await mangaResponse.json();
+      const userLightNovels = await lightNovelsResponse.json();
+      const userBooks = await booksResponse.json();
+
+      setUserPoems(userPoems);
+      setUserManga(userManga);
+      setUserLightNovels(userLightNovels);
+      setUserBooks(userBooks);
+
+    } catch (error) {
+      console.error("Error fetching profile data:", error);
+      setError("Failed to load profile data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchData();
+}, [id, user, isOwnProfile]);
 
   const handleFollow = async () => {
     if (!user || !userData) return;

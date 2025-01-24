@@ -30,26 +30,30 @@ export function MobileNavBar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      if (!user) return;
-      try {
-        const response = await fetch('http://localhost:3001/api/notifications', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        const data = await response.json();
+useEffect(() => {
+  const fetchNotifications = async () => {
+    if (!user) return;
+    try {
+      const response = await fetch('http://localhost:3001/api/notifications', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.notifications) {
         setUnreadCount(data.notifications.filter((n: any) => !n.isRead).length);
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
+      } else {
+        console.error('No notifications found in response');
       }
-    };
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
 
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // Check every 30 seconds
-    return () => clearInterval(interval);
-  }, [user]);
+  fetchNotifications();
+  const interval = setInterval(fetchNotifications, 30000); // Check every 30 seconds
+  return () => clearInterval(interval);
+}, [user]);
 
   const isActive = (path: string) => location.pathname === path;
 

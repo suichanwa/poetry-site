@@ -31,29 +31,35 @@ export function PoemActions({
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  React.useEffect(() => {
-    const checkLikeStatus = async () => {
-      if (!user) return;
+// src/components/subcomponents/PoemActions.tsx
+React.useEffect(() => {
+  const checkLikeStatus = async () => {
+    if (!user) return;
 
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3001/api/poems/${poemId}/like/status`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        
-        if (!response.ok) throw new Error('Failed to fetch like status');
-        const data = await response.json();
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3001/api/poems/${poemId}/like/status`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch like status');
+
+      const data = await response.json();
+      if (data) {
         setIsLiked(data.liked);
         setLikeCount(data.likeCount);
-      } catch (error) {
-        console.error('Error checking like status:', error);
+      } else {
+        console.error('No like status found in response');
       }
-    };
+    } catch (error) {
+      console.error('Error checking like status:', error);
+    }
+  };
 
-    checkLikeStatus();
-  }, [poemId, user]);
+  checkLikeStatus();
+}, [poemId, user]);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();

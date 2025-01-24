@@ -4,7 +4,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { MangaReaderWrapper } from "@/components/manga/MangaReaderWrapper";
 import { LoadingState } from "@/components/LoadingState";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -19,12 +25,13 @@ import {
   Trash2,
   BookOpen,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
 import { AddChapterModalWrapper } from "@/components/manga/AddChapterModalWrapper";
 import { MangaGrid } from "@/components/MangaGrid";
+import { Rating } from "@/components/ui/Rating";
 
 interface Chapter {
   id: number;
@@ -65,13 +72,20 @@ export default function MangaDetailPage() {
   const [currentChapter, setCurrentChapter] = useState<Chapter | null>(null);
   const [isLiked, setIsLiked] = useState(false);
   const [isAddChapterOpen, setIsAddChapterOpen] = useState(false);
-  const [recommendedMangas, setRecommendedMangas] = useState<MangaDetail[]>([]);
+  const [recommendedMangas, setRecommendedMangas] = useState<MangaDetail[]>(
+    []
+  );
   const [recommendedError, setRecommendedError] = useState<string>("");
+  const [rating, setRating] = useState(0);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalRatings, setTotalRatings] = useState(0);
 
   const getImageUrl = (path: string) => {
-    if (!path) return '/placeholder.png';
-    if (path.startsWith('http')) return path;
-    const cleanPath = path.replace(/^.*[\/\\]uploads[\/\\]/, 'uploads/').replace(/\\/g, '/');
+    if (!path) return "/placeholder.png";
+    if (path.startsWith("http")) return path;
+    const cleanPath = path
+      .replace(/^.*[\/\\]uploads[\/\\]/, "uploads/")
+      .replace(/\\/g, "/");
     return `http://localhost:3001/${cleanPath}`;
   };
 
@@ -79,19 +93,22 @@ export default function MangaDetailPage() {
     const fetchMangaDetail = async () => {
       try {
         setIsLoading(true);
-        const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3001/api/manga/${id}`, {
-          headers: {
-            ...(token && { 'Authorization': `Bearer ${token}` })
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          `http://localhost:3001/api/manga/${id}`,
+          {
+            headers: {
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
           }
-        });
-        if (!response.ok) throw new Error('Failed to fetch manga');
+        );
+        if (!response.ok) throw new Error("Failed to fetch manga");
         const data = await response.json();
         setManga(data);
         setIsLiked(data.isLiked || false);
       } catch (error) {
-        setError(error instanceof Error ? error.message : 'An error occurred');
-        console.error('Error fetching manga:', error);
+        setError(error instanceof Error ? error.message : "An error occurred");
+        console.error("Error fetching manga:", error);
       } finally {
         setIsLoading(false);
       }
@@ -99,16 +116,18 @@ export default function MangaDetailPage() {
 
     const fetchRecommendedMangas = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/api/manga/recommended?excludeId=${id}`);
+        const response = await fetch(
+          `http://localhost:3001/api/manga/recommended?excludeId=${id}`
+        );
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.error || 'Failed to fetch recommended mangas');
+          throw new Error(error.error || "Failed to fetch recommended mangas");
         }
         const data = await response.json();
         setRecommendedMangas(data);
       } catch (error) {
-        console.error('Error fetching recommended mangas:', error);
-        setRecommendedError('Failed to load recommended mangas');
+        console.error("Error fetching recommended mangas:", error);
+        setRecommendedError("Failed to load recommended mangas");
       }
     };
 
@@ -118,13 +137,95 @@ export default function MangaDetailPage() {
     }
   }, [id]);
 
+  useEffect(() => {
+    const fetchRatings = async () => {
+        if (!id) return; // Check if id is available
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`http://localhost:3001/api/rating/manga/${id}/ratings`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': `Bearer ${token}` })
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch ratings');
+            }
+            const data = await response.json();
+            setAverageRating(data.average);
+            setTotalRatings(data.total);
+            setRating(data.userRating || 0);
+        } catch (error) {
+            console.error('Error fetching ratings:', error);
+            setError('Failed to fetch ratings');
+        }
+    };
+
+    fetchRatings();
+}, [id]);
+
+  const handleRate = async (newRating: number) => {
+    if (!user) {
+      // Optionally, display a message to the user that they need to be logged in
+      return;
+    }
+  
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/rating/manga/${id}/rate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ rating: newRating }),
+        }
+      );
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to rate manga");
+      }
+  
+      const data = await response.json();
+  
+      // Update the user's rating
+      setRating(newRating);
+      // Fetch the updated ratings to update the average rating and total ratings
+      await fetchUpdatedRatings();
+    } catch (error) {
+      console.error("Error rating manga:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to rate manga"
+      );
+    }
+  };
+  
+  // New function to fetch updated ratings
+  const fetchUpdatedRatings = async () => {
+    const token = localStorage.getItem("token");
+    const response = await fetch(
+      `http://localhost:3001/api/rating/manga/${id}/ratings`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      }
+    );
+    const data = await response.json();
+    setAverageRating(data.average);
+    setTotalRatings(data.total);
+  };
+
   const handleReadChapter = (chapter: Chapter) => {
     setCurrentChapter(chapter);
     setIsReaderOpen(true);
   };
 
   const handleChapterChange = (chapterId: number) => {
-    const chapter = manga?.chapters.find(c => c.id === chapterId);
+    const chapter = manga?.chapters.find((c) => c.id === chapterId);
     if (chapter) {
       setCurrentChapter(chapter);
     }
@@ -134,49 +235,59 @@ export default function MangaDetailPage() {
     if (!user || !manga) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/manga/${manga.id}/like`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:3001/api/manga/${manga.id}/like`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
-      if (!response.ok) throw new Error('Failed to like manga');
+      if (!response.ok) throw new Error("Failed to like manga");
 
       setIsLiked(!isLiked);
-      setManga(prev => prev ? { ...prev, likes: isLiked ? prev.likes - 1 : prev.likes + 1 } : prev);
+      setManga((prev) =>
+        prev
+          ? { ...prev, likes: isLiked ? prev.likes - 1 : prev.likes + 1 }
+          : prev
+      );
     } catch (error) {
-      console.error('Error liking manga:', error);
+      console.error("Error liking manga:", error);
     }
   };
 
   const handleDeleteManga = async () => {
     if (!user || !manga) return;
 
-    const confirmDelete = window.confirm("Are you sure you want to delete this manga?");
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this manga?"
+    );
     if (!confirmDelete) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:3001/api/manga/${manga.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      if (!response.ok) throw new Error('Failed to delete manga');
+      if (!response.ok) throw new Error("Failed to delete manga");
 
-      navigate('/manga');
+      navigate("/manga");
     } catch (error) {
-      console.error('Error deleting manga:', error);
-      setError('Failed to delete manga');
+      console.error("Error deleting manga:", error);
+      setError("Failed to delete manga");
     }
   };
 
   if (isLoading) return <LoadingState />;
-  if (error || !manga) return <div className="text-center text-red-500">{error}</div>;
+  if (error || !manga)
+    return <div className="text-center text-red-500">{error}</div>;
 
   return (
     <div className="min-h-screen p-4 md:p-6">
@@ -197,7 +308,9 @@ export default function MangaDetailPage() {
                 />
               </div>
               <div className="flex-1">
-                <CardTitle className="text-2xl md:text-3xl font-bold">{manga.title}</CardTitle>
+                <CardTitle className="text-2xl md:text-3xl font-bold">
+                  {manga.title}
+                </CardTitle>
                 <CardDescription className="text-muted-foreground mt-2">
                   {manga.description}
                 </CardDescription>
@@ -211,11 +324,20 @@ export default function MangaDetailPage() {
                       </AvatarFallback>
                     )}
                   </Avatar>
-                  <span className="text-muted-foreground font-medium">{manga.author.name}</span>
+                  <span className="text-muted-foreground font-medium">
+                    {manga.author.name}
+                  </span>
                 </div>
                 <div className="mt-4 flex items-center gap-4">
-                  <Button variant="outline" size="sm" onClick={handleLike} className={isLiked ? "text-red-500" : ""}>
-                    <Heart className={`mr-2 h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleLike}
+                    className={isLiked ? "text-red-500" : ""}
+                  >
+                    <Heart
+                      className={`mr-2 h-4 w-4 ${isLiked ? "fill-current" : ""}`}
+                    />
                     {manga.likes}
                   </Button>
                   <div className="flex items-center gap-2 text-muted-foreground">
@@ -225,29 +347,48 @@ export default function MangaDetailPage() {
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Clock className="h-4 w-4" />
                     <span className="text-sm">
-                      {formatDistanceToNow(new Date(manga.createdAt), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(manga.createdAt), {
+                        addSuffix: true,
+                      })}
                     </span>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigator.share({ title: manga.title, text: manga.description, url: window.location.href })}
+                    onClick={() =>
+                      navigator.share({
+                        title: manga.title,
+                        text: manga.description,
+                        url: window.location.href,
+                      })
+                    }
                   >
                     <Share2 className="h-4 w-4" />
                   </Button>
                   {user?.id === manga.author.id && (
-                    <Button variant="destructive" size="sm" onClick={handleDeleteManga}>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleDeleteManga}
+                    >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete
                     </Button>
                   )}
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {manga.tags.map(tag => (
+                  {manga.tags.map((tag) => (
                     <Badge key={tag.name} variant="secondary">
                       {tag.name}
                     </Badge>
                   ))}
+                </div>
+                <div className="mt-4">
+                  <Rating initialRating={rating} onRate={handleRate} />
+                  <p>
+                    Average Rating: {averageRating} ({totalRatings}{" "}
+                    {totalRatings === 1 ? "rating" : "ratings"})
+                  </p>
                 </div>
               </div>
             </div>
@@ -266,53 +407,47 @@ export default function MangaDetailPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {manga.chapters.map((chapter, index) => (
                 <Button
-                    key={chapter.id}
-                    variant={currentChapter?.id === chapter.id ? "default" : "outline"}
-                    className="w-full flex items-center justify-between"
-                    onClick={() => {
-                      handleReadChapter(chapter);
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="h-4 w-4" />
-                      <span className="truncate">
-                        Chapter {chapter.orderIndex}: {chapter.title}
-                      </span>
+                  key={chapter.id}
+                  variant={
+                    currentChapter?.id === chapter.id ? "default" : "outline"
+                  }
+                  className="w-full flex items-center justify-between"
+                  onClick={() => {
+                    handleReadChapter(chapter);
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    <span className="truncate">
+                      Chapter {chapter.orderIndex}: {chapter.title}
+                    </span>
+                  </div>
+                  {index === 0 && (
+                    <Badge variant="secondary" className="ml-2">
+                      New
+                    </Badge>
+                  )}
+                  {currentChapter?.id === chapter.id && (
+                    <div className="flex gap-2">
+                     <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const nextChapter = manga.chapters.find(
+                            (c) => c.orderIndex === chapter.orderIndex + 1
+                          );
+                          if (nextChapter) {
+                            handleChapterChange(nextChapter.id);
+                          }
+                        }}
+                        disabled={chapter.orderIndex === manga.chapters.length}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
                     </div>
-                    {index === 0 && <Badge variant="secondary" className="ml-2">New</Badge>}
-                    {currentChapter?.id === chapter.id && (
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={(e) => {
-                              e.stopPropagation(); // Prevent triggering parent button click
-                              const previousChapter = manga.chapters.find(c => c.orderIndex === chapter.orderIndex - 1);
-                              if (previousChapter) {
-                                handleChapterChange(previousChapter.id);
-                              }
-                            }}
-                            disabled={chapter.orderIndex === 1}
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const nextChapter = manga.chapters.find(c => c.orderIndex === chapter.orderIndex + 1);
-                              if (nextChapter) {
-                                handleChapterChange(nextChapter.id);
-                              }
-                            }}
-                            disabled={chapter.orderIndex === manga.chapters.length}
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                    )}
-                  </Button>
+                  )}
+                </Button>
               ))}
             </div>
           </CardContent>
@@ -335,7 +470,6 @@ export default function MangaDetailPage() {
           currentChaptersCount={manga.chapters.length}
         />
       </div>
-      {/* Potential area for "Recommended Manga" section */}
     </div>
   );
 }
