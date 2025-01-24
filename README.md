@@ -3,6 +3,8 @@ da fucking pfp is workin
 
 # Poetry Site Project Progress
 
+fixes updates -> [fixes](log/fixes.md)
+
 ## ✅ Completed Features
 
 ### User Profile
