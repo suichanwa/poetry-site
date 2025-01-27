@@ -1,7 +1,20 @@
 import { useState } from "react";
-import { Menu, Sun, Moon, Globe, LogOut, User, Bookmark, Users } from "lucide-react";
+import {
+  Menu,
+  Sun,
+  Moon,
+  Globe,
+  LogOut,
+  User,
+  Bookmark,
+  Users,
+  Home,
+  Bell,
+  MessageSquare,
+  Settings,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useTheme } from "@/context/ThemeContext";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/context/AuthContext";
@@ -15,102 +28,97 @@ export default function BurgerMenu() {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setIsOpen(false); // Close the menu after navigation
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+    setIsOpen(false); // Close the menu after logout
+  };
+
+  const handleThemeToggle = () => {
+    toggleTheme();
+    setIsOpen(false); // Close the menu after toggling the theme
+  };
+
   return (
     <div className="relative flex items-center">
       <Button variant="outline" onClick={toggleMenu} aria-label="Toggle Menu">
         <Menu className="w-6 h-6" />
       </Button>
-      <img 
-        src="/icon.png" 
-        alt="Logo" 
-        className="w-8 h-8 ml-2 object-cover rounded-full" 
-      />
 
       {isOpen && (
         <div className="absolute top-full left-0 mt-2 w-48 bg-card text-card-foreground shadow-lg rounded-md z-50">
           <ul className="flex flex-col py-2">
             <li>
-              <button
-                onClick={() => {
-                  navigate("/");
-                  setIsOpen(false);
-                }}
+              <Link
+                to="/"
+                onClick={() => setIsOpen(false)}
                 className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full"
               >
                 {t("home")}
-              </button>
+              </Link>
             </li>
-            
+
             {!user ? (
               <>
                 <li>
-                  <button
-                    onClick={() => {
-                      navigate("/register");
-                      setIsOpen(false);
-                    }}
+                  <Link
+                    to="/register"
+                    onClick={() => setIsOpen(false)}
                     className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full"
                   >
                     {t("register")}
-                  </button>
+                  </Link>
                 </li>
                 <li>
-                  <button
-                    onClick={() => {
-                      navigate("/login");
-                      setIsOpen(false);
-                    }}
+                  <Link
+                    to="/login"
+                    onClick={() => setIsOpen(false)}
                     className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full"
                   >
                     {t("login")}
-                  </button>
+                  </Link>
                 </li>
               </>
             ) : (
               <>
                 <li>
-                  <button
-                    onClick={() => {
-                      navigate("/profile");
-                      setIsOpen(false);
-                    }}
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsOpen(false)}
                     className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full flex items-center"
                   >
                     <User className="w-4 h-4 mr-2" />
                     Profile
-                  </button>
+                  </Link>
                 </li>
                 <li>
-                  <button
-                    onClick={() => {
-                      navigate("/communities");
-                      setIsOpen(false);
-                    }}
+                  <Link
+                    to="/communities"
+                    onClick={() => setIsOpen(false)}
                     className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full flex items-center"
                   >
                     <Users className="w-4 h-4 mr-2" />
                     Communities
-                  </button>
+                  </Link>
                 </li>
                 <li>
-                  <button
-                    onClick={() => {
-                      navigate("/bookmarks");
-                      setIsOpen(false);
-                    }}
+                  <Link
+                    to="/bookmarks"
+                    onClick={() => setIsOpen(false)}
                     className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full flex items-center"
                   >
                     <Bookmark className="w-4 h-4 mr-2" />
                     Bookmarks
-                  </button>
+                  </Link>
                 </li>
                 <li>
                   <button
-                    onClick={() => {
-                      logout();
-                      navigate("/login");
-                      setIsOpen(false);
-                    }}
+                    onClick={handleLogout}
                     className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full flex items-center text-destructive"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
@@ -123,13 +131,10 @@ export default function BurgerMenu() {
             {/* Theme Toggle */}
             <li className="border-t border-border mt-2 pt-2">
               <button
-                onClick={() => {
-                  toggleTheme();
-                  setIsOpen(false);
-                }}
+                onClick={handleThemeToggle}
                 className="block px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground w-full flex items-center"
               >
-                {theme === 'dark' ? (
+                {theme === "dark" ? (
                   <>
                     <Sun className="w-4 h-4 mr-2" />
                     Light Mode

@@ -1,4 +1,3 @@
-// src/pages/MangaDetailPage.tsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MangaReaderWrapper } from "@/components/manga/MangaReaderWrapper";
@@ -30,7 +29,6 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
 import { AddChapterModalWrapper } from "@/components/manga/AddChapterModalWrapper";
-import { MangaGrid } from "@/components/MangaGrid";
 import { Rating } from "@/components/ui/Rating";
 
 interface Chapter {
@@ -72,10 +70,6 @@ export default function MangaDetailPage() {
   const [currentChapter, setCurrentChapter] = useState<Chapter | null>(null);
   const [isLiked, setIsLiked] = useState(false);
   const [isAddChapterOpen, setIsAddChapterOpen] = useState(false);
-  const [recommendedMangas, setRecommendedMangas] = useState<MangaDetail[]>(
-    []
-  );
-  const [recommendedError, setRecommendedError] = useState<string>("");
   const [rating, setRating] = useState(0);
   const [averageRating, setAverageRating] = useState(0);
   const [totalRatings, setTotalRatings] = useState(0);
@@ -114,62 +108,46 @@ export default function MangaDetailPage() {
       }
     };
 
-    const fetchRecommendedMangas = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:3001/api/manga/recommended?excludeId=${id}`
-        );
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Failed to fetch recommended mangas");
-        }
-        const data = await response.json();
-        setRecommendedMangas(data);
-      } catch (error) {
-        console.error("Error fetching recommended mangas:", error);
-        setRecommendedError("Failed to load recommended mangas");
-      }
-    };
-
     if (id) {
       fetchMangaDetail();
-      fetchRecommendedMangas();
     }
   }, [id]);
 
   useEffect(() => {
     const fetchRatings = async () => {
-        if (!id) return; // Check if id is available
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:3001/api/rating/manga/${id}/ratings`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token && { 'Authorization': `Bearer ${token}` })
-                }
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch ratings');
-            }
-            const data = await response.json();
-            setAverageRating(data.average);
-            setTotalRatings(data.total);
-            setRating(data.userRating || 0);
-        } catch (error) {
-            console.error('Error fetching ratings:', error);
-            setError('Failed to fetch ratings');
+      if (!id) return;
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          `http://localhost:3001/api/rating/manga/${id}/ratings`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch ratings");
         }
+        const data = await response.json();
+        setAverageRating(data.average);
+        setTotalRatings(data.total);
+        setRating(data.userRating || 0);
+      } catch (error) {
+        console.error("Error fetching ratings:", error);
+        setError("Failed to fetch ratings");
+      }
     };
 
     fetchRatings();
-}, [id]);
+  }, [id]);
 
   const handleRate = async (newRating: number) => {
     if (!user) {
-      // Optionally, display a message to the user that they need to be logged in
       return;
     }
-  
+
     try {
       const response = await fetch(
         `http://localhost:3001/api/rating/manga/${id}/rate`,
@@ -182,17 +160,15 @@ export default function MangaDetailPage() {
           body: JSON.stringify({ rating: newRating }),
         }
       );
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to rate manga");
       }
-  
+
       const data = await response.json();
-  
-      // Update the user's rating
+
       setRating(newRating);
-      // Fetch the updated ratings to update the average rating and total ratings
       await fetchUpdatedRatings();
     } catch (error) {
       console.error("Error rating manga:", error);
@@ -201,8 +177,7 @@ export default function MangaDetailPage() {
       );
     }
   };
-  
-  // New function to fetch updated ratings
+
   const fetchUpdatedRatings = async () => {
     const token = localStorage.getItem("token");
     const response = await fetch(
@@ -269,12 +244,15 @@ export default function MangaDetailPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:3001/api/manga/${manga.id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:3001/api/manga/${manga.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to delete manga");
 
@@ -429,7 +407,23 @@ export default function MangaDetailPage() {
                   )}
                   {currentChapter?.id === chapter.id && (
                     <div className="flex gap-2">
-                     <Button
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent triggering parent button click
+                          const previousChapter = manga.chapters.find(
+                            (c) => c.orderIndex === chapter.orderIndex - 1
+                          );
+                          if (previousChapter) {
+                            handleChapterChange(previousChapter.id);
+                          }
+                        }}
+                        disabled={chapter.orderIndex === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
                         variant="ghost"
                         size="icon"
                         onClick={(e) => {

@@ -4,6 +4,7 @@ import { ProfileAvatar } from "@/pages/ProfileSetup/ProfileAvatar";
 import { Button } from "@/components/ui/button";
 import { SideMenu } from "@/components/SideMenu";
 import { MobileNavBar } from "@/components/navigation/MobileNavBar";
+import { Bell } from "lucide-react"; // Import the Bell icon
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -24,8 +25,20 @@ export default function Layout({ children }: LayoutProps) {
 
             {user && (
               <div className="flex items-center gap-2 ml-auto">
-                <Button 
-                  variant="ghost" 
+                {/* Notification Bell Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hover:bg-accent"
+                  onClick={() => navigate("/notifications")}
+                >
+                  <Bell className="h-5 w-5" />
+                  <span className="sr-only">View Notifications</span>
+                </Button>
+
+                {/* Profile Avatar Button */}
+                <Button
+                  variant="ghost"
                   className="flex items-center gap-2 hover:bg-accent"
                   onClick={() => navigate(`/profile/${user.id}`)}
                 >

@@ -1,25 +1,79 @@
-import { useNavigate } from "react-router-dom";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { FeedTabs } from "@/components/FeedTabs";
+import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
+import { Search, Plus, Filter, ChevronDown } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { useFilters } from "@/hooks/useFilters";
+import { useContentFetch } from "@/hooks/useContentFetch";
+import { useModals } from "@/hooks/useModals";
+import { LoadingState } from "@/components/LoadingState";
+import PoemList from "@/components/PoemList";
 import { MangaGrid } from "@/components/MangaGrid";
 import { LightNovelGrid } from "@/components/lightnovel/LightNovelGrid";
 import { BookGrid } from "@/components/BookGrid";
-import { PoemFilters } from "@/components/PoemFilters";
-import { LoadingState } from "@/components/LoadingState";
-import { SearchResults } from "@/components/SearchResults";
-import { Modals } from "@/components/Modals";
-import { AddBookModal } from "@/components/AddBookModal";
-import { useContentFetch } from "@/hooks/useContentFetch";
-import { useFilters } from "@/hooks/useFilters";
-import { useModals } from "@/hooks/useModals";
-import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from 'react-router-dom';
+import BurgerMenu from "@/components/BurgerMenu";
 
 export default function MainPage() {
+  const [activeTab, setActiveTab] = useState<"poems" | "manga" | "lightnovels" | "books">("poems");
   const { user } = useAuth();
-  const { poems, mangas, lightNovels, books, followingPoems, isLoading } = useContentFetch();
-  const { filteredPoems, searchQuery, setSearchQuery, selectedTags, availableTags, toggleTag, clearFilters, showFilters, setShowFilters } = useFilters(poems);
-  const { isPoemModalOpen, setIsPoemModalOpen, isMangaModalOpen, setIsMangaModalOpen, isLightNovelModalOpen, setIsLightNovelModalOpen, isBookModalOpen, setIsBookModalOpen } = useModals();
   const navigate = useNavigate();
+  const {
+    poems,
+    mangas,
+    lightNovels,
+    books,
+    followingPoems,
+    isLoading,
+    setPoems,
+    setMangas,
+    setLightNovels,
+    setBooks,
+  } = useContentFetch();
+  const {
+    filteredPoems,
+    searchQuery,
+    setSearchQuery,
+    selectedTags,
+    availableTags,
+    toggleTag,
+    clearFilters,
+  } = useFilters(poems);
+  const {
+    isPoemModalOpen,
+    setIsPoemModalOpen,
+    isMangaModalOpen,
+    setIsMangaModalOpen,
+    isLightNovelModalOpen,
+    setIsLightNovelModalOpen,
+    isBookModalOpen,
+    setIsBookModalOpen,
+  } = useModals();
+
+  const handleAddContent = (contentType: string) => {
+    switch (contentType) {
+      case "poems":
+        setIsPoemModalOpen(true);
+        break;
+      case "manga":
+        setIsMangaModalOpen(true);
+        break;
+      case "lightnovels":
+        setIsLightNovelModalOpen(true);
+        break;
+      case "books":
+        setIsBookModalOpen(true);
+        break;
+    }
+  };
 
   const handleMangaClick = (mangaId: number) => {
     navigate(`/manga/${mangaId}`);
@@ -33,113 +87,128 @@ export default function MainPage() {
     navigate(`/book/${bookId}`);
   };
 
-  if (isLoading) return <LoadingState />;
+  if (isLoading) {
+    return <LoadingState />;
+  }
 
   return (
-    <div className="min-h-screen md:p-6 p-2">
-      <div className="max-w-4xl mx-auto space-y-4">
-        <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 border-b">
-          <Tabs defaultValue="poems">
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-4">
-              <TabsList className="w-full justify-start">
-                <TabsTrigger value="poems">Poems</TabsTrigger>
-                <TabsTrigger value="manga">Manga</TabsTrigger>
-                <TabsTrigger value="lightnovels">Light Novels</TabsTrigger>
-                <TabsTrigger value="books">Books</TabsTrigger>
-              </TabsList>
+    <div className="p-4 md:p-8">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <div className="flex items-center gap-4">
+          <BurgerMenu />
+          {/* Search Bar */}
+          <div className="flex-1">
+            <Input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-10 px-4 py-2 rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
 
-              <div className="w-full sm:w-auto">
-                <PoemFilters
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                  showFilters={showFilters}
-                  setShowFilters={setShowFilters}
-                  selectedTags={selectedTags}
-                  availableTags={availableTags}
-                  toggleTag={toggleTag}
-                  clearFilters={clearFilters}
-                  onAddPoem={() => setIsPoemModalOpen(true)}
-                  onAddManga={() => setIsMangaModalOpen(true)}
-                  onAddLightNovel={() => setIsLightNovelModalOpen(true)}
-                  onAddBook={() => setIsBookModalOpen(true)}
-                />
-              </div>
-            </div>
+          {/* Filter Button */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="h-10 px-3">
+                <Filter className="w-4 h-4 mr-2" />
+                Filters
+                <ChevronDown className="w-4 h-4 ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {availableTags.map((tag) => (
+                <DropdownMenuCheckboxItem
+                  key={tag.id}
+                  checked={selectedTags.some(
+                    (selectedTag) => selectedTag.id === tag.id
+                  )}
+                  onSelect={() => toggleTag(tag)}
+                >
+                  {tag.name}
+                </DropdownMenuCheckboxItem>
+              ))}
+              <Separator className="my-2" />
+              <DropdownMenuItem onSelect={clearFilters}>
+                Clear Filters
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-            <TabsContent value="poems">
-              <FeedTabs
-                activeTab="for-you"
-                setActiveTab={() => {}}
-                isLoading={isLoading}
-                filteredPoems={filteredPoems}
-                popularPoems={[]}
-                followingPoems={followingPoems}
-                user={user}
-                hideFilters={true}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                showFilters={showFilters}
-                setShowFilters={setShowFilters}
-                selectedTags={selectedTags}
-              />
-            </TabsContent>
-
-            <TabsContent value="manga">
-              <MangaGrid 
-                mangas={mangas} 
-                onMangaClick={handleMangaClick}
-                onAddManga={() => setIsMangaModalOpen(true)}
-              />
-            </TabsContent>
-
-            <TabsContent value="lightnovels">
-              <LightNovelGrid 
-                novels={lightNovels} 
-                onNovelClick={handleLightNovelClick}
-                onAddNovel={() => setIsLightNovelModalOpen(true)}
-              />
-            </TabsContent>
-
-            <TabsContent value="books">
-              <BookGrid 
-                books={books} 
-                onBookClick={handleBookClick}
-                onAddBook={() => setIsBookModalOpen(true)}
-              />
-            </TabsContent>
-          </Tabs>
+          {/* Add Content Button */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className="h-10 px-4 py-2 rounded-lg bg-primary text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleAddContent("poems")}>
+                Add Poem
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleAddContent("manga")}>
+                Add Manga
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleAddContent("lightnovels")}>
+                Add Light Novel
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleAddContent("books")}>
+                Add Book
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        <SearchResults 
-          poems={[]} 
-          manga={[]} 
-          lightNovels={[]} 
-          books={[]}
-        />
+        {/* Category Tabs */}
+        <div className="flex items-center justify-start gap-4">
+          <Button
+            variant={activeTab === "poems" ? "default" : "ghost"}
+            onClick={() => setActiveTab("poems")}
+            className="px-4 py-2 rounded-lg text-sm font-medium"
+          >
+            Poems
+          </Button>
+          <Button
+            variant={activeTab === "manga" ? "default" : "ghost"}
+            onClick={() => setActiveTab("manga")}
+            className="px-4 py-2 rounded-lg text-sm font-medium"
+          >
+            Manga
+          </Button>
+          <Button
+            variant={activeTab === "lightnovels" ? "default" : "ghost"}
+            onClick={() => setActiveTab("lightnovels")}
+            className="px-4 py-2 rounded-lg text-sm font-medium"
+          >
+            Light Novels
+          </Button>
+          <Button
+            variant={activeTab === "books" ? "default" : "ghost"}
+            onClick={() => setActiveTab("books")}
+            className="px-4 py-2 rounded-lg text-sm font-medium"
+          >
+            Books
+          </Button>
+        </div>
+        <Separator />
 
-        <Modals
-          isPoemModalOpen={isPoemModalOpen}
-          setIsPoemModalOpen={setIsPoemModalOpen}
-          isMangaModalOpen={isMangaModalOpen}
-          setIsMangaModalOpen={setIsMangaModalOpen}
-          isLightNovelModalOpen={isLightNovelModalOpen}
-          setIsLightNovelModalOpen={setIsLightNovelModalOpen}
-          isBookModalOpen={isBookModalOpen}
-          setIsBookModalOpen={setIsBookModalOpen}
-          onAddPoetry={(newPoem) => {
-            setPoems(prev => [newPoem, ...prev]);
-            setFilteredPoems(prev => [newPoem, ...prev]);
-          }}
-          onAddManga={(newManga) => setMangas(prev => [newManga, ...prev])}
-          onAddLightNovel={(newNovel) => setLightNovels(prev => [newNovel, ...prev])}
-          onAddBook={(newBook) => setBooks(prev => [newBook, ...prev])}
-        />
-
-        <AddBookModal
-          isOpen={isBookModalOpen}
-          onClose={() => setIsBookModalOpen(false)}
-          onAddBook={(newBook) => setBooks(prev => [newBook, ...prev])}
-        />
+        {/* Content Display */}
+        {activeTab === "poems" && <PoemList poems={filteredPoems} />}
+        {activeTab === "manga" && (
+          <MangaGrid mangas={mangas} onMangaClick={handleMangaClick} />
+        )}
+        {activeTab === "lightnovels" && (
+          <LightNovelGrid
+            novels={lightNovels}
+            onNovelClick={handleLightNovelClick}
+          />
+        )}
+        {activeTab === "books" && (
+          <BookGrid books={books} onBookClick={handleBookClick} />
+        )}
       </div>
     </div>
   );
