@@ -205,10 +205,11 @@
   }
 }
 
+/* Add these styles to ensure text wrapping */
 .break-words {
   word-wrap: break-word;
   overflow-wrap: break-word;
-  white-space: pre-wrap; /* Ensures that whitespace is preserved and lines break as needed */
+  word-break: break-word;
 }
 
 .prose {
@@ -252,4 +253,22 @@
 
 .dropdown-menu-item:hover {
   background-color: #f1f5f9;
+}
+
+.chat-window {
+  padding-bottom: 4rem; /* Adjust the value as needed */
+}
+
+/* Add styles for reactions */
+.message-reaction {
+  display: flex;
+  align-items: center;
+  margin-top: 0.5rem;
+  color: #ef4444; /* Tailwind red-500 */
+}
+
+.message-reaction .icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.25rem;
 }

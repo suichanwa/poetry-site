@@ -37,13 +37,14 @@ function App() {
               <Route path="/bookmarks" element={<BookmarksPage />} />
               <Route path="/setup-profile" element={<ProfileSetupPage />} />
               <Route path="/poem/:id" element={<PoemDetail />} />
-              <Route path='/profile/:id' element={<ProfilePage />} />
+              <Route path="/profile/:id" element={<ProfilePage />} />
               <Route path="/communities" element={<CommunitiesPage />} />
               <Route path="/communities/:id" element={<CommunityDetail />} />
               <Route path="/communities/:id/manage" element={<CommunityManagePage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/payment" element={<PaymentPage />} />
-              <Route path="/chat/:chatId" element={<ChatPage />} /> {/* Updated route */}
+              <Route path="/chat/:chatId" element={<ChatPage />} /> {/* Added route for individual chat */}
+              <Route path="/chats" element={<ChatPage />} /> {/* Added route for chat list */}
               <Route path="/manga/:id" element={<MangaDetailPage />} />
               <Route path="/lightnovel/:id" element={<LightNovelDetailPage />} />
               <Route path="/book/:id" element={<BookDetailPage />} />

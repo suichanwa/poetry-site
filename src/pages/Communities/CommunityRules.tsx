@@ -19,7 +19,7 @@ export function CommunityRules({ rules }: CommunityRulesProps) {
               <h3 className="font-medium">
                 {index + 1}. {rule.title}
               </h3>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-muted-foreground mt-1 break-words">
                 {rule.description}
               </p>
             </div>

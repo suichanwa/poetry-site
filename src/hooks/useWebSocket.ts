@@ -66,7 +66,6 @@ export function useWebSocket() {
           console.error('WebSocket error:', error);
           socket.close();
         };
-
       } catch (error) {
         console.error('Error establishing connection:', error);
       }

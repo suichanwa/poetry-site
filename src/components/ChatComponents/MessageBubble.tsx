@@ -1,7 +1,7 @@
-// src/components/ChatComponents/MessageBubble.tsx
-import { Paperclip } from "lucide-react";
+import { Paperclip, Heart } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { MessageStatus } from "./MessageStatus";
+import { useState } from "react";
 
 interface MessageBubbleProps {
   message: {
@@ -13,14 +13,43 @@ interface MessageBubbleProps {
     type: 'text' | 'image' | 'file';
     fileUrl?: string;
     fileName?: string;
+    reactions?: { userId: number; reaction: string }[];
   };
   isOwnMessage: boolean;
 }
 
 export function MessageBubble({ message, isOwnMessage }: MessageBubbleProps) {
+  const [isLiked, setIsLiked] = useState(
+    message.reactions?.some((reaction) => reaction.reaction === "heart") || false
+  );
+
+  const handleDoubleClick = async () => {
+    if (isLiked) return;
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/chats/messages/${message.id}/reactions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ reaction: "heart" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add reaction");
+      }
+
+      setIsLiked(true);
+    } catch (error) {
+      console.error("Error adding reaction:", error);
+    }
+  };
+
   return (
     <div
       className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+      onDoubleClick={handleDoubleClick}
     >
       <div
         className={`max-w-[70%] rounded-lg p-3 ${
@@ -54,6 +83,12 @@ export function MessageBubble({ message, isOwnMessage }: MessageBubbleProps) {
             <MessageStatus status={message.read ? 'read' : 'sent'} />
           )}
         </div>
+        {isLiked && (
+          <div className="flex items-center mt-2">
+            <Heart className="w-4 h-4 text-red-500" />
+            <span className="ml-1 text-xs text-red-500">You liked this</span>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-// src/pages/Communities/CommunityDetail.tsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -11,6 +10,7 @@ import { BookOpen, Users, Shield, Plus, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InviteUserModal } from "@/components/Communities/InviteUserModal";
 import { CreatePostModal } from "@/components/Communities/CreatePostModal";
+import { CommunityHeader } from "./CommunityHeader";
 
 interface Community {
   id: number;
@@ -133,13 +133,12 @@ export default function CommunityDetail() {
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-6xl mx-auto">
-        <CommunityInfo
+        <CommunityHeader
           community={community}
           isMember={isMember}
           isModerator={isModerator}
           onJoin={handleJoinCommunity}
           onLeave={handleLeaveCommunity}
-          onUpdate={handleCommunityUpdate}
           user={user}
         />
 

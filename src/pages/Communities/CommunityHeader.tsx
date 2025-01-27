@@ -1,4 +1,3 @@
-// src/components/Communities/CommunityHeader.tsx
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Settings, Calendar } from "lucide-react";
@@ -44,8 +43,8 @@ export function CommunityHeader({
           )}
         </div>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold mb-2">{community.name}</h1>
-          <p className="text-muted-foreground mb-4">{community.description}</p>
+          <h1 className="text-3xl font-bold mb-2 truncate">{community.name}</h1>
+          <p className="text-muted-foreground mb-4 break-words">{community.description}</p>
           <div className="flex items-center gap-4">
             <div className="text-sm text-muted-foreground">
               <span className="flex items-center gap-2">
