@@ -4,7 +4,6 @@
 
 @layer base {
   :root {
-    /* New vibrant light theme */
     --background: #f8fafc;
     --foreground: #1e293b;
     --card: #ffffff;
@@ -12,37 +11,29 @@
     --popover: #ffffff;
     --popover-foreground: #1e293b;
     
-    /* More vibrant primary colors */
     --primary: #3b82f6;  /* Bright blue */
     --primary-foreground: #ffffff;
     
-    /* Softer secondary colors */
     --secondary: #f1f5f9;
     --secondary-foreground: #334155;
     
-    /* Improved muted colors */
     --muted: #f1f5f9;
     --muted-foreground: #64748b;
     
-    /* Enhanced accent colors */
     --accent: #e0f2fe;
     --accent-foreground: #0369a1;
     
-    /* Warning/destructive colors */
     --destructive: #ef4444;
     --destructive-foreground: #ffffff;
     
-    /* Refined border and input colors */
     --border: #e2e8f0;
     --input: #e2e8f0;
     --ring: #60a5fa;
 
-    /* Border radius */
     --radius: 0.5rem;
   }
 
   .dark {
-    /* Enhanced dark theme colors */
     --background: #0f172a;    /* Deeper blue-black */
     --foreground: #e2e8f0;    /* Softer white */
     --card: #1e293b;          /* Richer card background */
@@ -59,7 +50,7 @@
     --accent-foreground: #ffffff;
     --destructive: #dc2626;   /* Richer red */
     --destructive-foreground: #fecaca;
-    --border: #334155;        /* Softer borders */
+    --border: #334155;        
     --input: #334155;
     --ring: #60a5fa;
   }

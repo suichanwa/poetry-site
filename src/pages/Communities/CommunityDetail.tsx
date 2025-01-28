@@ -201,6 +201,15 @@ export default function CommunityDetail() {
           )}
         </div>
 
+        {isMember && (
+          <div className="flex justify-end mb-6">
+            <Button onClick={() => setIsCreatePostModalOpen(true)}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Add Post
+            </Button>
+          </div>
+        )}
+
         <CreatePostModal
           isOpen={isCreatePostModalOpen}
           onClose={() => setIsCreatePostModalOpen(false)}

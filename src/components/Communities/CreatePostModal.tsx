@@ -1,3 +1,4 @@
+// src/components/Communities/CreatePostModal.tsx
 import { useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -73,7 +74,7 @@ export function CreatePostModal({
       images.forEach(image => formData.append('images', image));
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3001/api/communities/posts', {
+      const response = await fetch('http://localhost:3001/api/posts', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -156,7 +157,6 @@ export function CreatePostModal({
               multiple
               className="hidden"
               onChange={handleImageChange}
-              disabled={isLoading}
             />
 
             {previews.length > 0 && (

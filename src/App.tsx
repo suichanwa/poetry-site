@@ -21,6 +21,7 @@ import LightNovelDetailPage from "./pages/LightNovelDetailPage";
 import EditPoem from './pages/EditPoem';
 import BookDetailPage from "./pages/BookDetailPage";
 import BookReadPage from "@/pages/BookReadPage";
+import { PoemCommentsPage } from '@/pages/PoemCommentsPage';
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
               <Route path="/book/:id" element={<BookDetailPage />} />
               <Route path="/edit-poem/:id" element={<EditPoem />} />
               <Route path="/book/:id/read" element={<BookReadPage />} />
+              <Route path="/poems/:poemId/comments" element={<PoemCommentsPage />} />
             </Routes>
           </Layout>
         </Router>

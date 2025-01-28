@@ -134,32 +134,6 @@ export default function MainPage() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Add Content Button */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                className="h-10 px-4 py-2 rounded-lg bg-primary text-white"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleAddContent("poems")}>
-                Add Poem
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleAddContent("manga")}>
-                Add Manga
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleAddContent("lightnovels")}>
-                Add Light Novel
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleAddContent("books")}>
-                Add Book
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
         {/* Category Tabs */}
