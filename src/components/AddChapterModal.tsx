@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, FileIcon, X, Loader2, Plus } from "lucide-react";
+import { FileIcon, X, Loader2, Plus } from "lucide-react";
 
 interface AddChapterModalProps {
   isOpen: boolean;

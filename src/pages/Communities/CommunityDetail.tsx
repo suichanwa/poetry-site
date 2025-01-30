@@ -2,15 +2,15 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { LoadingState } from "@/components/LoadingState";
-import { CommunityInfo } from "./CommunityInfo";
-import { MemberList } from "./MemberList";
-import { CommunityRules } from "./CommunityRules";
+import { CommunityHeader } from "@/components/Communities/CommunityHeader";
+import { CreatePostModal } from "@/components/Communities/CreatePostModal";
+import { Button } from "@/components/ui/button";
+import { MemberList } from "@/components/Communities/MemberList";
+import { CommunityRules } from "@/components/Communities/CommunityRules";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Users, Shield, Plus, PlusCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { InviteUserModal } from "@/components/Communities/InviteUserModal";
-import { CreatePostModal } from "@/components/Communities/CreatePostModal";
-import { CommunityHeader } from "./CommunityHeader";
+import { PostCard } from "@/components/Communities/PostCard";
 
 interface Community {
   id: number;
@@ -163,11 +163,11 @@ export default function CommunityDetail() {
               <div className="space-y-4">
                 {community.posts.length > 0 ? (
                   community.posts.map(post => (
-                    <PoemCard key={post.id} {...post} />
+                    <PostCard key={post.id} post={post} />
                   ))
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    No posts yet. Be the first to share a poem!
+                    No posts yet. Be the first to share a post!
                   </div>
                 )}
               </div>

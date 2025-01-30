@@ -82,8 +82,6 @@ export function PoemCard({
   };
 
   const handleShare = async () => {
-    if (!id) return;
-
     if (navigator.share) {
       try {
         await navigator.share({

@@ -1,14 +1,16 @@
-// src/pages/Communities/CommunityDetail.tsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { LoadingState } from "@/components/LoadingState";
 import { CommunityHeader } from "@/components/Communities/CommunityHeader";
 import { CreatePostModal } from "@/components/Communities/CreatePostModal";
-import { CommunityPost } from "@/components/Communities/CommunityPost";
-import { CreateThreadModal } from "@/components/Communities/CreateThreadModal";
-import { ThreadList } from "@/components/Communities/ThreadList";
 import { Button } from "@/components/ui/button";
+import { MemberList } from "@/components/Communities/MemberList";
+import { CommunityRules } from "@/components/Communities/CommunityRules";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookOpen, Users, Shield, Plus, PlusCircle } from "lucide-react";
+import { InviteUserModal } from "@/components/Communities/InviteUserModal";
+import { PostCard } from "@/components/Communities/PostCard";
 
 interface Community {
   id: number;
@@ -16,10 +18,10 @@ interface Community {
   description: string;
   avatar?: string;
   createdAt: string;
+  isPrivate: boolean;
   _count: {
     members: number;
     posts: number;
-    threads: number;
   };
   members: {
     id: number;
@@ -27,7 +29,6 @@ interface Community {
     avatar?: string;
   }[];
   posts: any[];
-  threads: any[];
   creator: {
     id: number;
   };
@@ -44,9 +45,14 @@ export default function CommunityDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("posts");
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
-  const [isCreateThreadModalOpen, setIsCreateThreadModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  const handleCommunityUpdate = (updatedCommunity: Community) => {
+    setCommunity(updatedCommunity);
+  };
 
   useEffect(() => {
     const fetchCommunity = async () => {
@@ -66,19 +72,54 @@ export default function CommunityDetail() {
     fetchCommunity();
   }, [id]);
 
+  const handleJoinCommunity = async () => {
+    if (!user || !community) return;
+    try {
+      const response = await fetch(`http://localhost:3001/api/communities/${id}/join`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to join community');
+      const updatedCommunity = await response.json();
+      setCommunity(prev => ({
+        ...prev!,
+        members: [...prev!.members, user],
+        _count: { ...prev!._count, members: prev!._count.members + 1 }
+      }));
+    } catch (error) {
+      console.error('Error joining community:', error);
+    }
+  };
+
+  const handleLeaveCommunity = async () => {
+    if (!user || !community) return;
+    try {
+      const response = await fetch(`http://localhost:3001/api/communities/${id}/leave`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to leave community');
+      setCommunity(prev => ({
+        ...prev!,
+        members: prev!.members.filter(member => member.id !== user.id),
+        _count: { ...prev!._count, members: prev!._count.members - 1 }
+      }));
+    } catch (error) {
+      console.error('Error leaving community:', error);
+    }
+  };
+
   const handlePostCreated = (newPost: any) => {
     setCommunity(prev => ({
       ...prev!,
       posts: [newPost, ...prev!.posts],
       _count: { ...prev!._count, posts: prev!._count.posts + 1 }
-    }));
-  };
-
-  const handleThreadCreated = (newThread: any) => {
-    setCommunity(prev => ({
-      ...prev!,
-      threads: [newThread, ...prev!.threads],
-      _count: { ...prev!._count, threads: prev!._count.threads + 1 }
     }));
   };
 
@@ -96,50 +137,78 @@ export default function CommunityDetail() {
           community={community}
           isMember={isMember}
           isModerator={isModerator}
-          onJoin={() => {}}
-          onLeave={() => {}}
+          onJoin={handleJoinCommunity}
+          onLeave={handleLeaveCommunity}
           user={user}
         />
 
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">{community.name}</h1>
-          {isMember && (
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="posts">
+                <BookOpen className="w-4 h-4 mr-2" />
+                Posts ({community._count.posts})
+              </TabsTrigger>
+              <TabsTrigger value="members">
+                <Users className="w-4 h-4 mr-2" />
+                Members ({community._count.members})
+              </TabsTrigger>
+              <TabsTrigger value="rules">
+                <Shield className="w-4 h-4 mr-2" />
+                Rules
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="posts" className="mt-6">
+              <div className="space-y-4">
+                {community.posts.length > 0 ? (
+                  community.posts.map(post => (
+                    <PostCard key={post.id} post={post} />
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No posts yet. Be the first to share a post!
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="members" className="mt-6">
+              <MemberList
+                members={community.members}
+                creatorId={community.creator.id}
+              />
+            </TabsContent>
+
+            <TabsContent value="rules" className="mt-6">
+              <CommunityRules rules={community.rules} />
+            </TabsContent>
+          </Tabs>
+
+          {isModerator && (
+            <div className="flex gap-2 mt-4">
+              <Button onClick={() => setIsInviteModalOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Invite User
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/communities/${community.id}/manage`)}
+              >
+                Manage Community
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {isMember && (
+          <div className="flex justify-end mb-6">
             <Button onClick={() => setIsCreatePostModalOpen(true)}>
-              Create Post
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Add Post
             </Button>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          {community.posts.length > 0 ? (
-            community.posts.map(post => (
-              <CommunityPost key={post.id} post={post} />
-            ))
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              No posts yet. Be the first to share something!
-            </div>
-          )}
-        </div>
-
-        <div className="flex justify-between items-center mb-6 mt-10">
-          <h2 className="text-2xl font-bold">Threads</h2>
-          {isMember && (
-            <Button onClick={() => setIsCreateThreadModalOpen(true)}>
-              Create Thread
-            </Button>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          {community.threads.length > 0 ? (
-            <ThreadList threads={community.threads} />
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              No threads yet. Be the first to start a discussion!
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         <CreatePostModal
           isOpen={isCreatePostModalOpen}
@@ -148,11 +217,10 @@ export default function CommunityDetail() {
           onPostCreated={handlePostCreated}
         />
 
-        <CreateThreadModal
-          isOpen={isCreateThreadModalOpen}
-          onClose={() => setIsCreateThreadModalOpen(false)}
+        <InviteUserModal
+          isOpen={isInviteModalOpen}
+          onClose={() => setIsInviteModalOpen(false)}
           communityId={community.id}
-          onThreadCreated={handleThreadCreated}
         />
       </div>
     </div>
