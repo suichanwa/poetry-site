@@ -1,6 +1,6 @@
 // src/components/Communities/CreatePostModal.tsx
 import { useState } from "react";
-import { Modal } from "@/components/ui/modal";
+import { Modal, DialogTitle, DialogDescription } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -68,7 +68,10 @@ export function CreatePostModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="space-y-4 p-4">
-        <h2 className="text-2xl font-bold">Create Post</h2>
+        <DialogTitle className="text-2xl font-bold">Create Post</DialogTitle>
+        <DialogDescription>
+          Share your thoughts with the community.
+        </DialogDescription>
         {error && (
           <div className="bg-red-100 dark:bg-red-900/20 border border-red-400 text-red-700 dark:text-red-400 px-4 py-3 rounded">
             {error}

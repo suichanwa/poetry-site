@@ -137,7 +137,7 @@ export function PostCard({ post }: PostCardProps) {
         <CardFooter>
           <div className="flex items-center justify-between w-full">
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              {post._count.comments} Comments
+              {post._count?.comments || 0} Comments
             </span>
             <div className="flex items-center gap-2">
               <Button
