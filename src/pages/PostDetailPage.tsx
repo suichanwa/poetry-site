@@ -24,6 +24,8 @@ interface Post {
   };
 }
 
+//a small change for no reason
+
 export default function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
