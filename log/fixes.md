@@ -14,3 +14,6 @@
 
 acolo pe sait burgermenu trebuie sa se retraga cand alegi un compartiment
 acolo pe sait burgermenu trebuie sa se retraga cand alegi un compartiment 
+
+
+[] ive been yapping to that girl my entier day so ima making a small commit to keep on track, i swear ima gonna be back again later for bigger commits and meaningful ones

@@ -26,7 +26,6 @@ import BookReadPage from "./pages/BookReadPage";
 import { PoemCommentsPage } from "./pages/PoemCommentsPage";
 import { LoadingState } from "@/components/LoadingState";
 
-// Lazy load PostDetailPage (and any other heavy pages)
 const PostDetailPage = lazy(() => import("./pages/PostDetailPage"));
 
 function App() {
